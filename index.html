@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>フィールドノート</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Noto+Sans+JP:wght@900&display=swap">
+<style>
+:root{--bg:#efe8d4;--paper:#fbf7ea;--ink:#2b3526;--sub:#6a7360;--line:#ddd3b8;--acc:#4f8446;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171c15;--paper:#20271d;--ink:#ecead8;--sub:#a1aa94;--line:#363f30;--acc:#8cc47c}}
+:root[data-theme="dark"]{--bg:#171c15;--paper:#20271d;--ink:#ecead8;--sub:#a1aa94;--line:#363f30;--acc:#8cc47c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
+button{font:inherit;color:inherit;cursor:pointer}
+.book{height:100%;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.book::-webkit-scrollbar{display:none}
+.pg{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;box-sizing:border-box;padding:22px 20px 72px;position:relative;background:var(--paper);box-shadow:inset -10px 0 14px -12px rgba(0,0,0,.35),inset 6px 0 0 -3px var(--line)}
+.pg h2{margin:0 0 4px;font-size:26px;letter-spacing:.08em;font-weight:700}
+.lead{margin:0 0 18px;color:var(--sub);font-size:14px;line-height:1.7}
+/* cover */
+.cover{--cov:#2f5a3c;--covd:#1d3b27;--gold:#e2c36e;padding:0;display:flex;flex-direction:column;color:var(--gold);background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 4px),repeating-linear-gradient(-45deg,rgba(0,0,0,.06) 0 2px,transparent 2px 4px),var(--cov);overflow:hidden}
+.spine{position:absolute;left:0;top:0;bottom:0;width:26px;background:linear-gradient(90deg,var(--covd),var(--cov));border-right:2px solid var(--covd);box-shadow:inset -4px 0 6px rgba(0,0,0,.35)}
+.spine::before{content:"";position:absolute;left:6px;right:6px;top:70px;bottom:70px;border-left:1px solid var(--gold);border-right:1px solid var(--gold);opacity:.7}
+.corner{position:absolute;width:46px;height:46px;background:var(--covd);box-shadow:0 0 6px rgba(0,0,0,.3)}
+.tl{top:0;left:26px;clip-path:polygon(0 0,100% 0,0 100%)}.tr{top:0;right:0;clip-path:polygon(0 0,100% 0,100% 100%)}
+.bl{bottom:0;left:26px;clip-path:polygon(0 0,0 100%,100% 100%)}.br{bottom:0;right:0;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.ribbon{position:absolute;top:0;left:68%;width:14px;height:72px;background:#9c2f3a;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%)}
+.frame{flex:1;margin:40px 26px 0 46px;border:2px solid var(--gold);padding:6px;position:relative;z-index:1}
+.frame2{height:100%;box-sizing:border-box;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;background:rgba(0,0,0,.12)}
+.cover h1{margin:0;font-size:36px;line-height:1.35;letter-spacing:.2em;color:var(--gold);text-shadow:0 1px 0 rgba(0,0,0,.5);font-weight:700}
+.orn{width:60%;height:10px;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);position:relative}
+.orn::after{content:"❖";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;padding:0 6px;background:var(--cov)}
+.cover .sm{font-size:14px;letter-spacing:.3em}
+.under{position:relative;z-index:1;padding:14px 22px 64px 46px}
+.cl{font-size:12px;letter-spacing:.2em;text-align:center;opacity:.85}
+.sw-row{display:flex;gap:10px;justify-content:center;margin:8px 0 14px;overflow-x:auto;padding:4px 2px;scrollbar-width:none}
+.sw{flex:0 0 auto;border:0;background:none;padding:0;text-align:center;color:var(--gold);font-size:11px}
+.sw i{display:block;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.4);margin:0 auto 3px}
+.sw.on i{border-color:var(--gold);box-shadow:0 0 0 3px rgba(226,195,110,.35)}
+.open{width:100%;border:1.5px solid var(--gold);background:transparent;border-radius:6px;padding:12px;font-size:17px;letter-spacing:.2em;color:var(--gold)}
+.cover:not([data-d="0"]) .fd{display:none}.cover[data-d="0"] .stage{display:none}
+.stage{flex:1;position:relative;margin:34px 26px 0 26px;z-index:1}
+.dg-row{display:flex;gap:6px;justify-content:center;margin:6px 0 10px;flex-wrap:wrap}
+.dg{border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:999px;padding:6px 12px;font-size:13px}
+.dg.on{background:var(--gold);color:var(--cov)}
+.face{position:absolute;inset:0;display:none}
+.cover[data-d="1"] .fy,.cover[data-d="2"] .fh{display:block}
+.y-st{position:absolute;inset:8px;border:1.5px dashed var(--gold);border-radius:8px;opacity:.8}
+.y-sp{position:absolute;left:-26px;top:-34px;bottom:0;width:24px;background:var(--covd);box-shadow:inset -5px 0 7px rgba(0,0,0,.4),2px 0 6px rgba(0,0,0,.35)}
+.y-band{position:absolute;right:10%;top:-34px;bottom:0;width:13px;background:#1b1b1b;box-shadow:inset 2px 0 0 rgba(255,255,255,.14),inset -2px 0 0 rgba(0,0,0,.5),3px 0 7px rgba(0,0,0,.45)}
+.y-lab{position:absolute;left:12%;right:24%;top:12%;background:#f6f1e0;border:1.5px solid var(--covd);padding:14px 10px;text-align:center;color:#2b3526}
+.y-lab b{display:block;font-size:22px;letter-spacing:.1em}
+.y-lab small{display:block;font-size:13px;color:#5a6a4a;margin:6px 0 14px}
+.y-nm{display:flex;gap:6px;align-items:flex-end;font-size:14px;text-align:left}
+.y-nm i{flex:1;border-bottom:1px solid #2b2b2b;height:14px}
+.y-sp::before{content:"";position:absolute;left:10px;width:2px;top:12px;bottom:12px;background:repeating-linear-gradient(to bottom,var(--gold) 0 7px,transparent 7px 12px);opacity:.8}
+.y-em{position:absolute;inset:22px;border:1px solid rgba(255,255,255,.28);box-shadow:0 0 0 1px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.3);border-radius:3px}
+.y-c{position:absolute;width:58px;height:58px;background:var(--covd);top:-34px}
+.y-c.a{left:-2px;clip-path:polygon(0 0,100% 0,0 100%)}.y-c.b{right:-26px;clip-path:polygon(0 0,100% 0,100% 100%)}
+.cover[data-d="1"]{box-shadow:inset 0 0 70px rgba(0,0,0,.45)}
+.h-pl::after{content:"";position:absolute;inset:10px;border:1px solid rgba(90,74,42,.55);pointer-events:none}
+.h-fr{position:absolute;inset:0;border:2px solid var(--gold);padding:6px;box-sizing:border-box}
+.h-pl{height:100%;box-sizing:border-box;border:1px solid var(--gold);background:#efe3c4;position:relative;overflow:hidden;box-shadow:inset 0 0 30px rgba(120,80,30,.4)}
+.h-pl::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 22%,rgba(150,100,40,.18) 0 6px,transparent 7px),radial-gradient(circle at 80% 40%,rgba(150,100,40,.14) 0 4px,transparent 5px),radial-gradient(circle at 30% 80%,rgba(150,100,40,.12) 0 5px,transparent 6px)}
+.h-plant{position:absolute;left:50%;top:3%;height:58%;transform:translateX(-50%);overflow:visible}
+.h-lab{position:absolute;right:8px;bottom:8px;width:60%;background:#faf4e1;border:3px double #5a4a2a;padding:8px 10px;color:#2b2418;box-sizing:border-box}
+.h-lab small{display:block;font-size:12px;color:#6a5a3a}
+.h-lab b{display:block;font-size:19px;letter-spacing:.08em;margin:2px 0 6px}
+.h-lab i{display:block;border-bottom:1px solid #5a4a2a;height:13px}
+.h-c{position:absolute;width:30px;height:30px;background:var(--gold);opacity:.9}
+.h-c.a{top:0;left:0;clip-path:polygon(0 0,100% 0,0 100%)}.h-c.b{top:0;right:0;clip-path:polygon(0 0,100% 0,100% 100%)}
+.h-c.c{bottom:0;left:0;clip-path:polygon(0 0,0 100%,100% 100%)}.h-c.d{bottom:0;right:0;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.h-rb{position:absolute;top:-34px;left:72%;width:14px;height:72px;background:#9c2f3a;clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%)}
+.band{position:relative;height:110px;margin:-22px -20px 12px;overflow:hidden;cursor:pointer}
+.band svg{width:100%;height:100%;display:block}
+.band span{position:absolute;right:10px;bottom:6px;font-size:11px;color:#fff;background:rgba(0,0,0,.4);padding:2px 9px;border-radius:999px}
+.sn-tabs{display:flex;gap:6px;margin:0 0 12px;position:sticky;top:0;background:var(--paper);padding:6px 0;z-index:3}
+.sn-tabs button{flex:1;border:1px solid var(--line);background:none;border-radius:999px;padding:8px 0;font-size:14px}
+.sn-tabs .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.sn-card{display:flex;gap:12px;align-items:center;padding:11px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.sn-e{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-size:22px;flex:0 0 auto}
+.sn-card b{font-size:17px}.sn-card small{display:block;color:var(--sub);font-size:13px}
+.sn-now{font-style:normal;background:#d99a2b;color:#fff;font-size:11px;padding:1px 7px;border-radius:999px;margin-left:6px}
+.sn-det{padding:6px 6px 14px 58px;font-size:14px;line-height:1.7;border-bottom:1px solid var(--line)}
+.sn-warn{margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(190,60,40,.12);font-size:13px}
+.sn-dg{margin:12px 0;padding:12px;border:1px solid var(--line);border-left:4px solid #c0392b;font-size:14px;line-height:1.7}
+.sn-dg p{margin:6px 0 0}.sn-lv{font-style:normal;font-size:11px;padding:1px 8px;border-radius:999px;background:#d99a2b;color:#fff;margin-left:8px}.sn-lv.hi{background:#c0392b}
+.sn-cal{display:grid;grid-template-columns:84px repeat(12,1fr);gap:3px;font-size:12px;align-items:center}
+.sn-cal .h{text-align:center;color:var(--sub)}.sn-cal .h.now{color:var(--acc);font-weight:700}
+.sn-cal .nm{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sn-cal i{height:18px;border-radius:3px;background:var(--line);opacity:.4}.sn-cal i.on{opacity:1}
+.sn-note{font-size:13px;color:var(--sub);line-height:1.7}
+.sn-in{width:100%;box-sizing:border-box;padding:10px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);margin-bottom:8px;font-family:inherit}
+.sn-g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sn-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.sn-chip{border:1px solid var(--line);background:none;border-radius:999px;padding:5px 10px;font-size:13px}.sn-chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.sn-btn{border:0;background:var(--acc);color:#fff;border-radius:10px;padding:11px;font-size:15px;width:100%}
+.sn-ghost{background:none;border:1px solid var(--line);color:var(--ink)}.sn-red{background:#a8392b;margin-top:14px}
+.sn-row{padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px;line-height:1.7}
+.sn-tag{display:inline-block;background:var(--bg);border-radius:999px;padding:1px 9px;font-size:12px;margin:0 4px 2px 0}
+.sn-del{border:1px solid var(--line);background:none;border-radius:8px;padding:3px 10px;font-size:12px;color:var(--sub);margin-top:4px}.sn-del.ask{background:#b3412f;color:#fff;border-color:#b3412f}
+/* toc */
+.toc{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:14px 4px}
+.ico{flex:0 0 auto;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;color:#fff}
+.toc .nm{flex:1;font-size:18px}
+.toc .no{font-size:13px;color:var(--sub)}
+.del{border:1px solid var(--line);background:none;border-radius:8px;padding:6px 9px;font-size:12px;color:var(--sub)}
+.del.ask{background:#b3412f;color:#fff;border-color:#b3412f}
+.addb{margin-top:18px;width:100%;border:1.5px dashed var(--acc);background:none;color:var(--acc);border-radius:12px;padding:13px;font-size:16px}
+#addp{display:none;margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:12px}
+#addp.show{display:block}
+#addp label{display:block;font-size:13px;color:var(--sub);margin:10px 0 6px}
+#addp input[type=text]{width:100%;box-sizing:border-box;padding:11px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{width:40px;height:40px;border-radius:10px;border:2px solid transparent;background:var(--bg);font-size:20px;display:grid;place-items:center;padding:0}
+.opt.on{border-color:var(--acc)}
+.save{margin-top:14px;width:100%;border:0;border-radius:10px;padding:12px;background:var(--acc);color:#fff;font-size:16px}
+/* content pages */
+.hd{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{border:0;background:none;color:var(--sub);font-size:14px;padding:0 0 10px}
+.ph{border:1.5px dashed var(--line);border-radius:12px;padding:16px;margin-bottom:12px;color:var(--sub);font-size:15px}
+.ph b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+/* dots */
+#dots{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;padding:7px 12px;border-radius:999px;background:rgba(30,40,28,.45);backdrop-filter:blur(6px);z-index:5}
+#dots button{width:9px;height:9px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.5)}
+#dots button.on{background:#fff;width:22px;border-radius:5px}
+@media (prefers-reduced-motion:reduce){.book{scroll-behavior:auto}}
+:root{--foil:linear-gradient(135deg,#7a5a14 0%,#e9cf7a 22%,#fff3b8 38%,#b8902f 55%,#f1d97e 72%,#8a6a1f 100%)}
+.gf{background:var(--foil);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 0 rgba(0,0,0,.55)) drop-shadow(0 -1px 0 rgba(255,240,170,.3))}
+.cover,.pg.bk{background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 30% 18%,rgba(255,255,255,.12),transparent 62%),var(--cov);box-shadow:inset 0 0 60px rgba(0,0,0,.42)}
+.cover::before,.pg.bk::before{content:"";position:absolute;top:8px;bottom:8px;width:5px;background:repeating-linear-gradient(to bottom,#efe3c4 0 1px,#cdbb8c 1px 2px);z-index:2;opacity:.9}
+.cover::before{right:0}.pg.bk::before{left:0}
+.cover h1{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;font-size:52px;line-height:1.02;letter-spacing:.05em;text-shadow:none;color:transparent}
+.frame{border:3px solid transparent;border-image:var(--foil) 1;box-shadow:0 1px 3px rgba(0,0,0,.55)}
+.frame2{border:1px solid transparent;border-image:var(--foil) 1}
+.orn{border-style:solid;border-width:1px 0;border-color:transparent;border-image:var(--foil) 1}.orn::after{color:#e9cf7a}
+.y-em{border:2px solid transparent;border-image:var(--foil) 1;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.h-fr{border:3px solid transparent;border-image:var(--foil) 1}.h-pl{border:1px solid transparent;border-image:var(--foil) 1}.h-c{background:var(--foil);opacity:1}
+.spine,.y-sp{background:linear-gradient(90deg,rgba(0,0,0,.45),rgba(255,255,255,.2) 38%,rgba(0,0,0,.5)),var(--covd);box-shadow:inset -4px 0 6px rgba(0,0,0,.4),3px 0 8px rgba(0,0,0,.45)}
+.spine::after,.y-sp::after{content:"";position:absolute;inset:0;background:var(--foil) 0 12%/100% 3px no-repeat,var(--foil) 0 15%/100% 2px no-repeat,var(--foil) 0 85%/100% 3px no-repeat,var(--foil) 0 88%/100% 2px no-repeat}
+.bsp{left:auto;right:0;border-right:0;border-left:2px solid var(--covd);box-shadow:inset 4px 0 6px rgba(0,0,0,.4),-3px 0 8px rgba(0,0,0,.45)}
+.stamp{position:relative;width:76px;height:76px;border-radius:50%;border:2.5px solid #f4e9cc;color:#f4e9cc;display:grid;place-items:center;text-align:center;font-size:15px;line-height:1.25;letter-spacing:.12em;transform:rotate(-9deg);opacity:.88;filter:url(#rough)}
+.stamp::before{content:"";position:absolute;inset:4px;border:1px solid #f4e9cc;border-radius:50%}
+.stamp.pos{position:absolute;left:16px;bottom:16px;z-index:3}
+.h-pl .stamp{color:#8a2a22;border-color:#8a2a22;mix-blend-mode:multiply}.h-pl .stamp::before{border-color:#8a2a22}
+.pg.bk{padding:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#f1e6c8}
+.bk-card{position:relative;z-index:1;width:72%;margin-right:26px;box-sizing:border-box;padding:22px 16px 10px;border:3px solid transparent;border-image:var(--foil) 1;background:rgba(0,0,0,.14)}
+.bk-t{font:700 32px "Cormorant Garamond",Georgia,serif;letter-spacing:.1em;text-align:center;margin-bottom:16px}
+.bk-card label{display:block;margin-bottom:14px;font-size:12px;letter-spacing:.15em}
+.bk-card input{display:block;width:100%;box-sizing:border-box;background:transparent;border:0;border-bottom:1px solid currentColor;color:inherit;font-size:16px;padding:5px 0;font-family:inherit;outline:0}
+.bk-card input::placeholder{color:inherit;opacity:.4}
+.pg.bk[data-d="1"] .bk-card{background:#f6f1e0;color:#2b2418;border:1.5px solid var(--covd);border-image:none}
+.pg.bk[data-d="2"] .bk-card{background:#efe3c4;color:#2b2418}
+.pg.bk[data-d="1"] .gf,.pg.bk[data-d="2"] .gf{background:none;-webkit-text-fill-color:#6a5a2a;filter:none}
+.y-ttl{position:absolute;left:34px;right:62px;top:42%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;z-index:2}
+.y-ttl svg{display:block;flex:0 0 auto;width:38px;height:38px;margin:0;filter:drop-shadow(0 1px 0 rgba(0,0,0,.55))}
+.y-ttl b{display:block;font-size:clamp(14px,4.8vw,20px);letter-spacing:.06em;font-weight:700;white-space:nowrap}
+.y-ttl .stamp{position:absolute;right:-6px;bottom:-56px;width:70px;height:70px;font-size:14px;background:rgba(244,233,204,.92);color:#b3302a;border-color:#b3302a;opacity:.95}
+.y-ttl .stamp::before{border-color:#b3302a}
+.h-title{position:absolute;left:0;right:0;bottom:0;height:30%;min-height:92px;background:radial-gradient(ellipse at 20% 30%,rgba(255,235,190,.12),transparent 50%),linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.05)),var(--covd);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 14px;border-top:2px solid transparent;border-image:var(--foil) 1;box-shadow:inset 0 8px 12px rgba(0,0,0,.4)}
+.h-title svg{flex:0 0 auto;width:30px;height:30px;filter:url(#worn) drop-shadow(0 1px 0 rgba(0,0,0,.6)) drop-shadow(0 -1px 0 rgba(255,245,190,.4))}
+.h-title span{flex:0 0 auto;text-align:center;font:900 clamp(17px,5.6vw,24px)/1 "Noto Sans JP","Hiragino Kaku Gothic StdN","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;letter-spacing:.12em;white-space:nowrap;filter:url(#worn) drop-shadow(0 1px 0 rgba(0,0,0,.75)) drop-shadow(0 -1px 0 rgba(255,245,190,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.55))}
+.h-pl .stamp.pos{bottom:34%}
+.cover>.y-sp{left:0;top:0;bottom:0;z-index:2}
+.cover>.y-band{top:0;bottom:0;right:calc(26px + (100% - 52px)*.1);z-index:1}
+.cover[data-d="0"]>.cv-only,.cover:not([data-d="1"])>.y-band{display:none}
+.cover[data-d="2"]::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at 6% 5%,rgba(255,235,190,.26),transparent 26%),radial-gradient(ellipse at 95% 96%,rgba(255,235,190,.22),transparent 28%),radial-gradient(ellipse at 80% 20%,rgba(0,0,0,.2),transparent 30%),repeating-linear-gradient(118deg,transparent 0 31px,rgba(255,255,255,.06) 31px 32px,transparent 32px 70px)}
+.h-pl{background:radial-gradient(ellipse at 50% 40%,transparent 48%,rgba(110,70,25,.34)),#e4d3a8}
+.h-pl::before{background:radial-gradient(circle at 18% 22%,rgba(150,100,40,.28) 0 7px,transparent 8px),radial-gradient(circle at 82% 38%,rgba(150,100,40,.22) 0 5px,transparent 6px),radial-gradient(circle at 30% 62%,rgba(150,100,40,.2) 0 6px,transparent 7px),radial-gradient(ellipse at 70% 80%,rgba(120,80,30,.18) 0 18px,transparent 19px)}
+.h-c{filter:url(#worn)}
+:root{--grain:url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22220%22 height=%22220%22%3E%3Cfilter id=%22n%22 x=%220%22 y=%220%22 width=%22100%25%22 height=%22100%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%22.75%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix values=%220 0 0 0 .42  0 0 0 0 .33  0 0 0 0 .2  0 0 0 .45 -.1%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E")}
+.pg:not(.cover):not(.bk){--ink:#2b3526;--sub:#667058;--bg:rgba(255,255,255,.55);color:var(--ink);background:var(--holes),var(--grain),repeating-linear-gradient(90deg,rgba(120,100,60,.03) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 40%,transparent 58%,rgba(90,70,30,.1)),var(--paper)}
+.pp{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+.pp h3{margin:0 0 12px;font-size:16px;letter-spacing:.12em}
+.pp-sw{display:flex;gap:10px;flex-wrap:wrap}
+.ppb{border:0;background:none;padding:0;font-size:12px;color:var(--sub);text-align:center}
+.ppb i{display:block;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);margin:0 auto 3px}
+.ppb.on i{border-color:var(--ink);box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--acc)}
+.pp-g{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px;color:var(--sub)}
+.pp-g input{flex:1;accent-color:var(--acc)}
+.sw-row{flex-wrap:wrap;overflow:visible}
+.cvg{width:100%;accent-color:var(--gold);margin:2px 0 12px}
+.pbtn{float:right;border:1px solid var(--line);background:none;border-radius:999px;padding:3px 12px;font-size:12px;color:var(--sub)}
+.pp-pg{clear:both;margin:6px 0 16px;padding:12px;border:1px solid var(--line);border-radius:10px}
+.pp[hidden]{display:none}
+:root{--cutbg:var(--bg);--holes:radial-gradient(circle at 17px 16%,rgba(50,42,28,.62) 0 5px,rgba(0,0,0,.2) 5px 8px,transparent 9px),radial-gradient(circle at 17px 50%,rgba(50,42,28,.62) 0 5px,rgba(0,0,0,.2) 5px 8px,transparent 9px),radial-gradient(circle at 17px 84%,rgba(50,42,28,.62) 0 5px,rgba(0,0,0,.2) 5px 8px,transparent 9px)}
+html[data-holes="off"]{--holes:linear-gradient(transparent,transparent)}
+.pg:not(.cover):not(.bk){overflow:hidden;padding:0}
+.pgin{position:relative;height:100%;overflow-y:auto;box-sizing:border-box;padding:22px 20px 72px 36px;background:var(--rule,none)}
+.pgin .band{margin:-22px -20px 12px -36px}
+.pg[data-rule="line"]{--rule:linear-gradient(to bottom,transparent 31px,rgba(70,100,140,.3) 31px 32px) 0 0/100% 32px local,linear-gradient(90deg,transparent 46px,rgba(200,80,80,.35) 46px 47px,transparent 47px) local}
+.pg[data-rule="grid"]{--rule:linear-gradient(rgba(60,110,90,.2) 1px,transparent 1px) 0 0/24px 24px local,linear-gradient(90deg,rgba(60,110,90,.2) 1px,transparent 1px) 0 0/24px 24px local}
+.pg[data-rule="dot"]{--rule:radial-gradient(rgba(70,90,70,.4) 1.3px,transparent 1.8px) 0 0/22px 22px local}
+.pgno{position:absolute;right:46px;bottom:14px;font-size:13px;color:var(--sub);letter-spacing:.12em;pointer-events:none;z-index:2}
+.fold{position:absolute;right:0;bottom:0;width:30px;height:30px;pointer-events:none;z-index:2;background:linear-gradient(135deg,color-mix(in srgb,var(--paper),#fff 50%) 0 46%,rgba(0,0,0,.28) 50%,var(--cutbg) 50.5% 100%)}
+html[data-pgno="off"] .pgno,html[data-fold="off"] .fold{display:none}
+.note{position:absolute;z-index:4;padding:12px 8px 8px;box-sizing:border-box;color:#3a3320;line-height:1.35;overflow:hidden;white-space:pre-wrap;word-break:break-word;box-shadow:2px 4px 8px rgba(0,0,0,.28);touch-action:none;cursor:grab;user-select:none}
+.note::before{content:"";position:absolute;top:0;left:50%;width:34%;height:9px;margin-left:-17%;background:rgba(255,255,255,.5)}
+#nmod{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.42);display:grid;place-items:center}
+#nmod[hidden]{display:none}
+.nbox{width:min(88vw,360px);background:#fffdf6;color:#2b3526;border-radius:14px;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.nbox textarea{width:100%;box-sizing:border-box;font-size:16px;padding:10px;border:1px solid #ddd3b8;border-radius:8px;font-family:inherit;resize:none;background:#fff;color:#2b3526}
+.nl{font-size:12px;color:#6a7360;margin:12px 0 6px}
+.nrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.nsw{width:34px;height:34px;border-radius:50%;border:2px solid #ddd3b8;padding:0}.nsw.on{border-color:#2b3526;box-shadow:0 0 0 2px #fffdf6,0 0 0 4px #4f8446}
+.nrow .sn-btn{flex:1;padding:10px 0}
+.nbox .sn-chip{color:#2b3526}.nbox .sn-chip.on{color:#fff}
+.tz-ch{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.tz-ch .sn-chip{flex:0 0 auto}
+#mmod{position:fixed;inset:0;z-index:21;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}
+#mmod[hidden]{display:none}
+.msheet,.nbox{--ink:#2b3526;--line:#ddd3b8;--sub:#667058;--bg:#fff}
+.msheet{width:100%;max-height:82vh;overflow:auto;box-sizing:border-box;background:#fffdf6;color:#2b3526;border-radius:18px 18px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+.msheet h3{margin:0;font-size:24px}.msheet .y{color:#667058;font-size:13px;margin-bottom:8px}
+.mrow{display:flex;justify-content:space-between;border-bottom:1px solid #e3dcc6;padding:8px 0;font-size:14px}.mrow span:first-child{color:#667058}
+.msheet a.sn-btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
+.sn-tabs{overflow-x:auto;scrollbar-width:none}.sn-tabs button{flex:1 0 auto;padding:8px 10px;font-size:13px;white-space:nowrap}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/></filter><filter id="worn" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="3" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -1.6" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></svg>
+<div class="book" id="book">
+  <section class="pg cover" id="cover" data-d="0">
+    <div class="spine fd"></div><i class="corner fd tl"></i><i class="corner fd tr"></i><i class="corner fd bl"></i><i class="corner fd br"></i><div class="ribbon fd"></div><div class="y-sp cv-only"></div><div class="y-band cv-only"></div>
+    <div class="frame fd"><div class="frame2">
+      <svg width="56" height="56" viewBox="0 0 60 60" fill="none" stroke="url(#gfl)" stroke-width="2" style="filter:drop-shadow(0 1px 0 rgba(0,0,0,.55))"><defs><linearGradient id="gfl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6a1f"/><stop offset=".35" stop-color="#fff3b8"/><stop offset=".6" stop-color="#b8902f"/><stop offset="1" stop-color="#f1d97e"/></linearGradient></defs><path d="M30 54C30 54 8 40 12 18 28 14 46 22 48 40 46 48 38 54 30 54Z"/><path d="M30 54V20M30 38 20 28M30 32 40 26"/></svg>
+      <h1 class="gf">Field<br>Note</h1>
+      <div class="orn"></div>
+      <div class="stamp">自然の<br>恵ぐみ</div>
+    </div></div>
+    <div class="stage">
+      <div class="face fy"><div class="y-st"></div><div class="y-em"></div><i class="y-c a"></i><i class="y-c b"></i><div class="y-ttl"><svg width="50" height="50" viewBox="0 0 60 60" fill="none" stroke="url(#gfl2)" stroke-width="2"><defs><linearGradient id="gfl2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6a1f"/><stop offset=".35" stop-color="#fff3b8"/><stop offset=".6" stop-color="#b8902f"/><stop offset="1" stop-color="#f1d97e"/></linearGradient></defs><path d="M30 54C30 54 8 40 12 18 28 14 46 22 48 40 46 48 38 54 30 54Z"/><path d="M30 54V20M30 38 20 28M30 32 40 26"/></svg><b class="gf">フィールドノート</b><div class="stamp">自然の<br>恵ぐみ</div></div></div>
+      <div class="face fh"><div class="h-rb"></div><div class="h-fr"><div class="h-pl"><svg class="h-plant" viewBox="0 0 120 150" fill="none" stroke-linejoin="round"><defs><g id="lf"><path d="M0 0C-4-5-8-12-8-19L-10-21-8-22-9-25-6-26-6-29-3-30-2-33 0-37Z" fill="#9bb86a"/><path d="M0 0C4-5 8-12 8-19L10-21 8-22 9-25 6-26 6-29 3-30 2-33 0-37Z" fill="#6f8f45"/><path d="M0 0C-4-5-8-12-8-19L-10-21-8-22-9-25-6-26-6-29-3-30-2-33 0-37 2-33 3-30 6-29 6-26 9-25 8-22 10-21 8-19C8-12 4-5 0 0Z" stroke="#2f3d1f" stroke-width=".5"/><path d="M0 0V-35M0-8-4-14M0-8 4-14M0-15-5-21M0-15 5-21M0-22-4-27M0-22 4-27" stroke="#3a5226" stroke-width=".45"/></g>
+<g id="pm"><use href="#lf" transform="rotate(-72) scale(.72)"/><use href="#lf" transform="rotate(72) scale(.72)"/><use href="#lf" transform="rotate(-36) scale(.92)"/><use href="#lf" transform="rotate(36) scale(.92)"/><use href="#lf" transform="scale(1.05)"/></g>
+<g id="pl"><path d="M55 146C52 118 68 96 60 70S64 40 62 26" stroke="#5a4328" stroke-width="2.8"/><path d="M54.4 146C51.4 118 67.4 96 59.4 70S63.4 40 61.4 26" stroke="#a88c5c" stroke-width=".8"/>
+<path d="M56 112C46 108 38 104 30 96M62 84C74 80 82 74 88 66M61 56C52 52 44 48 34 40M62 40C72 40 82 38 88 34" stroke="#5a4328" stroke-width="1.4"/>
+<g fill="#3e2f1a"><ellipse cx="54" cy="130" rx=".9" ry=".4"/><ellipse cx="56" cy="104" rx=".9" ry=".4"/><ellipse cx="61" cy="78" rx=".9" ry=".4"/><ellipse cx="63" cy="56" rx=".9" ry=".4"/></g>
+<use href="#pm" transform="translate(30 96) rotate(-58) scale(.9)"/><use href="#pm" transform="translate(88 66) rotate(58) scale(.95)"/><use href="#pm" transform="translate(34 40) rotate(-50) scale(.8)"/>
+<path d="M62 27C56 19 57 10 62 3 67 10 68 19 62 27Z" fill="#b98a4a" stroke="#4a3418" stroke-width=".6"/><path d="M62 25V6M58.5 19 62 14 65.5 19M59 12 62 8 65 12" stroke="#6a4a20" stroke-width=".5"/>
+<g stroke="#5a4328" stroke-width=".6"><path d="M88 34 76 22M88 34 82 16M88 34 90 12M88 34 98 16M88 34 103 25M88 34 98 33"/></g>
+<g fill="#3b2c4a"><circle cx="76" cy="22" r="2.4"/><circle cx="82" cy="16" r="2.4"/><circle cx="90" cy="12" r="2.4"/><circle cx="98" cy="16" r="2.4"/><circle cx="103" cy="25" r="2.4"/><circle cx="98" cy="33" r="2.4"/></g>
+<g fill="#fff" opacity=".55"><circle cx="75.4" cy="21.3" r=".6"/><circle cx="81.4" cy="15.3" r=".6"/><circle cx="89.4" cy="11.3" r=".6"/><circle cx="97.4" cy="15.3" r=".6"/><circle cx="102.4" cy="24.3" r=".6"/><circle cx="97.4" cy="32.3" r=".6"/></g></g></defs>
+<use href="#pl"/></svg><div class="h-title"><svg viewBox="0 0 60 60" fill="none" stroke="url(#gfl3)" stroke-width="2.4"><defs><linearGradient id="gfl3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a6a1f"/><stop offset=".35" stop-color="#fff3b8"/><stop offset=".6" stop-color="#b8902f"/><stop offset="1" stop-color="#f1d97e"/></linearGradient></defs><path d="M30 54C30 54 8 40 12 18 28 14 46 22 48 40 46 48 38 54 30 54Z"/><path d="M30 54V20M30 38 20 28M30 32 40 26"/></svg><span class="gf">フィールドノート</span></div><div class="stamp pos">自然の<br>恵ぐみ</div></div></div>
+        <i class="h-c a"></i><i class="h-c b"></i><i class="h-c c"></i><i class="h-c d"></i></div>
+    </div>
+    <div class="under">
+      <div class="cl">表紙のデザイン</div><div class="dg-row" id="dpick"></div><div class="cl">表紙の色</div>
+      <div class="sw-row" id="picker"></div><div class="cl">濃淡</div><input type="range" id="cvg" class="cvg" min="0" max="100" value="50" aria-label="表紙の濃淡">
+      <button class="open" id="open">ノートを開く</button>
+    </div>
+  </section>
+  <section class="pg" id="tocpg">
+    <h2>もくじ</h2>
+    <p class="lead">ページをタップすると開きます。左右にスワイプでもめくれます。</p>
+    <div id="toc"></div>
+    <button class="addb" id="addb">＋ ページを追加</button>
+    <div id="addp">
+      <label>ページの名前</label>
+      <input type="text" id="an" maxlength="12" placeholder="例：温泉">
+      <label>アイコン</label><div class="opts" id="ai"></div>
+      <label>色</label><div class="opts" id="ac"></div>
+      <button class="save" id="asave">このページを追加</button>
+    </div>
+  </section>
+</div>
+<div id="dots"></div>
+<script>
+const BASE=[{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
+const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟"];
+const COLORS=["#4f8446","#b9473a","#a06a36","#3b7ca3","#835aa3","#b8922a"];
+const SC=[
+{n:"新緑",sky:["#bfe2c6","#f4f8dc"],sun:"#fff6b0",m1:"#8fbf8a",m2:"#5e9a62",gr:"#3f7a45",tr:"#2d6a3a",d:"pine",x:""},
+{n:"山桜",sky:["#fbd8e0","#fff6ee"],sun:"#ffffff",m1:"#c7d6c0",m2:"#8fae92",gr:"#6f9a78",tr:"#f1a0b5",d:"round",x:""},
+{n:"紅葉",sky:["#f6cf98","#fff0d2"],sun:"#fff3c0",m1:"#d79a5a",m2:"#b4673a",gr:"#8a4a2a",tr:"#d4452a",d:"round",x:""},
+{n:"雪山",sky:["#a9c2dc","#eef4fa"],sun:"#ffffff",m1:"#e4edf5",m2:"#b7c8da",gr:"#f4f8fc",tr:"#46675e",d:"pine",x:""},
+{n:"里山",sky:["#ffd2a3","#fff3dc"],sun:"#ffab5e",m1:"#b9c9a6",m2:"#8aa57e",gr:"#6c8f62",tr:"#4e7a4f",d:"round",x:""},
+{n:"渓流",sky:["#cfe6f0","#f2f8e8"],sun:"#ffffff",m1:"#8fb89a",m2:"#5f9470",gr:"#4a7f55",tr:"#2f6a42",d:"pine",x:"stream"},
+{n:"湖と山",sky:["#bcd8ec","#f6f3e6"],sun:"#ffffff",m1:"#9db4cc",m2:"#6f8fae",gr:"#5f8a6a",tr:"#34664a",d:"pine",x:"lake"},
+{n:"星空",sky:["#14213d","#3b4a78"],sun:"#f4f1d0",m1:"#2d3a5c",m2:"#1f2a46",gr:"#151d33",tr:"#0e1526",d:"pine",x:"night"},
+{n:"山菜の芽吹き",sky:["#dce9ee","#fbf6e6"],sun:"#fff7c8",m1:"#dfe8e4",m2:"#a8bfa4",gr:"#8a7a5a",tr:"#6f8a5a",d:"round",x:"sprout"},
+{n:"きのこの森",sky:["#d9d3bd","#f1ead2"],sun:"#fff0b8",m1:"#9aab84",m2:"#6d8a5c",gr:"#5a4a32",tr:"#3d5a38",d:"pine",x:"mush"}];
+const CV=[{n:"深緑",c:"#2f5a3c",d:"#1d3b27",g:"#e2c36e"},{n:"ワイン",c:"#6e2a35",d:"#4a1a22",g:"#e2c36e"},{n:"紺",c:"#25365e",d:"#16223d",g:"#e2c36e"},{n:"茶",c:"#6b4a2c",d:"#46301c",g:"#ecd08a"},{n:"墨黒",c:"#2b2b2b",d:"#141414",g:"#d9b95c"},{n:"生成り",c:"#cdbd97",d:"#9c8a60",g:"#5a4410"}];
+const YC=[{n:"深緑",c:"#3f5f34",d:"#27401f",g:"#e8dcb8"},{n:"茶",c:"#6b4a2c",d:"#46301c",g:"#e8dcb8"},{n:"紺",c:"#22385c",d:"#142339",g:"#e8dcb8"},{n:"臙脂",c:"#7a2c25",d:"#511b16",g:"#e8dcb8"},{n:"墨",c:"#2c2f33",d:"#17191c",g:"#e8dcb8"},{n:"芥子",c:"#9a7a22",d:"#6b5412",g:"#f1e6c0"}];
+const HC=[{n:"革茶",c:"#5a3a22",d:"#3b2414",g:"#d9b878"},{n:"深緑",c:"#2f4a34",d:"#1e3222",g:"#d9b878"},{n:"ワイン",c:"#5a2530",d:"#3a1620",g:"#d9b878"},{n:"墨紺",c:"#1f2c46",d:"#121b2e",g:"#d9b878"},{n:"黒革",c:"#2a2523",d:"#151211",g:"#d9b878"},{n:"栗",c:"#6b4426",d:"#472b15",g:"#e0c080"}];
+const PAL=[CV,YC,HC],DG=["古い辞書風","野帳風","植物標本帳風"];
+const DEF={sansai:8,fruit:2,kinoko:9,tozan:6,onsen:7};
+function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let custom=ld("fn_pages",[]),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_bands",{}),uid=0,colo=ld("fn_colo",{});
+let selIcon=ICONS[0],selColor=COLORS[0];
+const $=id=>document.getElementById(id),book=$("book");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"}];
+const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
+const pages=()=>bl().concat(custom);
+
+const X={
+stream:'<path d="M180 180Q200 152 240 143 290 135 400 130V146Q300 152 272 166 258 175 264 180Z" fill="#a8d8ec"/>',
+lake:'<ellipse cx="200" cy="160" rx="140" ry="15" fill="#9cc6dc"/><path d="M90 160H310" stroke="#fff" stroke-opacity=".6"/>',
+night:[40,90,150,230,270,350,380,120,320].map((x,i)=>`<circle cx="${x}" cy="${12+(i*17)%70}" r="${i%3?.9:1.5}" fill="#fff"/>`).join(""),
+sprout:[120,150,185,220,255,290].map(x=>`<ellipse cx="${x}" cy="166" rx="4" ry="9" fill="#8fd16a"/><ellipse cx="${x+6}" cy="169" rx="3" ry="6" fill="#6fb24c"/>`).join(""),
+mush:[120,170,260,300].map((x,i)=>`<rect x="${x-2}" y="160" width="4" height="9" fill="#f3ead4"/><path d="M${x-9} 161Q${x} 146 ${x+9} 161Z" fill="${i%2?"#e0a23a":"#c8483a"}"/>`).join("")};
+function svg(s){
+  const u=++uid,T=[[40,168,1],[92,172,.8],[312,170,.9],[366,166,1.1]];
+  const tr=T.map(([x,y,k])=>s.d==="pine"?`<g fill="${s.tr}"><polygon points="${x},${y-40*k} ${x-10*k},${y-15*k} ${x+10*k},${y-15*k}"/><polygon points="${x},${y-28*k} ${x-13*k},${y-4*k} ${x+13*k},${y-4*k}"/><rect x="${x-1.5}" y="${y-4}" width="3" height="7" fill="#5b4632"/></g>`:`<g><rect x="${x-1.5}" y="${y-16*k}" width="3" height="20" fill="#5b4632"/><circle cx="${x}" cy="${y-24*k}" r="${13*k}" fill="${s.tr}"/></g>`).join("");
+  return `<svg viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.sky[0]}"/><stop offset="1" stop-color="${s.sky[1]}"/></linearGradient></defs><rect width="400" height="180" fill="url(#g${u})"/><circle cx="310" cy="45" r="20" fill="${s.sun}" opacity=".9"/>${s.x==="night"?X.night:""}<path d="M0 120L70 70 130 105 210 55 300 100 400 75V180H0Z" fill="${s.m1}"/><path d="M0 150L90 105 170 140 260 100 340 135 400 115V180H0Z" fill="${s.m2}"/><path d="M0 160Q200 140 400 162V180H0Z" fill="${s.gr}"/>${s.x==="night"?"":(X[s.x]||"")}${tr}</svg>`;
+}
+const bi=id=>bands[id]??DEF[id]??0;
+const bandIn=id=>svg(SC[bi(id)])+`<span>${SC[bi(id)].n}（タップで変更）</span>`;
+const band=p=>`<div class="band" data-band="${p.id}">${bandIn(p.id)}</div>`;
+function paintEl(c){const k=PAL[dsg][cv]||PAL[dsg][0],st=c.style,t=(cvi-50)/50,ad=h=>t<0?mix(h,"#ffffff",-t*.5):mix(h,"#000000",t*.45);c.dataset.d=dsg;st.setProperty("--cov",ad(k.c));st.setProperty("--covd",ad(k.d));st.setProperty("--gold",k.g)}
+function drawCover(){
+  paintEl($("cover"));document.querySelectorAll(".bk").forEach(paintEl);
+  $("dpick").innerHTML=DG.map((n,i)=>`<button class="dg${dsg===i?" on":""}" data-d="${i}">${n}</button>`).join("");
+  $("picker").innerHTML=PAL[dsg].map((v,i)=>`<button class="sw${cv===i?" on":""}" data-i="${i}"><i style="background:${v.c}"></i>${v.n}</button>`).join("");
+}
+$("dpick").addEventListener("click",e=>{const b=e.target.closest(".dg");if(!b)return;dsg=+b.dataset.d;sv("fn_design",dsg);drawCover()});
+$("picker").addEventListener("click",e=>{const b=e.target.closest(".sw");if(!b)return;cv=+b.dataset.i;sv("fn_cover",cv);drawCover()});
+
+function go(i){book.scrollTo({left:i*book.clientWidth,behavior:"smooth"})}
+function renderPages(){
+  document.querySelectorAll(".pg.dyn").forEach(n=>n.remove());
+  pages().forEach((p,i)=>{
+    const s=document.createElement("section");s.className="pg dyn";
+    s.innerHTML=`${band(p)}<button class="back" data-go="1">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
+    const kd=p.id==="sansai"?"S":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    book.appendChild(s);
+    if(kd)({S:initSansai,T:initTozan,O:initOnsen})[kd](s.querySelector(".sn"));
+    {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,"– "+(i+1)+" –");
+  });
+  const bk=document.createElement("section");bk.className="pg dyn bk";
+  bk.innerHTML=`<div class="spine bsp"></div><div class="bk-card"><div class="bk-t gf">Colophon</div>${[["k","監修","監修者名"],["p","発行所在","発行所在地"],["d","発行日","2026年10月31日"],["v","バージョン","Ver. 1.0"]].map(([k,l,ph])=>`<label><span class="gf">${l}</span><input data-k="${k}" maxlength="40" placeholder="${ph}" value="${esc(colo[k]||"")}"></label>`).join("")}</div>`;
+  bk.addEventListener("input",e=>{const k=e.target.dataset.k;if(k){colo[k]=e.target.value;sv("fn_colo",colo)}});
+  book.appendChild(bk);paintEl(bk);
+  $("toc").innerHTML=pages().map((p,i)=>{
+    const c=i>=bl().length;
+    return `<div style="display:flex;align-items:center"><button class="toc" data-go="${i+2}"><span class="ico" style="background:${p.color}">${p.icon}</span><span class="nm">${esc(p.name)}</span><span class="no">${i+1}ページ</span></button>${c?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
+  }).join("");
+  $("dots").innerHTML=Array.from({length:pages().length+3},(_,i)=>`<button data-go="${i}" aria-label="${i+1}ページ目"></button>`).join("");
+  upd();
+}
+function upd(){
+  const i=Math.round(book.scrollLeft/book.clientWidth);
+  [...$("dots").children].forEach((d,j)=>d.classList.toggle("on",i===j));
+}
+book.addEventListener("scroll",upd,{passive:true});
+document.addEventListener("click",e=>{
+  const bd=e.target.closest("[data-band]");if(bd){const id=bd.dataset.band;bands[id]=(bi(id)+1)%SC.length;sv("fn_bands",bands);bd.innerHTML=bandIn(id);return}
+  const g=e.target.closest("[data-go]");if(g){go(+g.dataset.go);return}
+  const d=e.target.closest("[data-del]");
+  if(d){
+    if(d.classList.contains("ask")){custom.splice(+d.dataset.del,1);sv("fn_pages",custom);renderPages()}
+    else{d.classList.add("ask");d.textContent="本当に削除";setTimeout(()=>{d.classList.remove("ask");d.textContent="削除"},3000)}
+  }
+});
+$("open").onclick=()=>go(1);
+$("addb").onclick=()=>{$("addp").classList.toggle("show")};
+function opts(id,arr,get,set,fmt){
+  $(id).innerHTML=arr.map(v=>`<button class="opt${get()===v?" on":""}" data-v="${v}" ${fmt?`style="background:${v}"`:""}>${fmt?"":v}</button>`).join("");
+  $(id).onclick=e=>{const b=e.target.closest(".opt");if(!b)return;set(b.dataset.v);opts(id,arr,get,set,fmt)};
+}
+opts("ai",ICONS,()=>selIcon,v=>selIcon=v,false);
+opts("ac",COLORS,()=>selColor,v=>selColor=v,true);
+$("asave").onclick=()=>{
+  const n=$("an").value.trim();if(!n){$("an").focus();return}
+  custom.push({id:"c"+Date.now(),name:n,icon:selIcon,color:selColor});sv("fn_pages",custom);
+  $("an").value="";$("addp").classList.remove("show");renderPages();
+};
+const SN_DATA={"p":[[1,"フキノトウ","🌿",[2,3],"全域","雪解け直後の早春を告げる山菜。天ぷら・味噌炒めに。","#7cb87a"],[2,"タラノメ","🌱",[4,5],"山地","山菜の王様。天ぷらが定番。新芽のみ採取。","#a8c86e"],[3,"コシアブラ","🍃",[4,5],"中部・北陸","香り豊かな山菜。天ぷら・おひたしに。","#6aab5e"],[4,"ワラビ","🌾",[4,5,6],"草地・斜面","アク抜きが必要。煮物・漬物・炒め物に。","#8dc66b"],[5,"ゼンマイ","🌀",[4,5],"湿地・沢沿い","乾燥保存が可能。煮物・炒め物に。","#5a9e52"],[6,"ウド","🪴",[4,5,6],"林縁・谷筋","香りが特徴。きんぴら・天ぷら・酢味噌和えに。","#b5d97a"],[7,"ミツバ","🍀",[3,4,5],"湿地・沢沿い","香り高い春の山菜。おひたし・吸い物に。","#79c47e"],[9,"ノビル","🧅",[3,4,5],"草地・畦道","野生のネギ。酢味噌和え・炒め物に。","#c8d96e"],[13,"セリ","🌿",[2,3,4],"水辺・田んぼ脇","春の七草のひとつ。独特の香りが特徴。おひたし・鍋物・七草粥に。根っこごと採取するのがコツ。","#4caf6e"],[14,"葉ワサビ","🍃",[3,4,5],"清流・沢沿い","清流沿いに自生するワサビの葉。辛みと香りが特徴。醤油漬け・おひたし・天ぷらに。柔らかい若葉を選んで採取。","#2e7d32"],[15,"花ワサビ","🌸",[3,4],"清流・沢沿い","ワサビの白い花と花茎。葉より辛みが強く香り豊か。醤油漬け・からし和えに。開花直後の新鮮なものが最高。","#7b5ea7"],[16,"根曲がり竹","🎋",[5,6],"亜高山帯・笹薮","チシマザサの若タケノコ。北陸・信州の山の幸。味噌汁・炊き込みご飯・サバ缶との相性が絶品。群生地では一気に採れる。","#8aab3a"],[17,"コゴミ","🌀",[4,5],"沢沿い・湿地","クサソテツの若芽。アクが少なく扱いやすい。おひたし・天ぷら・マヨネーズ和えに。ゼンマイより採取しやすく初心者向け。","#4e8f5d"],[18,"ミョウガ","🌺",[7,8,9],"山間・林縁の湿った場所","夏〜秋に花穂（みょうがたけ）を採取。独特の香りと風味が特徴。薬味・天ぷら・甘酢漬け・味噌汁に。群生していることが多く一度見つければ毎年採れる。","#e07b8a"],[19,"ヨシナ（シドケ）","🍃",[4,5],"山地・林縁・沢沿い","モミジガサの北陸・東北方言名。独特の香りとほろ苦さが特徴。おひたし・天ぷら・胡麻和えに。アクが少なく扱いやすい。群生地では大量に採れる山菜の王様のひとつ。","#5c8a4e"],[20,"ミズ（ウワバミソウ）","💧",[5,6,7,8,9],"沢沿い・渓流脇・湿った林内","北陸・東北で古くから親しまれる山菜。茎が瑞々しく柔らかい。おひたし・炒め物・漬物・みそ汁に。秋にはムカゴ（肉芽）が付き、これも珍味。長期間採れるので重宝する。","#4a90c4"],[21,"行者ニンニク","🧄",[4,5],"亜高山帯・湿った林内・沢沿い斜面","強烈なニンニク臭が特徴の希少山菜。醤油漬け・炒め物・餃子の具・ラーメンのトッピングに絶品。成長が非常に遅く根こそぎ採取は厳禁。򄒒𰇃枚を残して採取すること。バイケイソウ・イヌサフランとの誤食事故に要注意。","#6d8c3e"],[22,"ウルイ（オオバギボウシ）","🌿",[4,5],"山地・林縁・湿った草地・沢沿い","大ぶりで扱いやすい人気の山菜。クセがなく食べやすい。おひたし・酢味噌和え・天ぷら・炒め物に。ぬめりがあり栄養豊富。イヌサフランと葉が酷似しているため採取時は要注意。臭いがないときは絶対に採らないこと。","#5aab72"],[23,"ボウナ（ミヤマタラノキ）","🌱",[5,6],"亜高山帯・山地の林縁・明るい斜面","タラノメに似た山菜で北陸・東北では古くから親しまれる。タラノメより柔らかくアクが少ない。天ぷら・おひたし・炒め物に。トゲが少なく採取しやすいのが特徴。旬が短いので時期を逃さないこと。","#7db84a"]],"d":[[101,"トリカブト","💜","猛毒",["ニリンソウ","ヨモギ","セリ","シドケ（モミジガサ）"],[7,13,19],"日本最強クラスの毒草。アルカロイド系毒素（アコニチン）を含み、誤食すると心臓麻痺を起こす。根・葉・茎すべてに毒がある。","ニリンソウとの区別：葉の切れ込みが深くギザギザ。花は紫色の特徴的な兜形（ニリンソウは白い花びら状）。葉をこすると独特の嫌な臭い。","山地・高山の湿った斜面","葉は春〜夏、花は夏〜秋","採取厳禁。触れるだけでも皮膚吸収の危険性あり。"],[102,"ドクウツギ","🍒","猛毒",["アケビ","木の実全般"],[10],"ドクゼリ・トリカブトと並ぶ日本三大毒草のひとつ。赤黒い実が甘そうに見えるが猛毒。コリアミルチンを含み死亡例あり。","アケビとの区別：葉が対生（アケビは互生）。実が房状に密集。茎は緑色で稜がある。","山地・川沿い・崩壊地","実は夏〜秋（赤→黒に変化）","実を絶対に食べない。子供が誤食しやすいため注意。"],[103,"ドクゼリ","🌿","猛毒",["セリ","ミツバ","ウド"],[13,7,6],"セリに非常によく似た猛毒植物。シクトキシンを含み、誤食すると痙攣・呼吸困難を引き起こす。根が特に毒性が強い。","セリとの区別：根を切ると空洞（節状の横隔壁がある竹のような構造）。茎が太く中空。葉は大型で光沢がある。セリの根は白い細根が多く香りが強い。","湿地・水辺・水田周辺","春〜夏","水辺のセリ採取は根の確認必須。根ごと抜いて断面を必ず確認。"],[104,"スイセン","🌼","有毒",["ノビル","ニラ"],[9],"球根・葉・花すべてに毒（リコリン）を含む。ノビルやニラと葉が非常に似ており誤食事故が多発。毎年被害報告がある。","ノビルとの区別：スイセンは葉を折っても臭いがない（ノビルはネギ臭）。球根の形状が違う（スイセンは球根が大きく白い）。葉が扁平でツヤがある。","庭・公園・土手・山すそ","葉は早春から（花は冬〜早春）","ノビル採取時は必ず臭いで確認。無臭ならスイセンの可能性大。"],[105,"イヌサフラン（コルチカム）","🌸","猛毒",["ギョウジャニンニク","ウルイ（オオバギボウシ）"],[],"コルヒチンを含む猛毒植物。ギョウジャニンニクやオオバギボウシと葉が酷似。近年誤食による死亡事故が増加。","ギョウジャニンニクとの区別：葉を傷つけてもニンニク臭がしない（ギョウジャニンニクは強いニンニク臭）。葉脈が平行で光沢が強い。球根が大きい。","庭・公園・山地（園芸逸出）","葉は春（花は秋）","臭いで必ず確認。無臭はすべて疑うこと。"],[106,"ハシリドコロ","🍃","有毒",["フキノトウ","ギョウジャニンニク"],[1],"アトロピン・スコポラミン等を含む有毒植物。早春にフキノトウと同じ場所に生えることがあり誤食事故多数。幻覚・錯乱・呼吸困難を引き起こす。","フキノトウとの区別：葉が柔らかく大きい。独特の臭いがある。茎を折ると白い液が出る。フキノトウは苞（つぼみ）の形が独特。","山地の沢沿い・湿った斜面","早春（3〜4月ごろ）","フキノトウ採取時に混入注意。必ず形状を確認してから採取。"],[107,"ヨウシュヤマゴボウ","🫐","有毒",["山菜全般（根）"],[],"根・実・葉すべてに毒を含む。黒紫の実がブルーベリーに似て見え、子供の誤食が多い。大人でも根をゴボウと間違えることがある。","ゴボウとの区別：根を切ると白く臭いが全く違う。茎が赤紫色で太い。実は黒紫色でブドウ房状。","道端・空き地・林縁（帰化植物）","葉は春〜夏、実は秋","見た目が美しく子供が食べやすいため特に注意。"],[108,"バイケイソウ","🌿","猛毒",["ギョウジャニンニク","コバイケイソウ","ウルイ（オオバギボウシ）"],[],"アルカロイド系毒素（ベラトルム）を含む猛毒植物。ギョウジャニンニクと春の若葉が酷似しており、北陸・東北で誤食死亡事故多数。","ギョウジャニンニクとの区別：葉が互生で大きく広い（ギョウジャニンニクは対生で細長い）。葉を傷つけてもニンニク臭がしない。葉脈が平行で目立つ。","亜高山帯・山地の湿った草地","早春〜初夏","北陸の山では最重要注意植物。ギョウジャニンニク採取時は必ず臭いで確認。"]]};
+function initSansai(root){
+  const P=SN_DATA.p.map(a=>({id:a[0],n:a[1],e:a[2],m:a[3],r:a[4],d:a[5],c:a[6]})).sort((a,b)=>a.n.localeCompare(b.n,"ja"));
+  const D=SN_DATA.d.map(a=>({id:a[0],n:a[1],e:a[2],lv:a[3],sim:a[4],sid:a[5],d:a[6],h:a[7],r:a[8],s:a[9],w:a[10]}));
+  let tab=0,open=null,dop=false,sel=[],gps=null,ask=null,bk=false,spots=ld("fn_sn_spots",[]),harv=ld("fn_sn_harv",[]);
+  const mo=new Date().getMonth()+1,pn=id=>(P.find(p=>p.id===id)||{n:"?"}).n.replace(/（.*/,"");
+  const mt=m=>m.length>1?`${m[0]}〜${m[m.length-1]}月`:`${m[0]}月`;
+  const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  const zukan=()=>P.map(p=>{
+    const dg=D.filter(x=>x.sid.includes(p.id));
+    return `<div class="sn-card" data-o="${p.id}"><span class="sn-e" style="background:${p.c}">${p.e}</span><div><b>${esc(p.n)}</b>${p.m.includes(mo)?'<i class="sn-now">旬</i>':""}<small>${mt(p.m)}・${esc(p.r)}</small></div></div>`+(open===p.id?`<div class="sn-det">${esc(p.d)}${dg.length?`<div class="sn-warn">⚠ 似ている毒草：${dg.map(x=>esc(x.n)).join("、")}。見分け方は下の「毒草に注意」で確認できます。</div>`:""}</div>`:"");
+  }).join("")+`<button class="sn-btn sn-red" data-dg="1">⚠ 毒草に注意（${D.length}種）${dop?"を閉じる":"を見る"}</button>`+(dop?D.map(x=>`<div class="sn-dg"><b>${x.e} ${esc(x.n)}</b><i class="sn-lv${x.lv==="猛毒"?" hi":""}">${esc(x.lv)}</i><p>${esc(x.d)}</p><p><u>見分け方</u>　${esc(x.h)}</p><p>似ている山菜：${x.sim.map(esc).join("、")}／時期：${esc(x.s)}</p><p>${esc(x.w)}</p></div>`).join(""):"");
+  const cal=()=>{
+    const rows=[...P].sort((a,b)=>a.m[0]-b.m[0]||a.n.localeCompare(b.n,"ja")),mm=Array.from({length:12},(_,i)=>i+1);
+    return `<div class="sn-cal"><span></span>${mm.map(i=>`<span class="h${i===mo?" now":""}">${i}</span>`).join("")}${rows.map(p=>`<span class="nm">${esc(p.n.replace(/（.*/,""))}</span>`+mm.map(i=>p.m.includes(i)?`<i class="on" style="background:${p.c}"></i>`:"<i></i>").join("")).join("")}</div><p class="sn-note">今月（${mo}月）が旬：${rows.filter(p=>p.m.includes(mo)).map(p=>esc(pn(p.id))).join("、")||"なし"}</p>`;
+  };
+  const spotsV=()=>`<input class="sn-in" id="sn-sn" placeholder="スポット名（例：○○沢の上流）" maxlength="30"><input class="sn-in" id="sn-sa" placeholder="県・地域" maxlength="20"><input class="sn-in" id="sn-sm" placeholder="メモ（目印・道順など）" maxlength="80"><div class="sn-chips">${P.map(p=>`<button class="sn-chip${sel.includes(p.id)?" on":""}" data-c="${p.id}">${esc(pn(p.id))}</button>`).join("")}</div><div class="sn-g"><button class="sn-btn sn-ghost" id="sn-gps">現在地を入れる</button><button class="sn-btn" id="sn-add">追加</button></div><p class="sn-note" id="sn-gm">${gps?"現在地を取得済みです（追加すると保存されます）":""}</p>`+(spots.map((s,i)=>`<div class="sn-row"><b>${esc(s.n)}</b> <small>${esc(s.a||"")}</small><br>${(s.s||[]).map(id=>`<span class="sn-tag">${esc(pn(id))}</span>`).join("")}${s.m?`<br>${esc(s.m)}`:""}${s.la?`<br><a href="https://www.google.com/maps?q=${s.la},${s.lo}" target="_blank" rel="noopener">地図で開く</a>`:""}<br><button class="sn-del${ask==="s"+i?" ask":""}" data-ds="${i}">${ask==="s"+i?"本当に削除":"削除"}</button></div>`).join("")||'<p class="sn-note">まだスポットがありません。</p>');
+  const harvV=()=>{
+    const st={};harv.forEach(h=>{const o=st[h.p]||(st[h.p]={n:0,g:0});o.n++;if(h.u==="g")o.g+=h.a;if(h.u==="kg")o.g+=h.a*1000});
+    const sm=Object.keys(st).map(k=>{const o=st[k];return `<span class="sn-tag">${esc(pn(+k))} ${o.n}回${o.g?"・"+(o.g>=1000?(o.g/1000).toFixed(1)+"kg":Math.round(o.g)+"g"):""}</span>`}).join("");
+    return `<div class="sn-g"><input class="sn-in" type="date" id="sn-hd" value="${today()}"><select class="sn-in" id="sn-hp">${P.map(p=>`<option value="${p.id}">${esc(pn(p.id))}</option>`).join("")}</select></div><select class="sn-in" id="sn-hs"><option value="">スポット（任意）</option>${spots.map(s=>`<option value="${esc(s.n)}">${esc(s.n)}</option>`).join("")}</select><div class="sn-g"><input class="sn-in" type="number" inputmode="decimal" id="sn-ha" placeholder="量"><select class="sn-in" id="sn-hu"><option>g</option><option>kg</option><option>本</option><option>束</option><option>個</option></select></div><input class="sn-in" id="sn-hm" placeholder="メモ" maxlength="80"><button class="sn-btn" id="sn-hadd">記録を追加</button>`
+    +(sm?`<p class="sn-note" style="margin-top:14px">これまでの収穫</p><div>${sm}</div>`:"")
+    +harv.map((h,i)=>({h,i})).sort((a,b)=>b.h.d.localeCompare(a.h.d)).map(({h,i})=>`<div class="sn-row"><b>${esc(h.d)}</b>　${esc(pn(h.p))}${h.a?"　"+h.a+esc(h.u):""}${h.s?"<br>📍 "+esc(h.s):""}${h.m?"<br>"+esc(h.m):""}<br><button class="sn-del${ask==="h"+i?" ask":""}" data-dh="${i}">${ask==="h"+i?"本当に削除":"削除"}</button></div>`).join("")
+    +`<button class="sn-btn sn-ghost" id="sn-bkt" style="margin-top:16px">バックアップ／復元</button>`
+    +(bk?`<p class="sn-note">下の文字をコピーして保管してください。復元するときは、貼り付けてから「復元」を押します。</p><textarea class="sn-in" id="sn-bk" rows="5">${esc(JSON.stringify({spots,harv}))}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" id="sn-bkc">コピー</button><button class="sn-btn" id="sn-bkr">復元</button></div>`:"");
+  };
+  const render=()=>{
+    root.innerHTML=`<div class="sn-tabs">${["図鑑","旬の暦","スポット","収穫"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV][tab]();
+  };
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button,.sn-card");if(!b)return;const d=b.dataset;
+    if(d.t!==undefined){tab=+d.t;ask=null;render();return}
+    if(d.o!==undefined){open=open===+d.o?null:+d.o;render();return}
+    if(d.dg){dop=!dop;render();return}
+    if(d.c){const i=+d.c,k=sel.indexOf(i);k<0?sel.push(i):sel.splice(k,1);b.classList.toggle("on");return}
+    if(d.ds!==undefined||d.dh!==undefined){
+      const sp=d.ds!==undefined,key=(sp?"s":"h")+(sp?d.ds:d.dh);
+      if(ask===key){if(sp){spots.splice(+d.ds,1);sv("fn_sn_spots",spots)}else{harv.splice(+d.dh,1);sv("fn_sn_harv",harv)}ask=null}else ask=key;
+      render();return}
+    const g=id=>$(id).value.trim();
+    if(b.id==="sn-gps"){
+      if(!navigator.geolocation){$("sn-gm").textContent="この端末では現在地を取得できません";return}
+      navigator.geolocation.getCurrentPosition(p=>{gps={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5)};$("sn-gm").textContent="現在地を取得しました（追加すると保存されます）"},()=>{$("sn-gm").textContent="現在地を取得できませんでした。位置情報の許可を確認してください"},{enableHighAccuracy:true,timeout:10000});
+    }else if(b.id==="sn-add"){
+      const n=g("sn-sn");if(!n){$("sn-sn").focus();return}
+      spots.unshift({n,a:g("sn-sa"),m:g("sn-sm"),s:sel.slice(),la:gps?gps.la:null,lo:gps?gps.lo:null});sv("fn_sn_spots",spots);sel=[];gps=null;render();
+    }else if(b.id==="sn-hadd"){
+      const a=parseFloat($("sn-ha").value);
+      harv.push({d:$("sn-hd").value||today(),p:+$("sn-hp").value,s:$("sn-hs").value,a:isNaN(a)?0:a,u:$("sn-hu").value,m:g("sn-hm")});sv("fn_sn_harv",harv);render();
+    }else if(b.id==="sn-bkt"){bk=!bk;render()
+    }else if(b.id==="sn-bkc"){const t=$("sn-bk");t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}
+    }else if(b.id==="sn-bkr"){
+      try{const o=JSON.parse($("sn-bk").value);if(Array.isArray(o.spots)&&Array.isArray(o.harv)){spots=o.spots;harv=o.harv;sv("fn_sn_spots",spots);sv("fn_sn_harv",harv);bk=false;render()}}catch(x){}
+    }
+  });
+  render();
+}
+const PP=[["薄緑","#f4f8ea","#c9e0ab"],["薄茶","#faf3e6","#e2caa0"],["黄色","#fffbe0","#f5df70"],["ピンク","#fff1f2","#f4bfcb"],["グレー","#f5f5f3","#c8c9c4"],["ブルー","#eef5fb","#b5d4ee"]];
+let pci=ld("fn_pcol",0),pin=ld("fn_pint",40);
+const hx=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+const mix=(a,b,t)=>{const x=hx(a),y=hx(b);return "#"+x.map((v,i)=>Math.round(v+(y[i]-v)*t).toString(16).padStart(2,"0")).join("")};
+function paintPaper(){
+  const p=PP[pci],c=mix(p[1],p[2],pin/100),r=document.documentElement.style;
+  r.setProperty("--paper",c);r.setProperty("--line",mix(c,"#6a5a3a",.18));
+}
+function drawPP(){
+  $("ppsw").innerHTML=PP.map((p,i)=>`<button class="ppb${pci===i?" on":""}" data-i="${i}"><i style="background:${mix(p[1],p[2],pin/100)}"></i>${p[0]}</button>`).join("");
+  $("ppv").textContent=pin+"%";
+}
+(function(){
+  const d=document.createElement("div");d.className="pp";d.id="ppanel";
+  d.innerHTML='<h3>ページの紙（共通）</h3><p class="sn-note">各ページの「🎨 紙の色」で、ページごとに変えられます。</p><div class="pp-sw" id="ppsw"></div><div class="pp-g"><span>淡</span><input type="range" id="ppr" min="0" max="100" value="'+pin+'" aria-label="濃淡"><span>濃</span><b id="ppv"></b></div>';
+  $("tocpg").appendChild(d);
+  $("ppsw").addEventListener("click",e=>{const b=e.target.closest(".ppb");if(!b)return;pci=+b.dataset.i;sv("fn_pcol",pci);paintPaper();drawPP()});
+  $("ppr").addEventListener("input",e=>{pin=+e.target.value;sv("fn_pint",pin);paintPaper();drawPP()});
+  paintPaper();drawPP();
+})();
+let ppg=ld("fn_ppg",{}),cvi=ld("fn_cvint",50),rl=ld("fn_rule","none"),dec=ld("fn_dec",{h:1,n:1,f:1}),notes=ld("fn_notes",{});
+CV.push({n:"臙脂",c:"#7a2c25",d:"#511b16",g:"#e2c36e"},{n:"藍",c:"#1f4a6e",d:"#122f48",g:"#e2c36e"},{n:"紫",c:"#4a2f66",d:"#2e1b42",g:"#e2c36e"},{n:"橙",c:"#b8622a",d:"#82401a",g:"#f1dc9a"},{n:"桃",c:"#b4637a",d:"#7e3a4e",g:"#f1dc9a"},{n:"灰",c:"#6b7280",d:"#444a55",g:"#e2c36e"},{n:"若草",c:"#6f8f4a",d:"#47602d",g:"#f1dc9a"});
+function paintPg(el,id){const o=ppg[id],st=el.style;
+  if(o&&o.c!==undefined){const p=PP[o.c],c=mix(p[1],p[2],o.i/100);st.setProperty("--paper",c);st.setProperty("--line",mix(c,"#6a5a3a",.18))}else{st.removeProperty("--paper");st.removeProperty("--line")}
+  el.dataset.rule=(o&&o.r)||rl}
+$("cvg").value=cvi;
+$("cvg").addEventListener("input",e=>{cvi=+e.target.value;sv("fn_cvint",cvi);paintEl($("cover"));document.querySelectorAll(".bk").forEach(paintEl)});
+const RL=[["none","無地"],["line","罫線"],["grid","方眼"],["dot","ドット"]];
+function ppPanel(el,id){
+  const o=()=>ppg[id]||{c:pci,i:pin,r:rl};
+  const draw=()=>{const v=o();el.innerHTML=`<div class="pp-sw">${PP.map((p,i)=>`<button class="ppb${v.c===i?" on":""}" data-i="${i}"><i style="background:${mix(p[1],p[2],v.i/100)}"></i>${p[0]}</button>`).join("")}</div><div class="pp-g"><span>淡</span><input type="range" min="0" max="100" value="${v.i}"><span>濃</span><b>${v.i}%</b></div><div class="nl">罫線・方眼</div><div class="sn-chips">${RL.map(([k,l])=>`<button class="sn-chip${v.r===k?" on":""}" data-r="${k}">${l}</button>`).join("")}</div><button class="sn-btn sn-ghost" data-rs="1">共通の設定に戻す</button>`};
+  const set=p=>{ppg[id]=Object.assign(o(),p);sv("fn_ppg",ppg);paintPg(el.closest(".pg"),id)};
+  draw();
+  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.rs){delete ppg[id];sv("fn_ppg",ppg);paintPg(el.closest(".pg"),id)}else if(b.dataset.i!==undefined)set({c:+b.dataset.i});else if(b.dataset.r)set({r:b.dataset.r});else return;draw()});
+  el.addEventListener("input",e=>{set({i:+e.target.value});const v=o();el.querySelector("b").textContent=v.i+"%";el.querySelectorAll(".ppb i").forEach((x,k)=>x.style.background=mix(PP[k][1],PP[k][2],v.i/100))});
+}
+function applyDec(){const h=document.documentElement.dataset;h.holes=dec.h?"on":"off";h.pgno=dec.n?"on":"off";h.fold=dec.f?"on":"off"}
+function repaintAll(){document.querySelectorAll(".pg[data-pid]").forEach(el=>paintPg(el,el.dataset.pid))}
+(function(){
+  const d=document.createElement("div");
+  const draw=()=>{d.innerHTML=`<div class="nl">罫線・方眼（共通）</div><div class="sn-chips">${RL.map(([k,l])=>`<button class="sn-chip${rl===k?" on":""}" data-r="${k}">${l}</button>`).join("")}</div><div class="nl">ページの飾り</div><div class="sn-chips">${[["h","綴じ穴"],["n","ページ番号"],["f","角の折れ"]].map(([k,l])=>`<button class="sn-chip${dec[k]?" on":""}" data-d="${k}">${l}</button>`).join("")}</div>`};
+  draw();
+  d.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.r){rl=b.dataset.r;sv("fn_rule",rl);repaintAll()}else if(b.dataset.d){dec[b.dataset.d]=dec[b.dataset.d]?0:1;sv("fn_dec",dec);applyDec()}else return;draw()});
+  $("ppanel").appendChild(d);applyDec();
+})();
+/* 付箋 */
+const NC=["#fff2a3","#ffc7d4","#bfe3ff","#cdeeb5","#ffd6a3","#e1cdfa"],NS=[["小",86],["中",120],["大",160]];
+let draft=null,ndel=false;
+const nmod=document.createElement("div");nmod.id="nmod";nmod.hidden=true;
+nmod.innerHTML='<div class="nbox"><textarea id="nt" rows="4" maxlength="200" placeholder="メモを書く"></textarea><div class="nl">大きさ</div><div class="sn-chips" id="ns"></div><div class="nl">色</div><div class="nrow" id="nc"></div><div class="nrow"><button class="sn-btn" id="nsv">保存</button><button class="sn-btn sn-ghost" id="nd">削除</button><button class="sn-btn sn-ghost" id="nx">閉じる</button></div></div>';
+document.body.appendChild(nmod);
+function drawNm(){
+  $("ns").innerHTML=NS.map(([l,w])=>`<button class="sn-chip${draft.d.w===w?" on":""}" data-w="${w}">${l}</button>`).join("");
+  $("nc").innerHTML=NC.map(c=>`<button class="nsw${draft.d.c===c?" on":""}" data-c="${c}" style="background:${c}" aria-label="色"></button>`).join("");
+  $("nd").textContent=ndel?"本当に削除":"削除";
+}
+function openEdit(n,w,id){draft={n,w,id,d:{t:n.t,w:n.w,c:n.c}};ndel=false;$("nt").value=n.t;drawNm();nmod.hidden=false}
+nmod.addEventListener("click",e=>{
+  if(e.target===nmod){nmod.hidden=true;return}
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.w){draft.d.w=+b.dataset.w;drawNm()}
+  else if(b.dataset.c){draft.d.c=b.dataset.c;drawNm()}
+  else if(b.id==="nsv"){draft.d.t=$("nt").value;Object.assign(draft.n,draft.d);sv("fn_notes",notes);nmod.hidden=true;renderNotes(draft.w,draft.id)}
+  else if(b.id==="nd"){if(ndel){notes[draft.id]=(notes[draft.id]||[]).filter(x=>x!==draft.n);sv("fn_notes",notes);nmod.hidden=true;renderNotes(draft.w,draft.id)}else{ndel=true;drawNm()}}
+  else if(b.id==="nx")nmod.hidden=true;
+});
+function renderNotes(w,id){
+  w.querySelectorAll(".note").forEach(x=>x.remove());
+  (notes[id]||[]).forEach(n=>{
+    const e=document.createElement("div");e.className="note";
+    const draw=()=>{e.style.cssText=`left:${n.x*100}%;top:${n.y}px;width:${n.w}px;height:${n.w*.95}px;background:${n.c};transform:rotate(${n.r}deg);font-size:${Math.max(11,n.w/9)}px`;e.textContent=n.t||"タップで編集"};
+    draw();
+    e.onpointerdown=ev=>{
+      ev.preventDefault();e.setPointerCapture(ev.pointerId);
+      const sx=ev.clientX,sy=ev.clientY,ox=n.x*w.clientWidth,oy=n.y;let mv=false;
+      e.onpointermove=m=>{const dx=m.clientX-sx,dy=m.clientY-sy;if(!mv&&Math.abs(dx)+Math.abs(dy)<7)return;mv=true;n.x=Math.min(Math.max(0,(ox+dx)/w.clientWidth),Math.max(0,1-n.w/w.clientWidth));n.y=Math.max(0,oy+dy);draw()};
+      e.onpointerup=()=>{e.onpointermove=e.onpointerup=null;if(mv)sv("fn_notes",notes);else openEdit(n,w,id)};
+    };
+    w.appendChild(e);
+  });
+}
+function wrapPg(s,id,label){
+  const w=document.createElement("div");w.className="pgin";
+  while(s.firstChild)w.appendChild(s.firstChild);
+  s.appendChild(w);
+  s.insertAdjacentHTML("beforeend",`<div class="pgno">${label}</div><i class="fold"></i>`);
+  s.dataset.pid=id;paintPg(s,id);
+  const nb=document.createElement("button");nb.className="pbtn";nb.textContent="🔖 付箋";nb.style.marginLeft="6px";
+  nb.onclick=()=>{const n={x:.5,y:w.scrollTop+90,w:120,c:NC[0],t:"",r:+(Math.random()*6-3).toFixed(1)};(notes[id]=notes[id]||[]).push(n);sv("fn_notes",notes);renderNotes(w,id);openEdit(n,w,id)};
+  const pb=w.querySelector(".pbtn");pb?pb.before(nb):w.prepend(nb);
+  renderNotes(w,id);
+}
+(function(){
+  const d=document.createElement("div");d.className="pp";let open=false,ask=false;
+  const keys=()=>{const a=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith("fn_"))a.push(k)}}catch(e){}return a};
+  const say=t=>{const m=d.querySelector(".bk-m");if(m)m.textContent=t};
+  const draw=()=>{d.innerHTML=`<h3>データのバックアップ</h3><p class="sn-note">記録・付箋・ページ設定をまとめて保管できます。端末を替えるときや、アプリを入れ直す前に使ってください。</p><button class="sn-btn sn-ghost" data-bk="t">${open?"閉じる":"バックアップ／復元を開く"}</button>`+(open?`<textarea class="sn-in" id="bk-tx" rows="6" style="margin-top:10px"></textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-bk="e">書き出す</button><button class="sn-btn" data-bk="r">${ask?"本当に復元（上書き）":"復元する"}</button></div><p class="sn-note bk-m"></p>`:"")};
+  draw();
+  d.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=b.dataset.bk;
+    if(k==="t"){open=!open;ask=false;draw()}
+    else if(k==="e"){const o={};keys().forEach(x=>{o[x]=localStorage.getItem(x)});const t=$("bk-tx");t.value=JSON.stringify(o);t.select();let ok=true;try{navigator.clipboard.writeText(t.value)}catch(x){ok=false}say(ok?"書き出しました（コピー済み）。メモなどに貼り付けて保管してください。":"書き出しました。文字を全部コピーして保管してください。")}
+    else if(k==="r"){
+      let o=null;try{o=JSON.parse($("bk-tx").value)}catch(x){}
+      if(!o||typeof o!=="object"||!Object.keys(o).some(x=>x.startsWith("fn_"))){say("復元する文字を、欄に貼り付けてください。");return}
+      if(!ask){ask=true;const v=$("bk-tx").value;draw();$("bk-tx").value=v;say("今のデータは上書きされます。よければもう一度押してください。");return}
+      try{Object.keys(o).forEach(x=>{if(x.startsWith("fn_")&&typeof o[x]==="string")localStorage.setItem(x,o[x])})}catch(x){}
+      say("復元しました。まもなく開き直します。");setTimeout(()=>location.reload(),900);
+    }
+  });
+  $("ppanel").appendChild(d);
+})();
+(function(){
+  const d=document.createElement("div");d.className="pp";let out="",inMsg="",pubOut="",st="",clr=false;
+  const pool=()=>ld("fn_pool",{});
+  const draw=()=>{const n=Object.keys(pool()).length;d.innerHTML=`<h3>みんなで共有</h3><p class="sn-note">山行記録・入湯記録・日帰り情報のうち、「共有する」にした記録を、みんなで見られます。</p><div class="nl">あなたの名前（共有するときに表示）</div><input class="sn-in" id="sh-nm" maxlength="20" value="${esc(myName())}"><button class="sn-btn" data-s="sub">共有する記録を、提出用の文字にする</button>${out?`<textarea class="sn-in" id="sh-out" rows="5" style="margin-top:8px">${esc(out)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-s="cp">コピー</button><button class="sn-btn" data-s="send">送る</button></div>`:""}<p class="sn-note">${out==="-"?"共有にしている記録がありません。":"できた文字を、LINEなどで管理者に送ってください。"}</p><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">管理者用：取り込みと配信</div><textarea class="sn-in" id="sh-in" rows="3" placeholder="メンバーから届いた文字を貼り付け"></textarea><button class="sn-btn sn-ghost" data-s="imp">取り込む</button><p class="sn-note">${esc(inMsg)}　取り込み済み：${n}件</p><button class="sn-btn sn-ghost" data-s="pub">配信ファイル（shared.json）の中身を書き出す</button>${pubOut?`<textarea class="sn-in" id="sh-pub" rows="5" style="margin-top:8px">${esc(pubOut)}</textarea><button class="sn-btn sn-ghost" data-s="cp2">コピー</button><p class="sn-note">コピーして、GitHubの shared.json に貼り付けて保存してください。</p>`:""}<button class="sn-del${clr?" ask":""}" data-s="clr">${clr?"本当にすべて消す":"取り込み済みをすべて消す"}</button><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">みんなの記録を受け取る</div><button class="sn-btn sn-ghost" data-s="get">最新を受け取る</button><p class="sn-note">${esc(st)}</p>`};
+  draw();
+  const cp=id=>{const t=$(id);t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}};
+  d.addEventListener("input",e=>{if(e.target.id==="sh-nm")sv("fn_myname",e.target.value.trim())});
+  d.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!b.dataset.s)return;const k=b.dataset.s;
+    if(k==="sub"){const nm=$("sh-nm").value.trim()||"名無し";sv("fn_myname",nm);const items=[];
+      [["tz","fn_tz_log"],["os","fn_os_log"],["oi","fn_os_info"]].forEach(([t,key])=>ld(key,[]).forEach(x=>{if(x.sh&&x.id)items.push(Object.assign({k:t},x))}));
+      out=items.length?JSON.stringify({t:"fn-share",v:1,from:nm,items}):"-";draw()}
+    else if(k==="cp")cp("sh-out");
+    else if(k==="send"){const t=$("sh-out").value;if(navigator.share)navigator.share({text:t}).catch(()=>{});else cp("sh-out")}
+    else if(k==="imp"){let o=null;try{o=JSON.parse($("sh-in").value.trim())}catch(x){}
+      if(!o||o.t!=="fn-share"||!Array.isArray(o.items)){inMsg="取り込める形式ではありません。";draw();return}
+      const p=pool();let n=0;o.items.forEach(x=>{if(x&&x.id&&["tz","os","oi"].includes(x.k)){const r=Object.assign({},x,{from:String(o.from||"?")});delete r.sh;p[r.from+":"+x.id]=r;n++}});
+      sv("fn_pool",p);inMsg=n+"件を取り込みました。";draw()}
+    else if(k==="pub"){pubOut=JSON.stringify({v:1,updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool())});draw()}
+    else if(k==="cp2")cp("sh-pub");
+    else if(k==="clr"){if(clr){sv("fn_pool",{});clr=false;inMsg="";pubOut=""}else clr=true;draw()}
+    else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
+  });
+  $("ppanel").appendChild(d);
+  fetchShared();
+})();
+wrapPg($("tocpg"),"toc","目次");
+/* 登山・温泉 */
+const td=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+function remote(){const r=ld("fn_shared_remote",null);return r&&Array.isArray(r.items)?r:{items:[],updated:""}}
+async function fetchShared(){try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(!j||!Array.isArray(j.items))throw 0;sv("fn_shared_remote",j);return j.items.length}catch(e){return -1}}
+function myName(){return ld("fn_myname","")}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function shRow(x){
+  const t={tz:"山行",os:"入湯",oi:"日帰り"}[x.k]||"",E=v=>esc(String(v==null?"":v)),y=Number(x.y)||0;
+  const body=x.k==="tz"?`${E(x.n)}　${E(x.w)}${x.h?"　"+E(x.h)+"時間":""}${x.o?"　♨️ "+E(x.o):""}`:x.k==="os"?`${E(x.n)}　<span style="color:#d99a2b">${"★".repeat(Math.min(5,Math.max(0,+x.r||0)))}</span><br><small>${E(x.a)}${x.s&&x.s!=="泉質は不明"?"・"+E(x.s):""}${y?"・"+y+"円":""}</small>`:`${E(x.n)} <small>${E(x.a)}</small><br><small>${x.h?"🕒 "+E(x.h)+"　":""}${x.c?"休："+E(x.c)+"　":""}${y?y+"円":""}／${E(x.p)}／${E(x.r)}／${E(x.t)}</small>`;
+  return `<div class="sn-row"><i class="sn-now" style="margin:0 6px 0 0">${t}</i><b>${E(x.d)}</b>　${body}${x.m?"<br>"+E(x.m):""}<br><small class="sn-note">投稿：${E(x.from||"?")}</small></div>`;
+}
+const sharedV=K=>{const r=remote(),a=r.items.filter(x=>K.includes(x.k)).sort((p,q)=>String(q.d||"").localeCompare(String(p.d||"")));return `<p class="sn-note">メンバーが共有した記録です。${r.updated?"（"+esc(r.updated)+" 時点）":"（まだ受信していません）"}</p><button class="sn-btn sn-ghost" data-rf="1">最新を受け取る</button><p class="sn-note" id="sh-m"></p>`+(a.map(shRow).join("")||'<p class="sn-note">まだありません。</p>')};
+const MT=`利尻岳|りしりだけ|1721|北海道|北海道|2|0|7〜9月|日本海に浮かぶ島の山。花の山として知られ、海を見下ろす山頂が魅力。
+羅臼岳|らうすだけ|1661|北海道|北海道|2|0|7〜9月|知床連山の山。ヒグマの生息地のため、クマ対策が必須。
+斜里岳|しゃりだけ|1547|北海道|北海道|2|0|7〜9月|沢を遡る独特のコースがあり、沢登り気分を味わえる。
+阿寒岳|あかんだけ|1499|北海道|北海道|2|0|7〜9月|雌阿寒岳が百名山。活火山で、火口と青沼・赤沼が見どころ。
+大雪山|たいせつざん|2291|北海道|北海道|2|1|7〜9月|最高峰は旭岳。ロープウェイで高山帯の花畑へ入れる。
+トムラウシ山|とむらうしやま|2141|北海道|北海道|3|1|7〜9月|大雪山系の奥にある山。行程が長く、天候の急変に注意。
+十勝岳|とかちだけ|2077|北海道|北海道|2|0|7〜9月|噴煙を上げる活火山。荒涼とした火山の景観が続く。
+幌尻岳|ぽろしりだけ|2052|北海道|北海道|3|1|7〜8月|日高山脈の最高峰。沢の渡渉があり、増水に注意。
+羊蹄山|ようていざん|1898|北海道|北海道|2|0|7〜9月|蝦夷富士と呼ばれる円錐形の独立峰。
+岩木山|いわきさん|1625|青森|東北|1|0|6〜10月|津軽富士と呼ばれる山。車やリフトで登山口の近くまで行ける。
+八甲田山|はっこうださん|1585|青森|東北|1|0|6〜10月|ロープウェイで入れる湿原と火山の山群。冬は樹氷が有名。
+八幡平|はちまんたい|1613|岩手・秋田|東北|1|0|6〜10月|なだらかな高原状の山。湿原や沼を巡る散策が楽しい。
+岩手山|いわてさん|2038|岩手|東北|2|0|7〜9月|南部片富士と呼ばれる山。火口を巡る雄大な景観。
+早池峰山|はやちねさん|1917|岩手|東北|2|0|6〜9月|固有の高山植物で知られる花の山。
+鳥海山|ちょうかいさん|2236|秋田・山形|東北|2|0|7〜9月|出羽富士と呼ばれる山。残雪と花畑が見事。
+月山|がっさん|1984|山形|東北|1|0|7〜9月|なだらかな山容で、高山植物が豊富。夏のスキーでも知られる。
+大朝日岳|おおあさひだけ|1871|山形・新潟|東北|3|1|7〜9月|朝日連峰の主峰。山小屋泊の縦走が基本。
+蔵王山|ざおうさん|1841|宮城・山形|東北|1|0|6〜10月|熊野岳が最高点。お釜と冬の樹氷で有名。
+飯豊山|いいでさん|2105|山形・福島・新潟|東北|3|1|7〜9月|残雪と花が豊富な大きな山。行程が長い。
+吾妻山|あずまやま|2035|山形・福島|東北|1|0|7〜9月|西吾妻山を中心に、湿原と原生林が広がる。
+安達太良山|あだたらやま|1700|福島|東北|1|0|6〜10月|智恵子抄の山。ロープウェイと温泉がそばにある。
+磐梯山|ばんだいさん|1816|福島|東北|1|0|6〜10月|会津富士と呼ばれる山。噴火でできた荒々しい火口壁が特徴。
+会津駒ヶ岳|あいづこまがたけ|2133|福島|上信越|2|0|7〜9月|山頂付近の湿原と池塘が美しい。
+那須岳|なすだけ|1917|福島・栃木|関東|1|0|6〜10月|茶臼岳が噴煙を上げる活火山。ロープウェイで登山口へ。
+越後駒ヶ岳|えちごこまがたけ|2003|新潟|上信越|3|0|7〜9月|越後三山の山。長い急登が続く。
+平ヶ岳|ひらがたけ|2141|新潟・群馬|上信越|3|1|7〜9月|登山口から長く歩き、山頂の湿原が広がる。
+巻機山|まきはたやま|1967|新潟・群馬|上信越|2|0|7〜9月|山頂付近の湿原と、谷川連峰の眺めが魅力。
+燧ヶ岳|ひうちがたけ|2356|福島|上信越|2|0|7〜9月|東北最高峰。尾瀬ヶ原を見下ろせる。
+至仏山|しぶつさん|2228|群馬|上信越|2|0|7〜9月|尾瀬の山。蛇紋岩の山で高山植物が豊富。
+谷川岳|たにがわだけ|1977|群馬・新潟|上信越|2|0|6〜10月|ロープウェイで登れるが、天候が変わりやすい。
+雨飾山|あまかざりやま|1963|新潟・長野|上信越|2|0|7〜9月|雪渓と湿原、日本海の眺めが魅力。
+苗場山|なえばさん|2145|新潟・長野|上信越|2|0|7〜9月|山頂に広大な高層湿原と池塘が広がる。
+妙高山|みょうこうさん|2454|新潟|上信越|2|0|7〜9月|越後富士と呼ばれる山。長い登りが続く。
+火打山|ひうちやま|2462|新潟|上信越|2|1|7〜9月|高谷池や天狗の庭の湿原が美しい。新潟県の最高峰。
+高妻山|たかつまやま|2353|長野|上信越|3|0|7〜9月|戸隠連峰の最高峰。急登と岩場がある。
+武尊山|ほたかやま|2158|群馬|関東|2|0|7〜9月|日本武尊の伝説が残る、大きな山。
+赤城山|あかぎやま|1828|群馬|関東|1|0|5〜11月|黒檜山が最高峰。カルデラ湖の大沼が美しい。
+草津白根山|くさつしらねさん|2160|群馬|関東|1|0|6〜10月|湯釜の火口湖で有名。立入規制を必ず確認。
+四阿山|あずまやさん|2354|群馬・長野|関東|1|0|6〜10月|根子岳とセットで歩けるなだらかな山。
+浅間山|あさまやま|2568|群馬・長野|関東|2|0|6〜10月|活火山。山頂は規制が多く、前掛山までの入山が一般的。
+筑波山|つくばさん|877|茨城|関東|1|0|通年|百名山で最も低い山。男体山と女体山の双耳峰。
+日光白根山|にっこうしらねさん|2578|栃木・群馬|関東|2|0|7〜10月|関東以北の最高峰。ロープウェイで登山口へ行ける。
+皇海山|すかいさん|2144|栃木・群馬|関東|3|0|6〜10月|アクセスの道が長く、登山口までが遠い山。
+男体山|なんたいさん|2486|栃木|関東|2|0|6〜10月|中禅寺湖畔から登る、信仰の山。
+白馬岳|しろうまだけ|2932|長野・富山|北アルプス|3|1|7〜9月|大雪渓と高山植物の宝庫。
+五竜岳|ごりゅうだけ|2814|長野・富山|北アルプス|3|1|7〜9月|急登と岩稜が続く山。山腹の武田菱の雪形が有名。
+鹿島槍ヶ岳|かしまやりがたけ|2889|長野・富山|北アルプス|3|1|7〜9月|美しい双耳峰。
+剱岳|つるぎだけ|2999|富山|北アルプス|3|1|7〜9月|岩と雪の山。鎖場が続き、上級者向け。
+立山|たてやま|3015|富山|北アルプス|2|1|7〜9月|信仰の山。アルペンルートで高所まで入れる。
+薬師岳|やくしだけ|2926|富山|北アルプス|3|2|7〜9月|雄大な山容と、カールの景観が魅力。
+黒部五郎岳|くろべごろうだけ|2840|富山・岐阜|北アルプス|3|2|7〜9月|大きなカール（圏谷）が広がる奥深い山。
+水晶岳|すいしょうだけ|2986|富山|北アルプス|3|2|7〜9月|黒岳とも呼ばれる、黒部川源流の山。
+鷲羽岳|わしばだけ|2924|富山・長野|北アルプス|3|2|7〜9月|鷲が羽を広げた姿の山。山頂直下に池がある。
+槍ヶ岳|やりがたけ|3180|長野・岐阜|北アルプス|3|1|7〜9月|槍の穂先のような山頂。上高地から入る。
+穂高岳|ほたかだけ|3190|長野・岐阜|北アルプス|3|1|7〜9月|奥穂高岳を中心に岩稜が連なる。
+常念岳|じょうねんだけ|2857|長野|北アルプス|3|1|7〜9月|槍・穂高を望む、ピラミッド型の山。
+笠ヶ岳|かさがたけ|2898|岐阜|北アルプス|3|2|7〜9月|笠の形の山。穂高連峰を一望できる。
+焼岳|やけだけ|2455|長野・岐阜|北アルプス|2|0|7〜10月|上高地のそばの活火山。噴気を上げている。
+乗鞍岳|のりくらだけ|3026|長野・岐阜|北アルプス|1|0|7〜9月|バスで標高約2700mまで行ける3000m峰。
+御嶽山|おんたけさん|3067|長野・岐阜|中部|2|0|7〜9月|信仰の山。火山のため、警戒レベルの確認が必要。
+美ヶ原|うつくしがはら|2034|長野|中部|1|0|6〜10月|牧場が広がる広い高原。王ヶ頭が最高点。
+霧ヶ峰|きりがみね|1925|長野|中部|1|0|6〜10月|車山を中心とした高原。ニッコウキスゲで有名。
+蓼科山|たてしなやま|2531|長野|中部|2|0|6〜10月|八ヶ岳北端の整った山。山頂は石の広場。
+八ヶ岳|やつがたけ|2899|長野・山梨|中部|3|1|6〜10月|最高峰は赤岳。硫黄岳や天狗岳など多くの峰が連なる。
+木曽駒ヶ岳|きそこまがたけ|2956|長野|中部|2|0|7〜10月|ロープウェイで千畳敷まで行ける、中央アルプスの山。
+空木岳|うつぎだけ|2864|長野|中部|3|1|7〜9月|中央アルプス南部の長い縦走の山。
+恵那山|えなさん|2191|長野・岐阜|中部|2|0|6〜10月|広い山頂の山。長野と岐阜にまたがる。
+甲斐駒ヶ岳|かいこまがたけ|2967|山梨・長野|南アルプス|3|1|7〜9月|花崗岩の白い山肌が特徴。急登が続く。
+仙丈ヶ岳|せんじょうがたけ|3033|長野・山梨|南アルプス|2|1|7〜9月|山頂近くのカールが美しい、南アルプスの女王。
+鳳凰山|ほうおうざん|2841|山梨|南アルプス|3|1|7〜9月|地蔵岳のオベリスクが目印の三山。
+北岳|きただけ|3193|山梨|南アルプス|3|1|7〜9月|日本で2番目に高い山。バットレスの岩壁が有名。
+間ノ岳|あいのだけ|3190|山梨・静岡|南アルプス|3|2|7〜9月|南アルプスの縦走の中間に位置する3000m峰。
+塩見岳|しおみだけ|3047|長野・静岡|南アルプス|3|2|7〜9月|南アルプスの中央にある、ピラミッド型の山。
+悪沢岳|わるさわだけ|3141|静岡|南アルプス|3|2|7〜9月|東岳とも呼ばれる、荒川三山の一座。
+赤石岳|あかいしだけ|3121|静岡・長野|南アルプス|3|2|7〜9月|南アルプスの大きな山。赤い岩が目印。
+聖岳|ひじりだけ|3013|長野・静岡|南アルプス|3|2|7〜9月|深い森に囲まれた、静かな3000m峰。
+光岳|てかりだけ|2591|長野・静岡|南アルプス|3|2|7〜9月|南アルプスの最南端の山。
+大菩薩嶺|だいぼさつれい|2057|山梨|関東山地|1|0|5〜11月|広い稜線から、富士山を望む。
+丹沢|たんざわ|1673|神奈川|関東山地|2|0|通年|蛭ヶ岳が最高峰。首都圏から日帰りで入れる山域。
+富士山|ふじさん|3776|静岡・山梨|富士・伊豆|2|1|7〜9月|日本最高峰。開山期間と入山規制を確認する。
+天城山|あまぎさん|1406|静岡|富士・伊豆|1|0|4〜11月|万三郎岳が最高点。シャクナゲの名所。
+金峰山|きんぷさん|2599|山梨・長野|関東山地|2|0|6〜10月|山頂の五丈岩が印象的。
+瑞牆山|みずがきやま|2230|山梨|関東山地|2|0|6〜10月|巨大な花崗岩の岩峰が連なる。
+甲武信ヶ岳|こぶしがだけ|2475|埼玉・山梨・長野|関東山地|2|1|6〜10月|千曲川・荒川・笛吹川の源流にある山。
+雲取山|くもとりやま|2017|東京・埼玉・山梨|関東山地|2|1|通年|東京都の最高峰。山小屋がある。
+両神山|りょうかみさん|1723|埼玉|関東山地|2|0|5〜11月|鎖場があり、展望が素晴らしい山。
+白山|はくさん|2702|石川・岐阜|北陸|2|1|7〜9月|霊峰。花畑と室堂が魅力。
+荒島岳|あらしまだけ|1523|福井|北陸|2|0|5〜11月|ブナ林と日本海の眺めが魅力。
+伊吹山|いぶきやま|1377|滋賀・岐阜|近畿|1|0|5〜10月|滋賀県の最高峰。薬草や花の山で、山頂付近は草原。
+大台ヶ原|おおだいがはら|1695|奈良・三重|近畿|1|0|5〜10月|日本有数の多雨地帯。日出ヶ岳が最高点。
+大峰山|おおみねさん|1915|奈良|近畿|2|1|5〜11月|八経ヶ岳が最高点。修験道の山。
+大山|だいせん|1729|鳥取|中国|2|0|5〜11月|中国地方の最高峰。伯耆富士と呼ばれる。
+剣山|つるぎさん|1955|徳島|四国|1|0|5〜11月|リフトで山頂近くまで行ける、四国第2の高峰。
+石鎚山|いしづちさん|1982|愛媛|四国|2|0|5〜11月|西日本の最高峰。鎖場がある信仰の山。
+九重山|くじゅうさん|1791|大分|九州|1|0|5〜11月|中岳が最高点。ミヤマキリシマの名所。
+祖母山|そぼさん|1756|大分・宮崎|九州|2|0|5〜11月|九州の神話に登場する山。
+阿蘇山|あそさん|1592|熊本|九州|1|0|通年|高岳が最高点。火口の規制を確認する。
+霧島山|きりしまやま|1700|宮崎・鹿児島|九州|2|0|5〜11月|韓国岳が最高峰の火山群。
+開聞岳|かいもんだけ|924|鹿児島|九州|1|0|通年|薩摩富士と呼ばれる、海から立ち上がる円錐形の山。
+宮之浦岳|みやのうらだけ|1936|鹿児島|九州|3|1|通年|屋久島の最高峰。長い行程の山。`.split("\n").map((l,i)=>{const a=l.split("|");return{no:i+1,n:a[0],y:a[1],h:+a[2],p:a[3],a:a[4],g:+a[5],d:+a[6],s:a[7],t:a[8]}});
+const VOL=["阿寒岳","十勝岳","岩手山","鳥海山","蔵王山","吾妻山","安達太良山","磐梯山","那須岳","燧ヶ岳","草津白根山","浅間山","日光白根山","焼岳","乗鞍岳","御嶽山","富士山","阿蘇山","霧島山","開聞岳","妙高山","八甲田山","岩木山"];
+const ARS=[...new Set(MT.map(m=>m.a))],GR=["","初級","中級","上級"],DY=["日帰り","1泊","2泊以上"];
+const PL={"日帰り":["地図・コンパス","登山靴","ザック","雨具","防寒着","ヘッドライト","水・行動食","救急セット","携帯電話・予備電池","登山計画書","帽子・日焼け止め","トレッキングポール"],"山小屋泊":["地図・コンパス","登山靴","ザック（大きめ）","雨具","防寒着","ヘッドライト","水・行動食","救急セット","携帯電話・予備電池","登山計画書","着替え","寝具（山小屋の確認）","現金","洗面用具","耳栓"],"雪山":["地図・コンパス","冬用登山靴","アイゼン","ピッケル","防寒着（重ね着）","防寒手袋（予備つき）","ゴーグル","ヘッドライト","ビーコン・プローブ・ショベル","熱い飲み物","救急セット","登山計画書"]};
+const mmod=document.createElement("div");mmod.id="mmod";mmod.hidden=true;document.body.appendChild(mmod);
+mmod.addEventListener("click",e=>{if(e.target===mmod)mmod.hidden=true});
+function initTozan(root){
+  let tab=0,q="",ar="全て",st="全て",pl="日帰り",pre="",ask=null,plan=ld("fn_tz_plan",{}),txt="",done=ld("fn_tz_done",{}),want=ld("fn_tz_want",{}),logs=ld("fn_tz_log",[]),pk=ld("fn_tz_pk",{});
+  const hue=m=>`hsl(${ARS.indexOf(m.a)*29+80} 42% 80%)`;
+  const items=()=>MT.filter(m=>(ar==="全て"||m.a===ar)&&(st==="全て"||(st==="登頂済"?done[m.n]:st==="未登頂"?!done[m.n]:want[m.n]))&&(!q||m.n.includes(q)||m.y.includes(q)||m.p.includes(q)));
+  const row=m=>`<div class="sn-card" data-m="${m.no}"><span class="sn-e" style="background:${hue(m)};font-size:12px;font-weight:700">${m.h}</span><div><b>${esc(m.n)}</b>${done[m.n]?'<i class="sn-now" style="background:#4f8446">登頂</i>':want[m.n]?'<i class="sn-now">行きたい</i>':""}<small>${esc(m.p)}・${esc(m.a)}</small></div></div>`;
+  const list=()=>{const a=items();return `<p class="sn-note">${a.length}座を表示</p>`+a.map(row).join("")};
+  const chips=(arr,cur,k)=>arr.map(a=>`<button class="sn-chip${cur===a?" on":""}" data-${k}="${a}">${a}</button>`).join("");
+  const listV=()=>`<p class="sn-note">登頂 <b>${Object.keys(done).length}</b> / 100座　行きたい <b>${Object.keys(want).length}</b>座</p><input class="sn-in" id="tz-q" placeholder="山名・県で探す" value="${esc(q)}"><div class="sn-chips tz-ch">${chips(["全て",...ARS],ar,"ar")}</div><div class="sn-chips">${chips(["全て","登頂済","未登頂","行きたい"],st,"st")}</div><div id="tz-l">${list()}</div>`;
+  const sheet=m=>{const dn=done[m.n],wn=want[m.n];
+    mmod.innerHTML=`<div class="msheet"><h3>${esc(m.n)}</h3><div class="y">${esc(m.y)}　百名山 No.${m.no}</div><div class="mrow"><span>標高</span><span>${m.h.toLocaleString()} m</span></div><div class="mrow"><span>所在地</span><span>${esc(m.p)}</span></div><div class="mrow"><span>山域</span><span>${esc(m.a)}</span></div><div class="mrow"><span>難易度の目安</span><span>${GR[m.g]}</span></div><div class="mrow"><span>日程の目安</span><span>${DY[m.d]}</span></div><div class="mrow"><span>見頃</span><span>${esc(m.s)}</span></div><p style="font-size:14px;line-height:1.7">${esc(m.t)}</p>${VOL.includes(m.n)?'<p class="sn-warn">⚠ 活火山です。噴火警戒レベルと入山規制を、出発前に必ず確認してください。</p>':""}<p class="sn-note">標高・難易度・日程は目安です。登山道の状況と天気は、出発前に最新の情報で確認してください。</p><div class="sn-g"><button class="sn-btn${dn?"":" sn-ghost"}" data-dn="${m.no}">${dn?"登頂済み "+dn:"登頂した"}</button><button class="sn-btn sn-ghost" data-wt="${m.no}">${wn?"♥ 行きたい（解除）":"♡ 行きたい"}</button></div><div class="sn-g" style="margin-top:8px"><button class="sn-btn sn-ghost" data-lg="${m.no}">記録を書く</button><a class="sn-btn sn-ghost" href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(m.n)}" target="_blank" rel="noopener">地図で見る</a></div><p><a class="sn-note" href="https://ja.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(m.n)}" target="_blank" rel="noopener">Wikipediaで詳しく見る</a></p><button class="sn-btn sn-ghost" data-cl="1">閉じる</button></div>`;mmod.hidden=false};
+  mmod.onclick=e=>{
+    if(e.target===mmod){mmod.hidden=true;return}
+    const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+    if(d.cl){mmod.hidden=true;return}
+    const m=MT[(d.dn||d.wt||d.lg)-1];if(!m)return;
+    if(d.dn){done[m.n]?delete done[m.n]:done[m.n]=td();sv("fn_tz_done",done);sheet(m);render()}
+    else if(d.wt){want[m.n]?delete want[m.n]:want[m.n]=1;sv("fn_tz_want",want);sheet(m);render()}
+    else if(d.lg){pre=m.n;tab=1;mmod.hidden=true;render()}
+  };
+  const logV=()=>`<input class="sn-in" type="date" id="tz-d" value="${td()}"><input class="sn-in" id="tz-n" list="tz-dl" placeholder="山名" value="${esc(pre)}"><datalist id="tz-dl">${MT.map(m=>`<option value="${esc(m.n)}">`).join("")}</datalist><div class="sn-g"><select class="sn-in" id="tz-w">${["晴れ","曇り","雨","雪","霧"].map(w=>`<option>${w}</option>`).join("")}</select><input class="sn-in" id="tz-h" type="number" inputmode="decimal" placeholder="行動時間（時間）"></div><input class="sn-in" id="tz-p" placeholder="同行者" maxlength="30"><input class="sn-in" id="tz-o" placeholder="下山後の立ち寄り湯（任意）" maxlength="30"><input class="sn-in" id="tz-m" placeholder="メモ" maxlength="100"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="tz-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="tz-add">記録を追加</button>`+logs.map((l,i)=>({l,i})).sort((a,b)=>b.l.d.localeCompare(a.l.d)).map(({l,i})=>`<div class="sn-row"><b>${esc(l.d)}</b>　${esc(l.n)}　${esc(l.w)}${l.h?"　"+l.h+"時間":""}${l.p?"<br>👥 "+esc(l.p):""}${l.o?"　♨️ "+esc(l.o):""}${l.m?"<br>"+esc(l.m):""}<br><button class="sn-del" data-sh="${i}">${l.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask===i?" ask":""}" data-dl="${i}">${ask===i?"本当に削除":"削除"}</button></div>`).join("");
+  const packV=()=>`<div class="sn-chips">${chips(Object.keys(PL),pl,"pl")}</div>`+PL[pl].map(it=>`<label class="sn-row" style="display:flex;gap:10px;align-items:center"><input type="checkbox" data-pk="${esc(it)}"${(pk[pl]||{})[it]?" checked":""} style="width:20px;height:20px">${esc(it)}</label>`).join("")+`<button class="sn-btn sn-ghost" data-pkr="1" style="margin-top:12px">チェックをすべて外す</button><p class="sn-note">基本の目安です。コースや季節に合わせて、足りないものを加えてください。</p>`;
+  const fm=v=>{if(!v)return "未定";const d=new Date(v);return isNaN(d)?v:(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+  const planV=()=>{const P=k=>esc(plan[k]||"");return `<p class="sn-note">入山前に、家族や友人へ予定を伝える連絡文を作れます。</p><input class="sn-in" data-pf="n" list="tz-dl2" placeholder="山名" value="${P("n")}"><datalist id="tz-dl2">${MT.map(m=>`<option value="${esc(m.n)}">`).join("")}</datalist><input class="sn-in" data-pf="c" placeholder="コース・登山口" value="${P("c")}"><div class="nl">入山予定</div><input class="sn-in" type="datetime-local" data-pf="a" value="${P("a")}"><div class="nl">下山予定</div><input class="sn-in" type="datetime-local" data-pf="b" value="${P("b")}"><input class="sn-in" data-pf="p" placeholder="同行者" value="${P("p")}"><input class="sn-in" data-pf="t" placeholder="緊急連絡先（家族など）" value="${P("t")}"><input class="sn-in" data-pf="m" placeholder="メモ（装備・ビバーク予定など）" value="${P("m")}"><div class="sn-g"><button class="sn-btn" id="tz-gen">入山連絡の文を作る</button><button class="sn-btn sn-ghost" id="tz-out">下山連絡の文を作る</button></div>`+(txt?`<textarea class="sn-in" id="tz-tx" rows="8" style="margin-top:10px">${esc(txt)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" id="tz-cp">コピー</button><button class="sn-btn" id="tz-sh">送る</button></div>`:"")+`<p class="sn-note">登山計画書は、登山口の提出箱か電子提出で必ず出してください。<a href="https://www.mt-compass.com/" target="_blank" rel="noopener">登山計画書の電子提出（コンパス）</a><br>緊急時は110番または119番に連絡してください。</p>`};
+  const render=()=>{root.innerHTML=`<div class="sn-tabs">${["百名山","山行記録","持ち物","入山連絡","みんな"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[listV,logV,packV,planV,()=>sharedV(["tz"])][tab]()};
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button,.sn-card");if(!b)return;const d=b.dataset;
+    if(d.t!==undefined){tab=+d.t;ask=null;render();return}
+    if(d.m!==undefined){sheet(MT[d.m-1]);return}
+    if(d.ar){ar=d.ar;render();return}
+    if(d.st){st=d.st;render();return}
+    if(d.pl){pl=d.pl;render();return}
+    if(d.pkr){pk[pl]={};sv("fn_tz_pk",pk);render();return}
+    if(d.rf){fetchShared().then(n=>{render();const m=$("sh-m");if(m)m.textContent=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました。"});return}
+    if(d.sh!==undefined){const l=logs[+d.sh];l.sh=l.sh?0:1;if(!l.id)l.id=newId();sv("fn_tz_log",logs);render();return}
+    if(d.dl!==undefined){if(ask===+d.dl){logs.splice(+d.dl,1);sv("fn_tz_log",logs);ask=null}else ask=+d.dl;render();return}
+    if(b.id==="tz-gen"){txt=`【入山連絡】\n山名：${plan.n||"未定"}\nコース：${plan.c||"未定"}\n入山予定：${fm(plan.a)}\n下山予定：${fm(plan.b)}\n同行者：${plan.p||"なし"}\n緊急連絡先：${plan.t||"なし"}${plan.m?"\nメモ："+plan.m:""}\n\n下山したら連絡します。下山予定の時刻を過ぎても連絡がない場合は、警察（110番）への連絡をお願いします。`;render();return}
+    if(b.id==="tz-out"){txt=`【下山連絡】\n${plan.n||"山"}を無事に下山しました。\n（${fm(new Date())}）`;render();return}
+    if(b.id==="tz-cp"||b.id==="tz-sh"){const t=$("tz-tx");if(b.id==="tz-sh"&&navigator.share){navigator.share({text:t.value}).catch(()=>{});return}t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}b.textContent="コピーしました";return}
+    if(b.id==="tz-add"){
+      const n=$("tz-n").value.trim();if(!n){$("tz-n").focus();return}
+      const dt=$("tz-d").value||td(),h=parseFloat($("tz-h").value);
+      logs.push({d:dt,n,w:$("tz-w").value,h:isNaN(h)?0:h,p:$("tz-p").value.trim(),o:$("tz-o").value.trim(),m:$("tz-m").value.trim(),id:newId(),sh:$("tz-sh").checked?1:0});sv("fn_tz_log",logs);
+      if(MT.some(m=>m.n===n)&&!done[n]){done[n]=dt;sv("fn_tz_done",done)}
+      pre="";render();
+    }
+  });
+  root.addEventListener("input",e=>{if(e.target.id==="tz-q"){q=e.target.value.trim();$("tz-l").innerHTML=list()}const k=e.target.dataset.pf;if(k){plan[k]=e.target.value;sv("fn_tz_plan",plan)}});
+  root.addEventListener("change",e=>{const k=e.target.dataset.pk;if(k!==undefined){(pk[pl]=pk[pl]||{})[k]=e.target.checked;sv("fn_tz_pk",pk)}});
+  render();
+}
+const SPR=[["単純温泉","成分が薄く、刺激がやわらかい。幅広い人が入りやすい。"],["塩化物泉","塩分を含み、湯上がりも体が温まりやすい。「熱の湯」と呼ばれる。"],["炭酸水素塩泉","肌がなめらかになる感触で、「美肌の湯」と呼ばれる。"],["硫酸塩泉","「傷の湯」とも呼ばれ、古くから湯治に使われてきた。"],["二酸化炭素泉","炭酸泉。体に細かい泡が付き、ぬるめの湯にゆっくり入る。"],["含鉄泉","鉄分を含み、空気に触れると茶褐色に変わる。"],["酸性泉","pHが低く、殺菌力が強い。肌の弱い人は短めに入る。"],["含よう素泉","よう素を含む珍しい泉質。"],["硫黄泉","卵のような香りが特徴。刺激が強く、長湯は避ける。"],["放射能泉","微量のラドンを含む。湯治で使われてきた泉質。"]];
+function initOnsen(root){
+  let tab=0,pre={n:"",a:""},ask=null,logs=ld("fn_os_log",[]),want=ld("fn_os_want",[]),info=ld("fn_os_info",[]);
+  const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
+  const logV=()=>{const names=new Set(logs.map(l=>l.n));return `<p class="sn-note">記録 <b>${logs.length}</b>件　入った温泉 <b>${names.size}</b>湯</p><input class="sn-in" type="date" id="os-d" value="${td()}"><input class="sn-in" id="os-n" placeholder="温泉名" maxlength="30" value="${esc(pre.n)}"><input class="sn-in" id="os-a" placeholder="地域" maxlength="20" value="${esc(pre.a)}"><div class="sn-g"><select class="sn-in" id="os-s"><option>泉質は不明</option>${SPR.map(p=>`<option>${p[0]}</option>`).join("")}</select><select class="sn-in" id="os-r">${[5,4,3,2,1].map(n=>`<option value="${n}">${stars(n)}</option>`).join("")}</select></div><input class="sn-in" id="os-y" type="number" inputmode="numeric" placeholder="料金（円）"><input class="sn-in" id="os-m" placeholder="メモ（どの山の帰りなど）" maxlength="100"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="os-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="os-add">記録を追加</button>`+logs.map((l,i)=>({l,i})).sort((a,b)=>b.l.d.localeCompare(a.l.d)).map(({l,i})=>`<div class="sn-row"><b>${esc(l.d)}</b>　${esc(l.n)}　<span style="color:#d99a2b">${stars(l.r)}</span><br><small>${esc(l.a||"")}${l.s&&l.s!=="泉質は不明"?"・"+esc(l.s):""}${l.y?"・"+l.y+"円":""}</small>${l.m?"<br>"+esc(l.m):""}<br><button class="sn-del" data-shl="${i}">${l.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="l"+i?" ask":""}" data-dl="${i}">${ask==="l"+i?"本当に削除":"削除"}</button></div>`).join("")};
+  const wantV=()=>`<input class="sn-in" id="ow-n" placeholder="行きたい温泉の名前" maxlength="30"><input class="sn-in" id="ow-a" placeholder="地域" maxlength="20"><input class="sn-in" id="ow-m" placeholder="メモ" maxlength="80"><button class="sn-btn" id="ow-add">リストに追加</button>`+(want.map((w,i)=>`<div class="sn-row"><b>${esc(w.n)}</b> <small>${esc(w.a||"")}</small>${w.m?"<br>"+esc(w.m):""}<br><button class="sn-del" data-go2="${i}">入った！記録へ</button> <button class="sn-del${ask==="w"+i?" ask":""}" data-dw="${i}">${ask==="w"+i?"本当に削除":"削除"}</button></div>`).join("")||'<p class="sn-note">まだありません。</p>');
+  const infoV=()=>`<input class="sn-in" id="oi-n" placeholder="温泉名" maxlength="30"><input class="sn-in" id="oi-a" placeholder="地域" maxlength="20"><input class="sn-in" id="oi-h" placeholder="営業時間（例：10:00〜21:00）" maxlength="30"><input class="sn-in" id="oi-c" placeholder="定休日" maxlength="20"><input class="sn-in" id="oi-y" type="number" inputmode="numeric" placeholder="入浴料（円）"><div class="sn-g"><select class="sn-in" id="oi-p"><option>駐車場：不明</option><option>駐車場：あり</option><option>駐車場：なし</option></select><select class="sn-in" id="oi-r"><option>貸切：不明</option><option>貸切：あり</option><option>貸切：なし</option></select></div><select class="sn-in" id="oi-t"><option>タトゥー：不明</option><option>タトゥー：可</option><option>タトゥー：不可</option><option>タトゥー：要確認</option></select><input class="sn-in" id="oi-m" placeholder="メモ" maxlength="80"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="oi-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="oi-add">日帰り情報を追加</button><p class="sn-note">営業時間や料金は変わることがあります。出かける前に、最新の情報を確認してください。</p>`+(info.map((x,i)=>`<div class="sn-row"><b>${esc(x.n)}</b> <small>${esc(x.a||"")}</small><br>${x.h?"🕒 "+esc(x.h)+"　":""}${x.c?"休：" +esc(x.c)+"　":""}${x.y?x.y+"円":""}<br><small>${esc(x.p)}／${esc(x.r)}／${esc(x.t)}</small>${x.m?"<br>"+esc(x.m):""}<br><a class="sn-note" href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(x.n)}" target="_blank" rel="noopener">地図で見る</a> <button class="sn-del" data-shi="${i}">${x.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="i"+i?" ask":""}" data-di="${i}">${ask==="i"+i?"本当に削除":"削除"}</button></div>`).join("")||'<p class="sn-note">まだありません。</p>');
+  const guideV=()=>SPR.map(p=>`<div class="sn-dg" style="border-left-color:#b8622a"><b>${p[0]}</b><p>${p[1]}</p></div>`).join("")+`<p class="sn-note">効能は目安です。持病のある人や妊娠中の人は、入浴の前に医師に相談してください。長湯や飲酒後の入浴は避けましょう。</p>`;
+  const render=()=>{root.innerHTML=`<div class="sn-tabs">${["入湯記録","行きたい","泉質ガイド","日帰り情報","みんな"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[logV,wantV,guideV,infoV,()=>sharedV(["os","oi"])][tab]()};
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;const d=b.dataset,v=id=>$(id).value.trim();
+    if(d.t!==undefined){tab=+d.t;ask=null;render();return}
+    if(d.dl!==undefined){const k="l"+d.dl;if(ask===k){logs.splice(+d.dl,1);sv("fn_os_log",logs);ask=null}else ask=k;render();return}
+    if(d.dw!==undefined){const k="w"+d.dw;if(ask===k){want.splice(+d.dw,1);sv("fn_os_want",want);ask=null}else ask=k;render();return}
+    if(d.rf){fetchShared().then(n=>{render();const m=$("sh-m");if(m)m.textContent=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました。"});return}
+    if(d.shl!==undefined){const l=logs[+d.shl];l.sh=l.sh?0:1;if(!l.id)l.id=newId();sv("fn_os_log",logs);render();return}
+    if(d.shi!==undefined){const l=info[+d.shi];l.sh=l.sh?0:1;if(!l.id)l.id=newId();sv("fn_os_info",info);render();return}
+    if(d.di!==undefined){const k="i"+d.di;if(ask===k){info.splice(+d.di,1);sv("fn_os_info",info);ask=null}else ask=k;render();return}
+    if(d.go2!==undefined){const w=want[+d.go2];pre={n:w.n,a:w.a||""};want.splice(+d.go2,1);sv("fn_os_want",want);tab=0;render();return}
+    if(b.id==="oi-add"){
+      const n=v("oi-n");if(!n){$("oi-n").focus();return}
+      const y=parseInt($("oi-y").value,10);
+      info.unshift({n,a:v("oi-a"),h:v("oi-h"),c:v("oi-c"),y:isNaN(y)?0:y,p:$("oi-p").value,r:$("oi-r").value,t:$("oi-t").value,m:v("oi-m"),d:td(),id:newId(),sh:$("oi-sh").checked?1:0});sv("fn_os_info",info);render();return}
+    if(b.id==="os-add"){
+      const n=v("os-n");if(!n){$("os-n").focus();return}
+      const y=parseInt($("os-y").value,10);
+      logs.push({d:$("os-d").value||td(),n,a:v("os-a"),s:$("os-s").value,r:+$("os-r").value,y:isNaN(y)?0:y,m:v("os-m"),id:newId(),sh:$("os-sh").checked?1:0});sv("fn_os_log",logs);pre={n:"",a:""};render();
+    }else if(b.id==="ow-add"){
+      const n=v("ow-n");if(!n){$("ow-n").focus();return}
+      want.unshift({n,a:v("ow-a"),m:v("ow-m")});sv("fn_os_want",want);render();
+    }
+  });
+  render();
+}
+drawCover();renderPages();
+</script>
+</body>
+</html>
