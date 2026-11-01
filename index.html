@@ -216,6 +216,17 @@ html[data-pgno="off"] .pgno,html[data-fold="off"] .fold{display:none}
 .mrow{display:flex;justify-content:space-between;border-bottom:1px solid #e3dcc6;padding:8px 0;font-size:14px}.mrow span:first-child{color:#667058}
 .msheet a.sn-btn{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
 .sn-tabs{overflow-x:auto;scrollbar-width:none}.sn-tabs button{flex:1 0 auto;padding:8px 10px;font-size:13px;white-space:nowrap}
+.ic{background:rgba(255,255,255,.5);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.ic h4{margin:0 0 8px;font-size:13px;color:var(--acc);letter-spacing:.06em}
+.ib{font-size:21px;font-weight:600;line-height:1.3}
+.ir{display:flex;gap:10px}.ir>.ic{flex:1;min-width:0}
+.ibar{height:8px;border-radius:4px;background:var(--line);position:relative;margin:10px 0 6px}
+.ibar i{position:absolute;top:0;bottom:0;background:#f0c050;border-radius:4px}.ibar u{position:absolute;top:-3px;width:3px;height:14px;background:#b3412f}
+.ic.wn{background:#fbe9e5;border-color:#e3b3a8}
+.ic a.sn-del{text-decoration:none;display:inline-block}
+#lbox{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.85);display:grid;place-items:center}#lbox[hidden]{display:none}#lbox img{max-width:96vw;max-height:90vh}
+#ntmod{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.5);display:grid;place-items:center}#ntmod[hidden]{display:none}
+.pgin details>summary{cursor:pointer}
 </style>
 </head>
 <body>
@@ -266,7 +277,7 @@ html[data-pgno="off"] .pgno,html[data-fold="off"] .fold{display:none}
 </div>
 <div id="dots"></div>
 <script>
-const BASE=[{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
+const BASE=[{id:"info",name:"情報",icon:"🧭",color:"#2f6f8f"},{id:"all",name:"みんな",icon:"👥",color:"#7a5aa3"},{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
 const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟"];
 const COLORS=["#4f8446","#b9473a","#a06a36","#3b7ca3","#835aa3","#b8922a"];
 const SC=[
@@ -284,7 +295,7 @@ const CV=[{n:"深緑",c:"#2f5a3c",d:"#1d3b27",g:"#e2c36e"},{n:"ワイン",c:"#6e
 const YC=[{n:"深緑",c:"#3f5f34",d:"#27401f",g:"#e8dcb8"},{n:"茶",c:"#6b4a2c",d:"#46301c",g:"#e8dcb8"},{n:"紺",c:"#22385c",d:"#142339",g:"#e8dcb8"},{n:"臙脂",c:"#7a2c25",d:"#511b16",g:"#e8dcb8"},{n:"墨",c:"#2c2f33",d:"#17191c",g:"#e8dcb8"},{n:"芥子",c:"#9a7a22",d:"#6b5412",g:"#f1e6c0"}];
 const HC=[{n:"革茶",c:"#5a3a22",d:"#3b2414",g:"#d9b878"},{n:"深緑",c:"#2f4a34",d:"#1e3222",g:"#d9b878"},{n:"ワイン",c:"#5a2530",d:"#3a1620",g:"#d9b878"},{n:"墨紺",c:"#1f2c46",d:"#121b2e",g:"#d9b878"},{n:"黒革",c:"#2a2523",d:"#151211",g:"#d9b878"},{n:"栗",c:"#6b4426",d:"#472b15",g:"#e0c080"}];
 const PAL=[CV,YC,HC],DG=["古い辞書風","野帳風","植物標本帳風"];
-const DEF={sansai:8,fruit:2,kinoko:9,tozan:6,onsen:7};
+const DEF={info:6,all:4,sansai:8,fruit:2,kinoko:9,tozan:6,onsen:7};
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 let custom=ld("fn_pages",[]),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_bands",{}),uid=0,colo=ld("fn_colo",{});
@@ -324,9 +335,9 @@ function renderPages(){
   pages().forEach((p,i)=>{
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="1">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=p.id==="sansai"?"S":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     book.appendChild(s);
-    if(kd)({S:initSansai,T:initTozan,O:initOnsen})[kd](s.querySelector(".sn"));
+    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen})[kd](s.querySelector(".sn"),CFGS[kd]);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,"– "+(i+1)+" –");
   });
   const bk=document.createElement("section");bk.className="pg dyn bk";
@@ -368,17 +379,24 @@ $("asave").onclick=()=>{
   $("an").value="";$("addp").classList.remove("show");renderPages();
 };
 const SN_DATA={"p":[[1,"フキノトウ","🌿",[2,3],"全域","雪解け直後の早春を告げる山菜。天ぷら・味噌炒めに。","#7cb87a"],[2,"タラノメ","🌱",[4,5],"山地","山菜の王様。天ぷらが定番。新芽のみ採取。","#a8c86e"],[3,"コシアブラ","🍃",[4,5],"中部・北陸","香り豊かな山菜。天ぷら・おひたしに。","#6aab5e"],[4,"ワラビ","🌾",[4,5,6],"草地・斜面","アク抜きが必要。煮物・漬物・炒め物に。","#8dc66b"],[5,"ゼンマイ","🌀",[4,5],"湿地・沢沿い","乾燥保存が可能。煮物・炒め物に。","#5a9e52"],[6,"ウド","🪴",[4,5,6],"林縁・谷筋","香りが特徴。きんぴら・天ぷら・酢味噌和えに。","#b5d97a"],[7,"ミツバ","🍀",[3,4,5],"湿地・沢沿い","香り高い春の山菜。おひたし・吸い物に。","#79c47e"],[9,"ノビル","🧅",[3,4,5],"草地・畦道","野生のネギ。酢味噌和え・炒め物に。","#c8d96e"],[13,"セリ","🌿",[2,3,4],"水辺・田んぼ脇","春の七草のひとつ。独特の香りが特徴。おひたし・鍋物・七草粥に。根っこごと採取するのがコツ。","#4caf6e"],[14,"葉ワサビ","🍃",[3,4,5],"清流・沢沿い","清流沿いに自生するワサビの葉。辛みと香りが特徴。醤油漬け・おひたし・天ぷらに。柔らかい若葉を選んで採取。","#2e7d32"],[15,"花ワサビ","🌸",[3,4],"清流・沢沿い","ワサビの白い花と花茎。葉より辛みが強く香り豊か。醤油漬け・からし和えに。開花直後の新鮮なものが最高。","#7b5ea7"],[16,"根曲がり竹","🎋",[5,6],"亜高山帯・笹薮","チシマザサの若タケノコ。北陸・信州の山の幸。味噌汁・炊き込みご飯・サバ缶との相性が絶品。群生地では一気に採れる。","#8aab3a"],[17,"コゴミ","🌀",[4,5],"沢沿い・湿地","クサソテツの若芽。アクが少なく扱いやすい。おひたし・天ぷら・マヨネーズ和えに。ゼンマイより採取しやすく初心者向け。","#4e8f5d"],[18,"ミョウガ","🌺",[7,8,9],"山間・林縁の湿った場所","夏〜秋に花穂（みょうがたけ）を採取。独特の香りと風味が特徴。薬味・天ぷら・甘酢漬け・味噌汁に。群生していることが多く一度見つければ毎年採れる。","#e07b8a"],[19,"ヨシナ（シドケ）","🍃",[4,5],"山地・林縁・沢沿い","モミジガサの北陸・東北方言名。独特の香りとほろ苦さが特徴。おひたし・天ぷら・胡麻和えに。アクが少なく扱いやすい。群生地では大量に採れる山菜の王様のひとつ。","#5c8a4e"],[20,"ミズ（ウワバミソウ）","💧",[5,6,7,8,9],"沢沿い・渓流脇・湿った林内","北陸・東北で古くから親しまれる山菜。茎が瑞々しく柔らかい。おひたし・炒め物・漬物・みそ汁に。秋にはムカゴ（肉芽）が付き、これも珍味。長期間採れるので重宝する。","#4a90c4"],[21,"行者ニンニク","🧄",[4,5],"亜高山帯・湿った林内・沢沿い斜面","強烈なニンニク臭が特徴の希少山菜。醤油漬け・炒め物・餃子の具・ラーメンのトッピングに絶品。成長が非常に遅く根こそぎ採取は厳禁。򄒒𰇃枚を残して採取すること。バイケイソウ・イヌサフランとの誤食事故に要注意。","#6d8c3e"],[22,"ウルイ（オオバギボウシ）","🌿",[4,5],"山地・林縁・湿った草地・沢沿い","大ぶりで扱いやすい人気の山菜。クセがなく食べやすい。おひたし・酢味噌和え・天ぷら・炒め物に。ぬめりがあり栄養豊富。イヌサフランと葉が酷似しているため採取時は要注意。臭いがないときは絶対に採らないこと。","#5aab72"],[23,"ボウナ（ミヤマタラノキ）","🌱",[5,6],"亜高山帯・山地の林縁・明るい斜面","タラノメに似た山菜で北陸・東北では古くから親しまれる。タラノメより柔らかくアクが少ない。天ぷら・おひたし・炒め物に。トゲが少なく採取しやすいのが特徴。旬が短いので時期を逃さないこと。","#7db84a"]],"d":[[101,"トリカブト","💜","猛毒",["ニリンソウ","ヨモギ","セリ","シドケ（モミジガサ）"],[7,13,19],"日本最強クラスの毒草。アルカロイド系毒素（アコニチン）を含み、誤食すると心臓麻痺を起こす。根・葉・茎すべてに毒がある。","ニリンソウとの区別：葉の切れ込みが深くギザギザ。花は紫色の特徴的な兜形（ニリンソウは白い花びら状）。葉をこすると独特の嫌な臭い。","山地・高山の湿った斜面","葉は春〜夏、花は夏〜秋","採取厳禁。触れるだけでも皮膚吸収の危険性あり。"],[102,"ドクウツギ","🍒","猛毒",["アケビ","木の実全般"],[10],"ドクゼリ・トリカブトと並ぶ日本三大毒草のひとつ。赤黒い実が甘そうに見えるが猛毒。コリアミルチンを含み死亡例あり。","アケビとの区別：葉が対生（アケビは互生）。実が房状に密集。茎は緑色で稜がある。","山地・川沿い・崩壊地","実は夏〜秋（赤→黒に変化）","実を絶対に食べない。子供が誤食しやすいため注意。"],[103,"ドクゼリ","🌿","猛毒",["セリ","ミツバ","ウド"],[13,7,6],"セリに非常によく似た猛毒植物。シクトキシンを含み、誤食すると痙攣・呼吸困難を引き起こす。根が特に毒性が強い。","セリとの区別：根を切ると空洞（節状の横隔壁がある竹のような構造）。茎が太く中空。葉は大型で光沢がある。セリの根は白い細根が多く香りが強い。","湿地・水辺・水田周辺","春〜夏","水辺のセリ採取は根の確認必須。根ごと抜いて断面を必ず確認。"],[104,"スイセン","🌼","有毒",["ノビル","ニラ"],[9],"球根・葉・花すべてに毒（リコリン）を含む。ノビルやニラと葉が非常に似ており誤食事故が多発。毎年被害報告がある。","ノビルとの区別：スイセンは葉を折っても臭いがない（ノビルはネギ臭）。球根の形状が違う（スイセンは球根が大きく白い）。葉が扁平でツヤがある。","庭・公園・土手・山すそ","葉は早春から（花は冬〜早春）","ノビル採取時は必ず臭いで確認。無臭ならスイセンの可能性大。"],[105,"イヌサフラン（コルチカム）","🌸","猛毒",["ギョウジャニンニク","ウルイ（オオバギボウシ）"],[],"コルヒチンを含む猛毒植物。ギョウジャニンニクやオオバギボウシと葉が酷似。近年誤食による死亡事故が増加。","ギョウジャニンニクとの区別：葉を傷つけてもニンニク臭がしない（ギョウジャニンニクは強いニンニク臭）。葉脈が平行で光沢が強い。球根が大きい。","庭・公園・山地（園芸逸出）","葉は春（花は秋）","臭いで必ず確認。無臭はすべて疑うこと。"],[106,"ハシリドコロ","🍃","有毒",["フキノトウ","ギョウジャニンニク"],[1],"アトロピン・スコポラミン等を含む有毒植物。早春にフキノトウと同じ場所に生えることがあり誤食事故多数。幻覚・錯乱・呼吸困難を引き起こす。","フキノトウとの区別：葉が柔らかく大きい。独特の臭いがある。茎を折ると白い液が出る。フキノトウは苞（つぼみ）の形が独特。","山地の沢沿い・湿った斜面","早春（3〜4月ごろ）","フキノトウ採取時に混入注意。必ず形状を確認してから採取。"],[107,"ヨウシュヤマゴボウ","🫐","有毒",["山菜全般（根）"],[],"根・実・葉すべてに毒を含む。黒紫の実がブルーベリーに似て見え、子供の誤食が多い。大人でも根をゴボウと間違えることがある。","ゴボウとの区別：根を切ると白く臭いが全く違う。茎が赤紫色で太い。実は黒紫色でブドウ房状。","道端・空き地・林縁（帰化植物）","葉は春〜夏、実は秋","見た目が美しく子供が食べやすいため特に注意。"],[108,"バイケイソウ","🌿","猛毒",["ギョウジャニンニク","コバイケイソウ","ウルイ（オオバギボウシ）"],[],"アルカロイド系毒素（ベラトルム）を含む猛毒植物。ギョウジャニンニクと春の若葉が酷似しており、北陸・東北で誤食死亡事故多数。","ギョウジャニンニクとの区別：葉が互生で大きく広い（ギョウジャニンニクは対生で細長い）。葉を傷つけてもニンニク臭がしない。葉脈が平行で目立つ。","亜高山帯・山地の湿った草地","早春〜初夏","北陸の山では最重要注意植物。ギョウジャニンニク採取時は必ず臭いで確認。"]]};
-function initSansai(root){
-  const P=SN_DATA.p.map(a=>({id:a[0],n:a[1],e:a[2],m:a[3],r:a[4],d:a[5],c:a[6]})).sort((a,b)=>a.n.localeCompare(b.n,"ja"));
-  const D=SN_DATA.d.map(a=>({id:a[0],n:a[1],e:a[2],lv:a[3],sim:a[4],sid:a[5],d:a[6],h:a[7],r:a[8],s:a[9],w:a[10]}));
-  let tab=0,open=null,dop=false,sel=[],gps=null,ask=null,bk=false,spots=ld("fn_sn_spots",[]),harv=ld("fn_sn_harv",[]);
+const FR_DATA={"p":[[10,"アケビ","🍇",[9,10],"林縁・山地","秋の実と皮を食べる。皮は肉詰め料理に。","#9b7fc8"],[7001,"ナワシロイチゴ","🍓",[6,7],"草地・路傍、林縁・伐採跡","酸味と甘みのバランスがよい。生食、ジャム","#c2410c",{"w":"トゲがあるので手袋を。","s":"Rubus parvifolius","c":"低木・バラ科 キイチゴ属","i":[["植生","日当たりのよい草地・土手・畑のへり。地面を這うように伸びる"],["標高帯","低地〜丘陵"]]}],[7002,"クマイチゴ","🍓",[6,7,8],"林縁・伐採跡、里山・二次林","甘酸っぱく、キイチゴ類の中でも粒が大きめ。生食、ジャム","#c2410c",{"w":"鋭いトゲが多い。","s":"Rubus crataegifolius","c":"低木・バラ科 キイチゴ属","i":[["植生","落葉広葉樹林の林縁・伐採跡・崩壊地などの明るい場所"],["標高帯","丘陵〜山地"]]}],[7003,"モミジイチゴ","🟡",[5,6],"林縁・伐採跡、里山・二次林","黄橙色の実で甘い。生食、ジャム","#c2410c",{"w":"葉がモミジ型。実は熟すと崩れやすい。","s":"Rubus palmatus","c":"低木・バラ科 キイチゴ属","i":[["植生","コナラ・クヌギなどの二次林の林縁、林道沿い"],["標高帯","低地〜山地"]]}],[7004,"ニガイチゴ","🍓",[6,7],"林縁・伐採跡、亜高山・高山","種に苦みがあり、果肉は甘酸っぱい。生食","#c2410c",{"w":"名前の通り種を噛むと苦い。","s":"Rubus microphyllus","c":"低木・バラ科 キイチゴ属","i":[["植生","ブナ・ミズナラ帯の林縁や岩場、尾根"],["標高帯","山地〜亜高山"]]}],[7005,"ヘビイチゴ","🔴",[5,6,7],"草地・路傍","毒はないが味がほとんどなく食用には不向き","#d98a00",{"w":"ヤブヘビイチゴも同様。ヘビイチゴ類と混同しない。","s":"Potentilla hebiichigo","c":"草本・バラ科 キジムシロ属","i":[["植生","田畑の畔・湿った草地・道端"],["標高帯","低地〜丘陵"]]}],[7006,"ヤマグワ","🟣",[5,6,7],"林縁・伐採跡、里山・二次林、湿地・河畔","黒紫に熟すと甘い。生食、ジャム、果実酒","#6a9a2c",{"w":"汁が衣類に付くと落ちにくい。","s":"Morus bombycis","c":"高木・小高木・クワ科 クワ属","i":[["植生","山地の谷沿い、河畔林、林縁。養蚕で植えられた個体も多い"],["標高帯","低地〜山地"]]}],[7007,"ヤマモモ","🍒",[6,7],"照葉樹林、海岸","甘酸っぱく、生食、ジャム、果実酒。高知県の県木","#6a9a2c",{"w":"落果が多いので地面で拾うとき腐敗に注意。","s":"Myrica rubra","c":"高木・小高木・ヤマモモ科 ヤマモモ属","i":[["植生","暖地の照葉樹林の尾根沿い・海岸近くの山"],["標高帯","低地〜丘陵"]]}],[7008,"ナツグミ","🔴",[5,6],"林縁・伐採跡、里山・二次林","渋みが残るが熟すと甘酸っぱい。生食、ジャム","#c2410c",{"w":"未熟果は渋い。","s":"Elaeagnus multiflora","c":"低木・グミ科 グミ属","i":[["植生","丘陵〜山地の林縁、川沿いの日当たりのよい場所"],["標高帯","低地〜山地"]]}],[7009,"アキグミ","🔴",[9,10,11],"林縁・伐採跡、草地・路傍、海岸","秋に赤く熟す。渋みがあるが甘酸っぱい。生食、果実酒","#c2410c",{"w":"葉裏が銀白色。同属のトゲに注意。","s":"Elaeagnus umbellata","c":"低木・グミ科 グミ属","i":[["植生","河原・海岸・荒地・崩壊地など、痩せ地に先に定着"],["標高帯","低地〜山地"]]}],[7010,"ヤマブドウ","🍇",[9,10],"林縁・伐採跡、里山・二次林","酸味が強く、ジュース、ジャム、ワイン。皮はアントシアニンが豊富","#6d3fb5",{"w":"ノブドウ(食用に向かない)と混同しない。","s":"Vitis coignetiae","c":"つる性・ブドウ科 ブドウ属","i":[["植生","落葉広葉樹林の林縁、沢沿い。他の木に巻き付いて育つ"],["標高帯","山地"]]}],[7011,"サルナシ","🥝",[9,10],"林縁・伐採跡、里山・二次林","ミニキウイのような味。生食、ジャム、果実酒","#6d3fb5",{"w":"熟すと一気に柔らかくなる。","s":"Actinidia arguta","c":"つる性・マタタビ科 マタタビ属","i":[["植生","山地の落葉広葉樹林、谷沿い、林縁"],["標高帯","丘陵〜山地"]]}],[7012,"マタタビ","🟢",[9,10],"林縁・伐採跡、亜高山・高山","辛味と苦みがあり、果実酒や塩漬けにして食べる","#6d3fb5",{"w":"生食には向かない。","s":"Actinidia polygama","c":"つる性・マタタビ科 マタタビ属","i":[["植生","山地〜亜高山の林縁、沢沿い。夏に葉の一部が白くなる"],["標高帯","山地〜亜高山"]]}],[7013,"アケビ","🟣",[9,10],"林縁・伐採跡、里山・二次林","白い果肉は甘く、種が多い。皮は炒め物や天ぷらに","#6d3fb5",{"w":"葉は5枚。ミツバアケビは3枚。","s":"Akebia quinata","c":"つる性・アケビ科 アケビ属","i":[["植生","丘陵〜山地の林縁や藪。他の木に絡む"],["標高帯","低地〜山地"]]}],[7014,"ミツバアケビ","🟣",[9,10],"林縁・伐採跡、里山・二次林","甘い果肉。山形県などでは皮の料理が有名","#6d3fb5",{"w":"3出複葉が見分けのポイント。","s":"Akebia trifoliata","c":"つる性・アケビ科 アケビ属","i":[["植生","アケビと同様。やや寒冷な地域に多い"],["標高帯","低地〜山地"]]}],[7015,"ムベ","🟣",[10,11],"照葉樹林、林縁・伐採跡","熟しても割れず、甘い果肉。生食","#6d3fb5",{"w":"果皮は食用に向かない。","s":"Stauntonia hexaphylla","c":"つる性・アケビ科 ムベ属","i":[["植生","暖地の海岸近くの照葉樹林や林縁。常緑"],["標高帯","低地〜丘陵"]]}],[7016,"ガマズミ","🔴",[9,10,11],"里山・二次林、林縁・伐採跡","酸味が強く、霜に当たると甘くなる。果実酒、ジャム","#c2410c",{"w":"種が大きい。熟した赤い実のみ使う。","s":"Viburnum dilatatum","c":"低木・レンプクソウ科(旧スイカズラ科) ガマズミ属","i":[["植生","雑木林・里山の林縁、日当たりのよい山道"],["標高帯","低地〜山地"]]}],[7017,"ヤマボウシ","🟠",[9,10],"里山・二次林、林縁・伐採跡","柿のような甘さ。生食、ジャム","#6a9a2c",{"w":"ハナミズキの実は食用には不向き。","s":"Cornus kousa","c":"高木・小高木・ミズキ科 ミズキ属","i":[["植生","落葉広葉樹林や山地の林縁、尾根"],["標高帯","丘陵〜山地"]]}],[7018,"コケモモ","🔴",[8,9],"亜高山・高山","酸味が強く、ジャム、果実酒。ソースにも","#c2410c",{"w":"高山帯は保護区が多く採取不可の場所も。","s":"Vaccinium vitis-idaea","c":"低木・ツツジ科 スノキ属","i":[["植生","亜高山帯の針葉樹林や高山の岩場、北海道では低地の湿った場所にも。常緑"],["標高帯","亜高山〜高山"]]}],[7019,"クロマメノキ","🫐",[8,9],"亜高山・高山、湿地・河畔","ブルーベリーに似て甘酸っぱい。生食、ジャム","#c2410c",{"w":"保護区での採取は不可の場合が多い。","s":"Vaccinium uliginosum","c":"低木・ツツジ科 スノキ属","i":[["植生","高山の岩場・湿原・草原"],["標高帯","亜高山〜高山"]]}],[7020,"ナツハゼ","🫐",[9,10],"里山・二次林、林縁・伐採跡","酸味がやや強いが甘い。生食、ジャム","#c2410c",{"w":"紅葉がきれい。実は黒紫に熟す。","s":"Vaccinium oldhamii","c":"低木・ツツジ科 スノキ属","i":[["植生","アカマツ林やコナラ林の乾いた尾根、日当たりのよい林縁"],["標高帯","低地〜山地"]]}],[7021,"ハマナス","🌹",[7,8,9],"海岸","ローズヒップ状の実は酸味があり、ジャムやお茶に","#c2410c",{"w":"自生地は減少。保護地では採取不可。","s":"Rosa rugosa","c":"低木・バラ科 バラ属","i":[["植生","海岸の砂丘・砂地。冷涼な気候を好む"],["標高帯","低地〜海岸"]]}],[7022,"ハスカップ(クロミノウグイスカグラ)","🫐",[6,7],"湿地・河畔、亜高山・高山","強い酸味。ジャム、果実酒、ジュース","#c2410c",{"w":"湿原は保護区が多い。","s":"Lonicera caerulea var. emphyllocalyx","c":"低木・スイカズラ科 スイカズラ属","i":[["植生","北海道の湿原・火山灰地・高層湿原、本州北部の高山"],["標高帯","低地(北海道)〜高山"]]}],[7023,"クリ(ヤマグリ)","🌰",[9,10],"里山・二次林、林縁・伐採跡","小ぶりで甘い。ゆでる、焼く、栗ご飯","#6a9a2c",{"w":"イガが鋭い。拾うときは靴で開く。","s":"Castanea crenata","c":"高木・小高木・ブナ科 クリ属","i":[["植生","里山の二次林、雑木林、山の斜面"],["標高帯","低地〜山地"]]}],[7024,"オニグルミ","🥜",[9,10],"湿地・河畔、里山・二次林","殻が硬く、油分が多い。実を割ってそのまま、和え物に","#6a9a2c",{"w":"外側の果皮の汁でかぶれる、手が黒く染まる。","s":"Juglans mandshurica var. sachalinensis","c":"高木・小高木・クルミ科 クルミ属","i":[["植生","河畔林、沢沿い、谷間の肥沃な湿った場所"],["標高帯","低地〜山地"]]}],[7025,"スダジイ","🌰",[10,11],"照葉樹林、海岸","アクがなく、生でも食べられる。炒る、茹でる","#6a9a2c",{"w":"虫食いが多い実は避ける。","s":"Castanopsis sieboldii","c":"高木・小高木・ブナ科 シイ属","i":[["植生","暖地の照葉樹林、海岸近くの社叢林"],["標高帯","低地〜丘陵"]]}]],"d":[]};
+const KN_DATA={"p":[[11,"マツタケ","🍄",[9,10],"松林","秋の王様。土瓶蒸し・焼き松茸に。","#c8945e"],[12,"ナメコ","🍄",[10,11],"広葉樹林","ぬめりが特徴。味噌汁・鍋物に。","#d4884a"]],"d":[[201,"ツキヨタケ","🍄","有毒",["シイタケ","ヒラタケ","ムキタケ"],[],"日本で最も食中毒が多い毒きのこ。食後30分〜3時間ほどで、激しい嘔吐・下痢・腹痛を起こす。加熱や乾燥をしても毒は消えない。","傘と柄のつけ根のあたりを縦に裂くと、黒っぽいシミがある（シイタケ・ヒラタケ・ムキタケにはない）。柄に短いツバ（輪の跡）があり、ひだは淡い黄白色。暗い所でひだがほのかに光ることもあるが、発光は見分けの決め手にしないこと。","ブナ・ミズナラなど広葉樹の枯れ木・倒木","8月〜10月","シイタケ・ヒラタケ・ムキタケと同じ場所に生えることがある。1本でも混ざると危険。必ず縦に裂いて確認する。"],[202,"カエンタケ","🔥","猛毒",["ベニナギナタタケ","ホウキタケ類"],[],"触れただけで皮膚がかぶれることがある猛毒きのこ。食べると短時間で消化器症状が出て、その後に脳神経障害や多臓器不全に進み、ごく少量でも死亡例がある。","鮮やかな赤〜橙色で、指や炎のような形。表面はでこぼこしている。ベニナギナタタケはより細く繊細。少しでも似ていたら手を触れないこと。","コナラ・ミズナラなど広葉樹林の地面（枯れ木の近く）","6月〜10月","触らない・採らない・持ち帰らない。触れてしまったら石けんでよく洗い、体調に異変があればすぐ医療機関へ。"],[203,"ドクツルタケ","🍄","猛毒",["ハラタケ","シロオオハラタケ","ほかの白いきのこ"],[],"致死性の猛毒きのこ。アマトキシン類を含み、食後6〜24時間たってから嘔吐・下痢が出る。いったん回復したように見えたあと、肝臓や腎臓が壊れて死亡することがある。","全体が純白。柄に白いスカート状のツバがあり、根元はふくらんで袋状のツボに包まれている（土の中なので掘って確認する）。ひだは白いまま（ハラタケはひだがピンク〜黒褐色になる）。","針葉樹・広葉樹の林内の地面","7月〜10月","白いきのこは根元まで掘り取って確認する。症状が遅れて出るため、食べてしまったら症状がなくてもすぐ受診する。"],[204,"クサウラベニタケ","🍄","有毒",["ホンシメジ","ウラベニホテイシメジ","ハタケシメジ"],[],"シメジ類と間違えやすい毒きのこ。食後30分〜数時間で、嘔吐・下痢・腹痛などを起こす。中毒の例が多い。","成熟するとひだがピンク色になる（ホンシメジのひだは白〜クリーム色のまま）。傘は灰褐色で、柄は細長く中が空洞になりやすい（ホンシメジは柄が太くしっかり詰まっている）。","広葉樹林・雑木林の地面","8月〜10月","シメジ類は見た目だけで判断しない。確実でないものは採らない。"],[205,"ニガクリタケ","🍄","有毒",["クリタケ","ナラタケ"],[],"クリタケと間違えやすい毒きのこ。食べると嘔吐・下痢・腹痛を起こし、重症になることもある。","傘が黄色っぽく、ひだは黄〜緑がかった色。クリタケの傘はレンガ色〜赤褐色。名前のとおり強い苦味があるが、味見で確かめてはいけない。","広葉樹・針葉樹の枯れ木や切り株","春〜晩秋","切り株に群生するクリタケ類は、傘の色を必ず確認する。"],[206,"スギヒラタケ","🍄","注意",["ヒラタケ"],[],"かつては北陸・東北で食べられていたが、2004年に急性脳症の発生が相次ぎ、特に腎臓に持病のある人で重症例があった。原因は完全には分かっておらず、現在は食べないよう呼びかけられている。","スギなど針葉樹の倒木・切り株に群生する。白くて薄い扇形〜へら形の傘で、柄はほとんどなく、ひだが細かく密に並ぶ。","スギなど針葉樹の枯れ木","9月〜11月","食べる習慣があっても採らない・食べない・人にあげない。特に腎臓に持病のある人は絶対に避ける。"]]};
+const CFGS={F:{data:FR_DATA,pre:"fn_fr_",dl:"毒草",nm:"果実"},K:{data:KN_DATA,pre:"fn_kn_",dl:"毒きのこ",nm:"きのこ"}};
+function initSansai(root,cfg){
+  const CF=cfg||{data:SN_DATA,pre:"fn_sn_",dl:"毒草",nm:"山菜"};
+  const $=id=>root.querySelector("#"+id);
+  let cu=ld(CF.pre+"custom",[]),P=[];
+  const buildP=()=>{P=CF.data.p.map(a=>({id:a[0],n:a[1],e:a[2],m:a[3],r:a[4],d:a[5],c:a[6],x:a[7]||{}})).concat(cu.map(c=>({id:c.id,n:c.n,e:c.e||"🌿",m:c.m||[],r:c.r||"",d:c.d||"",c:c.c||"#9bb88a",x:{},cu:1}))).sort((a,b)=>a.n.localeCompare(b.n,"ja"))};buildP();
+  const D=CF.data.d.map(a=>({id:a[0],n:a[1],e:a[2],lv:a[3],sim:a[4],sid:a[5],d:a[6],h:a[7],r:a[8],s:a[9],w:a[10]}));
+  let tab=0,open=null,dop=false,sel=[],gps=null,ask=null,bk=false,spots=ld(CF.pre+"spots",[]),harv=ld(CF.pre+"harv",[]);
   const mo=new Date().getMonth()+1,pn=id=>(P.find(p=>p.id===id)||{n:"?"}).n.replace(/（.*/,"");
   const mt=m=>m.length>1?`${m[0]}〜${m[m.length-1]}月`:`${m[0]}月`;
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  const addForm=()=>`<div class="pp" style="margin-top:22px"><h3>図鑑に追加</h3><input class="sn-in" id="zk-n" placeholder="名前" maxlength="20"><div class="sn-g"><input class="sn-in" id="zk-e" placeholder="絵文字（任意）" maxlength="4"><input class="sn-in" id="zk-r" placeholder="場所（例：林縁）" maxlength="20"></div><div class="sn-g"><select class="sn-in" id="zk-a">${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}月から</option>`).join("")}</select><select class="sn-in" id="zk-b">${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}月まで</option>`).join("")}</select></div><input class="sn-in" id="zk-d" placeholder="メモ（食べ方・特徴など）" maxlength="100"><button class="sn-btn" id="zk-add">図鑑に追加する</button></div>`;
   const zukan=()=>P.map(p=>{
-    const dg=D.filter(x=>x.sid.includes(p.id));
-    return `<div class="sn-card" data-o="${p.id}"><span class="sn-e" style="background:${p.c}">${p.e}</span><div><b>${esc(p.n)}</b>${p.m.includes(mo)?'<i class="sn-now">旬</i>':""}<small>${mt(p.m)}・${esc(p.r)}</small></div></div>`+(open===p.id?`<div class="sn-det">${esc(p.d)}${dg.length?`<div class="sn-warn">⚠ 似ている毒草：${dg.map(x=>esc(x.n)).join("、")}。見分け方は下の「毒草に注意」で確認できます。</div>`:""}</div>`:"");
-  }).join("")+`<button class="sn-btn sn-red" data-dg="1">⚠ 毒草に注意（${D.length}種）${dop?"を閉じる":"を見る"}</button>`+(dop?D.map(x=>`<div class="sn-dg"><b>${x.e} ${esc(x.n)}</b><i class="sn-lv${x.lv==="猛毒"?" hi":""}">${esc(x.lv)}</i><p>${esc(x.d)}</p><p><u>見分け方</u>　${esc(x.h)}</p><p>似ている山菜：${x.sim.map(esc).join("、")}／時期：${esc(x.s)}</p><p>${esc(x.w)}</p></div>`).join(""):"");
+    const dg=D.filter(x=>x.sid.includes(p.id)),x=p.x||{};
+    return `<div class="sn-card" data-o="${p.id}"><span class="sn-e" style="background:${p.c}">${p.e}</span><div><b>${esc(p.n)}</b>${p.m.includes(mo)?'<i class="sn-now">旬</i>':""}<small>${p.m.length?mt(p.m):""}${p.r?"・"+esc(p.r):""}</small></div></div>`+(open===p.id?`<div class="sn-det">${esc(p.d)}${x.s?`<br><small>学名：${esc(x.s)}${x.c?"（"+esc(x.c)+"）":""}</small>`:""}${(x.i||[]).map(r=>`<br><small>${esc(r[0])}：${esc(r[1])}</small>`).join("")}${x.w?`<div class="sn-warn">⚠ ${esc(x.w)}</div>`:""}${dg.length?`<div class="sn-warn">⚠ 似ている${CF.dl}：${dg.map(y=>esc(y.n)).join("、")}。見分け方は下の「${CF.dl}に注意」で確認できます。</div>`:""}${p.cu?`<br><button class="sn-del${ask==="c"+p.id?" ask":""}" data-dcu="${p.id}">${ask==="c"+p.id?"本当に削除":"この項目を削除"}</button>`:""}</div>`:"");
+  }).join("")+(D.length?`<button class="sn-btn sn-red" data-dg="1">⚠ ${CF.dl}に注意（${D.length}種）${dop?"を閉じる":"を見る"}</button>`+(dop?D.map(x=>`<div class="sn-dg"><b>${x.e} ${esc(x.n)}</b><i class="sn-lv${x.lv==="猛毒"?" hi":""}">${esc(x.lv)}</i><p>${esc(x.d)}</p><p><u>見分け方</u>　${esc(x.h)}</p><p>似ている${CF.nm}：${x.sim.map(esc).join("、")}／時期：${esc(x.s)}</p><p>${esc(x.w)}</p></div>`).join(""):""):"")+addForm();
   const cal=()=>{
     const rows=[...P].sort((a,b)=>a.m[0]-b.m[0]||a.n.localeCompare(b.n,"ja")),mm=Array.from({length:12},(_,i)=>i+1);
     return `<div class="sn-cal"><span></span>${mm.map(i=>`<span class="h${i===mo?" now":""}">${i}</span>`).join("")}${rows.map(p=>`<span class="nm">${esc(p.n.replace(/（.*/,""))}</span>`+mm.map(i=>p.m.includes(i)?`<i class="on" style="background:${p.c}"></i>`:"<i></i>").join("")).join("")}</div><p class="sn-note">今月（${mo}月）が旬：${rows.filter(p=>p.m.includes(mo)).map(p=>esc(pn(p.id))).join("、")||"なし"}</p>`;
@@ -387,39 +405,114 @@ function initSansai(root){
   const harvV=()=>{
     const st={};harv.forEach(h=>{const o=st[h.p]||(st[h.p]={n:0,g:0});o.n++;if(h.u==="g")o.g+=h.a;if(h.u==="kg")o.g+=h.a*1000});
     const sm=Object.keys(st).map(k=>{const o=st[k];return `<span class="sn-tag">${esc(pn(+k))} ${o.n}回${o.g?"・"+(o.g>=1000?(o.g/1000).toFixed(1)+"kg":Math.round(o.g)+"g"):""}</span>`}).join("");
-    return `<div class="sn-g"><input class="sn-in" type="date" id="sn-hd" value="${today()}"><select class="sn-in" id="sn-hp">${P.map(p=>`<option value="${p.id}">${esc(pn(p.id))}</option>`).join("")}</select></div><select class="sn-in" id="sn-hs"><option value="">スポット（任意）</option>${spots.map(s=>`<option value="${esc(s.n)}">${esc(s.n)}</option>`).join("")}</select><div class="sn-g"><input class="sn-in" type="number" inputmode="decimal" id="sn-ha" placeholder="量"><select class="sn-in" id="sn-hu"><option>g</option><option>kg</option><option>本</option><option>束</option><option>個</option></select></div><input class="sn-in" id="sn-hm" placeholder="メモ" maxlength="80"><button class="sn-btn" id="sn-hadd">記録を追加</button>`
+    return `<div class="sn-g"><input class="sn-in" type="date" id="sn-hd" value="${today()}"><select class="sn-in" id="sn-hp">${P.map(p=>`<option value="${p.id}">${esc(pn(p.id))}</option>`).join("")}</select></div><select class="sn-in" id="sn-hs"><option value="">スポット（任意）</option>${spots.map(s=>`<option value="${esc(s.n)}">${esc(s.n)}</option>`).join("")}</select><div class="sn-g"><input class="sn-in" type="number" inputmode="decimal" id="sn-ha" placeholder="量"><select class="sn-in" id="sn-hu"><option>g</option><option>kg</option><option>本</option><option>束</option><option>個</option></select></div><input class="sn-in" id="sn-hm" placeholder="メモ" maxlength="80"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="sn-hg" style="width:20px;height:20px">現在地も記録する（収穫マップに表示）</label><button class="sn-btn" id="sn-hadd">記録を追加</button>`
     +(sm?`<p class="sn-note" style="margin-top:14px">これまでの収穫</p><div>${sm}</div>`:"")
-    +harv.map((h,i)=>({h,i})).sort((a,b)=>b.h.d.localeCompare(a.h.d)).map(({h,i})=>`<div class="sn-row"><b>${esc(h.d)}</b>　${esc(pn(h.p))}${h.a?"　"+h.a+esc(h.u):""}${h.s?"<br>📍 "+esc(h.s):""}${h.m?"<br>"+esc(h.m):""}<br><button class="sn-del${ask==="h"+i?" ask":""}" data-dh="${i}">${ask==="h"+i?"本当に削除":"削除"}</button></div>`).join("")
+    +harv.map((h,i)=>({h,i})).sort((a,b)=>b.h.d.localeCompare(a.h.d)).map(({h,i})=>`<div class="sn-row"><b>${esc(h.d)}</b>　${esc(pn(h.p))}${h.a?"　"+h.a+esc(h.u):""}${h.s?"<br>📍 "+esc(h.s):""}${h.m?"<br>"+esc(h.m):""}${h.la!=null?`<br><a class="sn-note" href="https://www.google.com/maps?q=${h.la},${h.lo}" target="_blank" rel="noopener">地図で開く</a><br><button class="sn-del" data-xsh="${i}">${h.sh?"エリア共有中（やめる）":"おおよそのエリアを共有"}</button>`:""}<br><button class="sn-del${ask==="h"+i?" ask":""}" data-dh="${i}">${ask==="h"+i?"本当に削除":"削除"}</button></div>`).join("")
     +`<button class="sn-btn sn-ghost" id="sn-bkt" style="margin-top:16px">バックアップ／復元</button>`
     +(bk?`<p class="sn-note">下の文字をコピーして保管してください。復元するときは、貼り付けてから「復元」を押します。</p><textarea class="sn-in" id="sn-bk" rows="5">${esc(JSON.stringify({spots,harv}))}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" id="sn-bkc">コピー</button><button class="sn-btn" id="sn-bkr">復元</button></div>`:"");
   };
-  const render=()=>{
-    root.innerHTML=`<div class="sn-tabs">${["図鑑","旬の暦","スポット","収穫"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV][tab]();
+  /* ---- 採取まわり ---- */
+  const R2=Math.PI/180,f2=n=>String(n).padStart(2,"0");
+  const CL={"道具":["山菜ナイフ・鎌","収穫袋・コンテナ","軍手","火ばさみ","笛"],"服装":["長袖・長ズボン","長靴・登山靴","帽子","虫よけ","雨具","着替え"],"持ち物":["地図・スマホ・予備電池","水・行動食","熊鈴","救急セット","緊急連絡先のメモ","図鑑（このアプリ）"]};
+  let xck=ld(CF.pre+"ck",{}),xcl="道具",xyr=new Date().getFullYear(),xask=null,xpt=null,xtm=null,xmsg="",xbl=ld(CF.pre+"blog",[]),xrc=ld(CF.pre+"rc",[]),xmm=ld(CF.pre+"mm",[]),xpp=ld(CF.pre+"pt",[]),xpl=ld(CF.pre+"ptl",[]);
+  let lb=document.getElementById("lbox");if(!lb){lb=document.createElement("div");lb.id="lbox";lb.hidden=true;lb.innerHTML='<img alt="">';lb.onclick=()=>{lb.hidden=true};document.body.appendChild(lb)}
+  const saveQ=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+  const shrink=(file,cb)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.6))};im.onerror=()=>cb("");im.src=r.result};r.readAsDataURL(file)};
+  const dist2=(a,b)=>{const dl=(b[0]-a[0])*R2,dn=(b[1]-a[1])*R2,x=Math.sin(dl/2)**2+Math.cos(a[0]*R2)*Math.cos(b[0]*R2)*Math.sin(dn/2)**2;return 12742000*Math.asin(Math.sqrt(x))};
+  const pathSvg=pts=>{if(!pts||pts.length<2)return "";const la=pts.map(p=>p[0]),lo=pts.map(p=>p[1]),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo),k=Math.cos((a0+a1)/2*R2),S=Math.max((o1-o0)*k,a1-a0,1e-4);return `<svg viewBox="0 0 300 120" style="width:100%;height:100px;background:rgba(0,0,0,.04);border-radius:8px"><polyline fill="none" stroke="#3b7ca3" stroke-width="2" points="${pts.map(p=>(150+((p[1]-(o0+o1)/2)*k)/S*100).toFixed(1)+","+(60-(p[0]-(a0+a1)/2)/S*100).toFixed(1)).join(" ")}"/></svg>`};
+  const mapV=()=>{
+    const pts=harv.filter(h=>h.la!=null);
+    if(!pts.length)return '<p class="sn-note">「収穫」で「現在地も記録する」にチェックを入れて記録すると、ここに表示されます。</p>';
+    const la=pts.map(h=>h.la),lo=pts.map(h=>h.lo),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo),k=Math.cos((a0+a1)/2*R2),S=Math.max((o1-o0)*k,a1-a0,0.004);
+    const X=h=>150+((h.lo-(o0+o1)/2)*k)/S*240,Y=h=>120-(h.la-(a0+a1)/2)/S*200;
+    return `<div class="ic"><h4>収穫マップ（${pts.length}か所）</h4><svg viewBox="0 0 300 240" style="width:100%;background:rgba(0,0,0,.04);border-radius:10px"><g stroke="rgba(0,0,0,.08)">${[60,120,180].map(v=>`<line x1="0" x2="300" y1="${v}" y2="${v}"/><line y1="0" y2="240" x1="${v+30}" x2="${v+30}"/>`).join("")}</g>${pts.map(h=>{const p=P.find(q=>q.id===h.p)||{n:"?",c:"#4f8446"};return `<circle cx="${X(h).toFixed(1)}" cy="${Y(h).toFixed(1)}" r="7" fill="${p.c}" stroke="#2b3526" stroke-width="1.2" opacity=".9"/><text x="${(X(h)+9).toFixed(1)}" y="${(Y(h)+4).toFixed(1)}" font-size="10" fill="#2b3526">${esc(p.n.replace(/（.*/,"").slice(0,4))}</text>`}).join("")}</svg><div class="sn-note">表示範囲 約${(S*111.32).toFixed(1)}km四方。上が北です。</div></div>`+pts.map(h=>`<div class="sn-row"><b>${esc(h.d)}</b>　${esc(pn(h.p))}　<a class="sn-note" href="https://www.google.com/maps?q=${h.la},${h.lo}" target="_blank" rel="noopener">地図で開く</a></div>`).join("");
   };
+  const sumV=()=>{
+    const ys=[...new Set(harv.map(h=>(h.d||"").slice(0,4)).concat(String(xyr)))].filter(Boolean).sort().reverse(),H=harv.filter(h=>(h.d||"").startsWith(String(xyr)));
+    const sp={},m12=Array(12).fill(0),so={};
+    H.forEach(h=>{const o=sp[h.p]||(sp[h.p]={n:0,g:0});o.n++;if(h.u==="g")o.g+=h.a;if(h.u==="kg")o.g+=h.a*1000;m12[(+h.d.slice(5,7)||1)-1]++;if(h.s)so[h.s]=(so[h.s]||0)+1});
+    const mx=Math.max(1,...m12),wt=g=>g>=1000?(g/1000).toFixed(1)+"kg":Math.round(g)+"g";
+    return `<select class="sn-in" data-xyr="1">${ys.map(y=>`<option${y==xyr?" selected":""}>${y}</option>`).join("")}</select><div class="ir"><div class="ic"><div class="sn-note">採った日</div><div class="ib">${new Set(H.map(h=>h.d)).size}日</div></div><div class="ic"><div class="sn-note">記録</div><div class="ib">${H.length}回</div></div><div class="ic"><div class="sn-note">種類</div><div class="ib">${Object.keys(sp).length}</div></div></div><div class="ic"><h4>月ごとの回数</h4><div style="display:flex;gap:3px;align-items:flex-end;height:74px">${m12.map((n,i)=>`<div style="flex:1;text-align:center;font-size:10px"><div style="height:${n/mx*50}px;background:var(--acc);border-radius:3px 3px 0 0"></div>${i+1}</div>`).join("")}</div></div><div class="ic"><h4>種類ごと</h4>${Object.keys(sp).sort((a,b)=>sp[b].n-sp[a].n).map(k=>`<div class="sn-note">${esc(pn(+k))}　${sp[k].n}回${sp[k].g?"・"+wt(sp[k].g):""}</div>`).join("")||'<p class="sn-note">この年の記録はありません。</p>'}</div>${Object.keys(so).length?`<div class="ic"><h4>よく行ったスポット</h4>${Object.keys(so).sort((a,b)=>so[b]-so[a]).slice(0,5).map(k=>`<div class="sn-note">${esc(k)}　${so[k]}回</div>`).join("")}</div>`:""}`;
+  };
+  const delB=(k,i)=>`<button class="sn-del${xask===k+i?" ask":""}" data-xd="${k}${i}">${xask===k+i?"本当に削除":"削除"}</button>`;
+  const ckV=()=>`<div class="sn-chips">${Object.keys(CL).map(k=>`<button class="sn-chip${xcl===k?" on":""}" data-xcl="${k}">${k}</button>`).join("")}</div>`+CL[xcl].map(it=>`<label class="sn-row" style="display:flex;gap:10px;align-items:center"><input type="checkbox" data-xck="${esc(it)}"${(xck[xcl]||{})[it]?" checked":""} style="width:20px;height:20px">${esc(it)}</label>`).join("")+'<button class="sn-btn sn-ghost" data-xckr="1" style="margin-top:12px">チェックをすべて外す</button><p class="sn-note">基本の目安です。足りないものは、メモに書き足してください。</p>';
+  const rcV=()=>`<input class="sn-in" id="rc-n" placeholder="料理名" maxlength="30"><select class="sn-in" id="rc-p"><option value="">素材（任意）</option>${P.map(p=>`<option value="${p.id}">${esc(pn(p.id))}</option>`).join("")}</select><textarea class="sn-in" id="rc-t" rows="2" placeholder="下処理（あく抜きなど）"></textarea><textarea class="sn-in" id="rc-c" rows="3" placeholder="作り方"></textarea><textarea class="sn-in" id="rc-k" rows="2" placeholder="保存のしかた（冷凍・塩漬け・乾燥など）"></textarea><button class="sn-btn" id="rc-add">レシピを追加</button>`+xrc.map((r,i)=>`<div class="sn-row"><b>${esc(r.n)}</b>${r.p?"　<small>"+esc(pn(+r.p))+"</small>":""}${r.t?"<br>下処理："+esc(r.t):""}${r.c?"<br>作り方："+esc(r.c):""}${r.k?"<br>保存："+esc(r.k):""}<br>${delB("r",i)}</div>`).join("");
+  const blV=()=>`<input class="sn-in" id="bl-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="bl-x" rows="4" placeholder="今日の採取の様子" maxlength="600"></textarea><input type="file" id="bl-f" accept="image/*" class="sn-in"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="bl-sh" style="width:20px;height:20px">みんなに共有する（文章のみ。写真は送りません）</label><button class="sn-btn" id="bl-add">投稿する</button><p class="sn-note">${esc(xmsg)}写真は小さくして、この端末に保存します。</p>`+xbl.map((b,i)=>`<div class="sn-row"><b>${esc(b.t)}</b>　<small>${esc(b.d)}</small>${b.x?"<br>"+esc(b.x):""}${b.img?`<br><img src="${b.img}" data-xim="${i}" alt="" style="max-width:100%;border-radius:8px;margin-top:6px">`:""}<br><button class="sn-del" data-xsb="${i}">${b.sh?"共有中（やめる）":"共有する"}</button> ${delB("b",i)}</div>`).join("");
+  const mmV=()=>`<textarea class="sn-in" id="mm-x" rows="3" placeholder="メモ（場所・気づきなど）" maxlength="400"></textarea><button class="sn-btn" id="mm-add">メモを追加</button>`+xmm.map((m,i)=>`<div class="sn-row"><small>${esc(m.d)}</small><br>${esc(m.x)}<br>${delB("m",i)}</div>`).join("");
+  const ptV=()=>{const t=today();return `<div class="ic"><h4>巡回予定</h4><div class="sn-g"><input class="sn-in" type="date" id="pp-d" value="${t}"><input class="sn-in" type="time" id="pp-h"></div><input class="sn-in" id="pp-p" placeholder="場所" maxlength="30"><input class="sn-in" id="pp-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="pp-add">予定を追加</button>${xpp.map((p,i)=>({p,i})).sort((a,b)=>(a.p.d+(a.p.h||"")).localeCompare(b.p.d+(b.p.h||""))).map(({p,i})=>`<div class="sn-row" style="${p.d<t?"opacity:.5":""}"><b>${esc(p.d)}</b> ${esc(p.h||"")}　${esc(p.p||"")}${p.m?"<br>"+esc(p.m):""}<br>${delB("p",i)}</div>`).join("")}</div><div class="ic"><h4>GPS巡回の記録</h4>${xpt?'<div class="ib" id="pt-live"></div><button class="sn-btn sn-red" data-xgo="stop">巡回を終える</button>':'<button class="sn-btn" data-xgo="start">巡回を始める</button>'}<p class="sn-note">開始中は、画面を開いたままにしてください。</p>${xpl.map((l,i)=>`<div class="sn-row"><b>${esc(l.d)}</b>　${(l.dist/1000).toFixed(2)} km　${l.min}分${pathSvg(l.pts)}${delB("l",i)}</div>`).join("")}</div>`};
+  const live=()=>{const el=root.querySelector("#pt-live");if(el&&xpt){const m=Math.floor((Date.now()-xpt.s)/1000);el.textContent=`${(xpt.dist/1000).toFixed(2)} km　${f2(Math.floor(m/60))}:${f2(m%60)}`}};
+  const shV=()=>{
+    const PG=CF.pre.slice(3,5),A=allSh().filter(x=>x.k==="ar"&&x.pg===PG),B=allSh().filter(x=>x.k==="bl"&&x.pg===PG).sort((a,b)=>String(b.d).localeCompare(String(a.d))),cells={};
+    A.forEach(x=>{const la=Math.round(+x.la*10)/10,lo=Math.round(+x.lo*10)/10;if(isNaN(la)||isNaN(lo))return;const k=la+","+lo;(cells[k]=cells[k]||{la,lo,l:[]}).l.push(x)});
+    const cs=Object.values(cells);let map='<p class="sn-note">まだ共有されたエリアがありません。収穫の記録（現在地つき）で「おおよそのエリアを共有」を押すと、約10km四方にぼかした位置で共有できます。</p>';
+    if(cs.length){const la=cs.map(c=>c.la),lo=cs.map(c=>c.lo),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo),k=Math.cos((a0+a1)/2*R2),S=Math.max((o1-o0)*k+0.2,a1-a0+0.2,0.4),X=c=>150+((c.lo-(o0+o1)/2)*k)/S*250,Y=c=>120-(c.la-(a0+a1)/2)/S*250,r=Math.max(12,0.05*250/S);
+      map=`<svg viewBox="0 0 300 240" style="width:100%;background:rgba(0,0,0,.04);border-radius:10px">${cs.map(c=>`<circle cx="${X(c).toFixed(1)}" cy="${Y(c).toFixed(1)}" r="${r.toFixed(1)}" fill="#4f8446" opacity=".35"/><text x="${X(c).toFixed(1)}" y="${(Y(c)+4).toFixed(1)}" font-size="12" text-anchor="middle" fill="#2b3526">${c.l.length}</text>`).join("")}</svg><div class="sn-note">約10km四方にぼかした位置です。上が北です。</div>`+cs.map(c=>`<div class="sn-row"><b>北緯${c.la.toFixed(1)}° 東経${c.lo.toFixed(1)}° 付近</b><br>${[...new Set(c.l.map(x=>esc(String(x.p))+"（"+(+x.mo||"?")+"月）"))].join("、")}</div>`).join("")}
+    return `<button class="sn-btn sn-ghost" data-rf2="1">最新を受け取る</button><p class="sn-note" id="sh-m"></p><div class="ic"><h4>みんなの採取エリア</h4>${map}</div><div class="ic"><h4>みんなのブログ</h4>${B.map(x=>`<div class="sn-row"><b>${esc(String(x.t))}</b>　<small>${esc(String(x.d))}</small>${x.x?"<br>"+esc(String(x.x)):""}<br><small class="sn-note">投稿：${esc(String(x.from||"?"))}</small></div>`).join("")||'<p class="sn-note">まだありません。</p>'}</div>`;
+  };
+  const TABS=["図鑑","旬の暦","スポット","収穫","収穫マップ","まとめ","持ち物","レシピ","ブログ","パトロール","メモ","みんな"];
+  const render=()=>{
+    root.innerHTML=`<div class="sn-tabs">${TABS.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV,mapV,sumV,ckV,rcV,blV,ptV,mmV,shV][tab]();
+    const bar=root.querySelector(".sn-tabs"),on=bar.querySelector(".on");if(on)bar.scrollLeft=on.offsetLeft-bar.clientWidth/2+on.clientWidth/2;live();
+  };
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button,img[data-xim]");if(!b)return;const d=b.dataset,g=id=>$(id).value.trim();
+    if(d.t!==undefined)xask=null;
+    else if(d.xsh!==undefined){const h=harv[+d.xsh];h.sh=h.sh?0:1;if(!h.id)h.id=newId();sv(CF.pre+"harv",harv);render()}
+    else if(d.xsb!==undefined){const x=xbl[+d.xsb];x.sh=x.sh?0:1;if(!x.id)x.id=newId();saveQ(CF.pre+"blog",xbl);render()}
+    else if(d.rf2){fetchShared().then(n=>{render();const m=$("sh-m");if(m)m.textContent=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました。"})}
+    else if(d.xim!==undefined){lb.querySelector("img").src=xbl[+d.xim].img;lb.hidden=false}
+    else if(d.xcl){xcl=d.xcl;render()}
+    else if(d.xckr){xck[xcl]={};sv(CF.pre+"ck",xck);render()}
+    else if(d.xd){const k=d.xd[0],i=+d.xd.slice(1),M={r:[xrc,"rc"],b:[xbl,"blog"],m:[xmm,"mm"],p:[xpp,"pt"],l:[xpl,"ptl"]}[k];if(xask===d.xd){M[0].splice(i,1);sv(CF.pre+M[1],M[0]);xask=null}else xask=d.xd;render()}
+    else if(d.xgo==="start"){
+      if(!navigator.geolocation){xmsg="この端末では位置情報を使えません。";return}
+      xpt={s:Date.now(),pts:[],dist:0};
+      xpt.w=navigator.geolocation.watchPosition(p=>{const c=[+p.coords.latitude.toFixed(5),+p.coords.longitude.toFixed(5)],l=xpt&&xpt.pts[xpt.pts.length-1];if(!xpt)return;if(!l||dist2(l,c)>8){if(l)xpt.dist+=dist2(l,c);xpt.pts.push(c)}},()=>{},{enableHighAccuracy:true});
+      xtm=setInterval(live,1000);render();
+    }else if(d.xgo==="stop"){
+      navigator.geolocation.clearWatch(xpt.w);clearInterval(xtm);
+      if(xpt.pts.length>=2){let q=xpt.pts;while(q.length>150)q=q.filter((_,i)=>i%2===0);xpl.unshift({d:today(),dist:xpt.dist,min:Math.max(1,Math.round((Date.now()-xpt.s)/60000)),pts:q});sv(CF.pre+"ptl",xpl)}
+      xpt=null;render();
+    }
+    else if(b.id==="bl-add"){
+      const t=g("bl-t"),x=g("bl-x");if(!t&&!x){$("bl-t").focus();return}
+      const f=$("bl-f").files[0],post=img=>{const rec={t:t||"無題",x,d:today(),img:img||"",id:newId(),sh:$("bl-sh").checked?1:0};xbl.unshift(rec);if(saveQ(CF.pre+"blog",xbl))xmsg="";else{xbl.shift();xmsg="保存できませんでした。写真を減らすか、古い記事を消してください。"}render()};
+      if(f)shrink(f,post);else post("");
+    }else if(b.id==="rc-add"){const n=g("rc-n");if(!n){$("rc-n").focus();return}xrc.unshift({n,p:$("rc-p").value,t:g("rc-t"),c:g("rc-c"),k:g("rc-k")});sv(CF.pre+"rc",xrc);render()}
+    else if(b.id==="mm-add"){const x=g("mm-x");if(!x){$("mm-x").focus();return}xmm.unshift({d:today(),x});sv(CF.pre+"mm",xmm);render()}
+    else if(b.id==="pp-add"){const dd=$("pp-d").value;if(!dd)return;xpp.push({d:dd,h:$("pp-h").value,p:g("pp-p"),m:g("pp-m")});sv(CF.pre+"pt",xpp);render()}
+  });
+  root.addEventListener("change",e=>{const t=e.target;if(t.dataset.xck!==undefined){(xck[xcl]=xck[xcl]||{})[t.dataset.xck]=t.checked;sv(CF.pre+"ck",xck)}else if(t.dataset.xyr!==undefined){xyr=+t.value;render()}});
   root.addEventListener("click",e=>{
     const b=e.target.closest("button,.sn-card");if(!b)return;const d=b.dataset;
     if(d.t!==undefined){tab=+d.t;ask=null;render();return}
+    if(d.dcu!==undefined){const k="c"+d.dcu;if(ask===k){cu=cu.filter(c=>c.id!==+d.dcu);sv(CF.pre+"custom",cu);buildP();open=null;ask=null}else ask=k;render();return}
     if(d.o!==undefined){open=open===+d.o?null:+d.o;render();return}
     if(d.dg){dop=!dop;render();return}
     if(d.c){const i=+d.c,k=sel.indexOf(i);k<0?sel.push(i):sel.splice(k,1);b.classList.toggle("on");return}
     if(d.ds!==undefined||d.dh!==undefined){
       const sp=d.ds!==undefined,key=(sp?"s":"h")+(sp?d.ds:d.dh);
-      if(ask===key){if(sp){spots.splice(+d.ds,1);sv("fn_sn_spots",spots)}else{harv.splice(+d.dh,1);sv("fn_sn_harv",harv)}ask=null}else ask=key;
+      if(ask===key){if(sp){spots.splice(+d.ds,1);sv(CF.pre+"spots",spots)}else{harv.splice(+d.dh,1);sv(CF.pre+"harv",harv)}ask=null}else ask=key;
       render();return}
     const g=id=>$(id).value.trim();
     if(b.id==="sn-gps"){
       if(!navigator.geolocation){$("sn-gm").textContent="この端末では現在地を取得できません";return}
       navigator.geolocation.getCurrentPosition(p=>{gps={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5)};$("sn-gm").textContent="現在地を取得しました（追加すると保存されます）"},()=>{$("sn-gm").textContent="現在地を取得できませんでした。位置情報の許可を確認してください"},{enableHighAccuracy:true,timeout:10000});
+    }else if(b.id==="zk-add"){
+      const n=g("zk-n");if(!n){$("zk-n").focus();return}
+      const a=+$("zk-a").value,bb=+$("zk-b").value,m=[];let i=a;for(let c=0;c<12;c++){m.push(i);if(i===bb)break;i=i%12+1}
+      cu.push({id:Date.now(),n,e:g("zk-e")||"🌿",m,r:g("zk-r"),d:g("zk-d")});sv(CF.pre+"custom",cu);buildP();render();
     }else if(b.id==="sn-add"){
       const n=g("sn-sn");if(!n){$("sn-sn").focus();return}
-      spots.unshift({n,a:g("sn-sa"),m:g("sn-sm"),s:sel.slice(),la:gps?gps.la:null,lo:gps?gps.lo:null});sv("fn_sn_spots",spots);sel=[];gps=null;render();
+      spots.unshift({n,a:g("sn-sa"),m:g("sn-sm"),s:sel.slice(),la:gps?gps.la:null,lo:gps?gps.lo:null});sv(CF.pre+"spots",spots);sel=[];gps=null;render();
     }else if(b.id==="sn-hadd"){
-      const a=parseFloat($("sn-ha").value);
-      harv.push({d:$("sn-hd").value||today(),p:+$("sn-hp").value,s:$("sn-hs").value,a:isNaN(a)?0:a,u:$("sn-hu").value,m:g("sn-hm")});sv("fn_sn_harv",harv);render();
+      const a=parseFloat($("sn-ha").value),rec={id:newId(),d:$("sn-hd").value||today(),p:+$("sn-hp").value,s:$("sn-hs").value,a:isNaN(a)?0:a,u:$("sn-hu").value,m:g("sn-hm")};
+      const fin=()=>{harv.push(rec);sv(CF.pre+"harv",harv);render()};
+      if($("sn-hg").checked&&navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{rec.la=+p.coords.latitude.toFixed(5);rec.lo=+p.coords.longitude.toFixed(5);fin()},fin,{enableHighAccuracy:true,timeout:10000});else fin();
     }else if(b.id==="sn-bkt"){bk=!bk;render()
     }else if(b.id==="sn-bkc"){const t=$("sn-bk");t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}
     }else if(b.id==="sn-bkr"){
-      try{const o=JSON.parse($("sn-bk").value);if(Array.isArray(o.spots)&&Array.isArray(o.harv)){spots=o.spots;harv=o.harv;sv("fn_sn_spots",spots);sv("fn_sn_harv",harv);bk=false;render()}}catch(x){}
+      try{const o=JSON.parse($("sn-bk").value);if(Array.isArray(o.spots)&&Array.isArray(o.harv)){spots=o.spots;harv=o.harv;sv(CF.pre+"spots",spots);sv(CF.pre+"harv",harv);bk=false;render()}}catch(x){}
     }
   });
   render();
@@ -545,26 +638,61 @@ function wrapPg(s,id,label){
   d.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!b.dataset.s)return;const k=b.dataset.s;
     if(k==="sub"){const nm=$("sh-nm").value.trim()||"名無し";sv("fn_myname",nm);const items=[];
       [["tz","fn_tz_log"],["os","fn_os_log"],["oi","fn_os_info"]].forEach(([t,key])=>ld(key,[]).forEach(x=>{if(x.sh&&x.id)items.push(Object.assign({k:t},x))}));
+      [["sn","fn_sn_"],["fr","fn_fr_"],["kn","fn_kn_"]].forEach(([pg,pre])=>{ld(pre+"blog",[]).forEach(x=>{if(x.sh&&x.id)items.push({k:"bl",pg,id:x.id,t:x.t,x:x.x,d:x.d})});ld(pre+"harv",[]).forEach(x=>{if(x.sh&&x.id&&x.la!=null)items.push({k:"ar",pg,id:x.id,p:spName(pg,x.p),mo:+String(x.d).slice(5,7)||0,la:Math.round(x.la*10)/10,lo:Math.round(x.lo*10)/10,d:String(x.d).slice(0,7)})})});
       out=items.length?JSON.stringify({t:"fn-share",v:1,from:nm,items}):"-";draw()}
     else if(k==="cp")cp("sh-out");
     else if(k==="send"){const t=$("sh-out").value;if(navigator.share)navigator.share({text:t}).catch(()=>{});else cp("sh-out")}
     else if(k==="imp"){let o=null;try{o=JSON.parse($("sh-in").value.trim())}catch(x){}
       if(!o||o.t!=="fn-share"||!Array.isArray(o.items)){inMsg="取り込める形式ではありません。";draw();return}
-      const p=pool();let n=0;o.items.forEach(x=>{if(x&&x.id&&["tz","os","oi"].includes(x.k)){const r=Object.assign({},x,{from:String(o.from||"?")});delete r.sh;p[r.from+":"+x.id]=r;n++}});
+      const p=pool();let n=0;o.items.forEach(x=>{if(x&&x.id&&["tz","os","oi","ar","bl"].includes(x.k)){const r=Object.assign({},x,{from:String(o.from||"?")});delete r.sh;if(r.k==="ar"){r.la=Math.round(+r.la*10)/10;r.lo=Math.round(+r.lo*10)/10}p[r.from+":"+x.id]=r;n++}});
       sv("fn_pool",p);inMsg=n+"件を取り込みました。";draw()}
     else if(k==="pub"){pubOut=JSON.stringify({v:1,updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool())});draw()}
     else if(k==="cp2")cp("sh-pub");
-    else if(k==="clr"){if(clr){sv("fn_pool",{});clr=false;inMsg="";pubOut=""}else clr=true;draw()}
+    else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>v.from==="管理者")));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
     else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
   });
   $("ppanel").appendChild(d);
-  fetchShared();
+  fetchShared().then(()=>checkNotices());
+})();
+(function(){
+  const d=document.createElement("div");d.className="pp";
+  d.innerHTML='<h3>山菜手帳の図鑑を取り込む</h3><p class="sn-note">山菜手帳のバックアップファイルを選ぶと、図鑑を「山菜採り」「果実と樹の実」「きのこ」に振り分けて取り込みます。</p><input type="file" id="imp-f" accept=".json,.txt,application/json"><p class="sn-note" id="imp-m"></p>';
+  const MR=/(茸|きのこ|キノコ|シメジ|ナメコ|マツタケ|マイタケ|シイタケ|ヒラタケ|ナラタケ|ムキタケ|クリタケ|ハツタケ|エノキタケ|ナメタケ|ショウゲンジ|チチタケ|アミタケ|タモギタケ|カノシタ|コウタケ|ホウキタケ|キクラゲ)/;
+  const FRR=/(アケビ|ムベ|ヤマブドウ|山ブドウ|サルナシ|コクワ|キイチゴ|木苺|野イチゴ|ノイチゴ|ヤマモモ|グミ|桑の実|クワの実|ナツハゼ|ガマズミ|ブルーベリー|ヤマボウシ|柿|柚子|ユズ|林檎|リンゴ|梨|桃|梅|ミカン|蜜柑|金柑|キンカン|枇杷|ビワ|ザクロ|石榴|スモモ|アンズ|杏|カリン|花梨|イチジク|キウイ|イチゴ|苺|スダチ|カボス)/,FE=/[🍇🍒🍓🫐🍎🍏🍑🍊🍐🍋🍈🍉🍌🍍🥭🥝]/u;
+  const cat=e=>{if(["plant","fruit","mushroom","cultivated"].includes(e.category))return e.category;const n=e.name||"",em=e.emoji||"";if(em==="🍄"||MR.test(n))return "mushroom";if(FE.test(em)||FRR.test(n))return "fruit";return "plant"};
+  d.querySelector("#imp-f").addEventListener("change",e=>{
+    const f=e.target.files[0];if(!f)return;const say=t=>{d.querySelector("#imp-m").textContent=t};
+    const r=new FileReader();
+    r.onload=()=>{
+      let o=null;try{o=JSON.parse(r.result)}catch(x){}
+      let list=Array.isArray(o)?o:o&&(o.sansai_list_v2||(o.data&&o.data.sansai_list_v2));
+      if(typeof list==="string"){try{list=JSON.parse(list)}catch(x){list=null}}
+      if(!Array.isArray(list)){say("図鑑のデータが見つかりませんでした。山菜手帳のバックアップファイルを選んでください。");return}
+      const T={plant:["fn_sn_",SN_DATA],fruit:["fn_fr_",FR_DATA],mushroom:["fn_kn_",KN_DATA]},cnt={plant:0,fruit:0,mushroom:0};
+      const have={};for(const k in T)have[k]=new Set(T[k][1].p.map(a=>a[1]).concat(ld(T[k][0]+"custom",[]).map(c=>c.n)));
+      const add={plant:ld("fn_sn_custom",[]),fruit:ld("fn_fr_custom",[]),mushroom:ld("fn_kn_custom",[])};
+      list.forEach((x,i)=>{if(!x||!x.name)return;const c=cat(x);if(c==="cultivated"||x.kind==="cultivated"||have[c].has(x.name))return;
+        have[c].add(x.name);add[c].push({id:Date.now()+i,n:String(x.name),e:x.emoji||"🌿",m:Array.isArray(x.months)?x.months.filter(v=>v>=1&&v<=12):[],r:String(x.region||""),d:[x.desc,x.prep&&"下処理："+x.prep,x.cook&&"食べ方："+x.cook,x.keep&&"保存："+x.keep,x.notes].filter(Boolean).join(" ").slice(0,400),c:/^#[0-9a-f]{6}$/i.test(x.color||"")?x.color:"#9bb88a"});cnt[c]++});
+      for(const k in T)sv(T[k][0]+"custom",add[k]);
+      say(`取り込みました。山菜 ${cnt.plant}件、果実と樹の実 ${cnt.fruit}件、きのこ ${cnt.mushroom}件。まもなく開き直します。`);setTimeout(()=>location.reload(),1200);
+    };
+    r.readAsText(f);
+  });
+  $("ppanel").appendChild(d);
 })();
 wrapPg($("tocpg"),"toc","目次");
 /* 登山・温泉 */
 const td=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 function remote(){const r=ld("fn_shared_remote",null);return r&&Array.isArray(r.items)?r:{items:[],updated:""}}
 async function fetchShared(){try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(!j||!Array.isArray(j.items))throw 0;sv("fn_shared_remote",j);return j.items.length}catch(e){return -1}}
+function allSh(){const r=remote().items.slice(),seen=new Set(r.map(x=>(x.from||"")+":"+x.id));Object.values(ld("fn_pool",{})).forEach(x=>{const k=(x.from||"")+":"+x.id;if(!seen.has(k)){r.push(x);seen.add(k)}});return r}
+function spName(pg,id){const D={sn:SN_DATA,fr:FR_DATA,kn:KN_DATA}[pg],a=D.p.find(a=>a[0]===id);if(a)return a[1];const c=ld({sn:"fn_sn_",fr:"fn_fr_",kn:"fn_kn_"}[pg]+"custom",[]).find(c=>c.id===id);return c?c.n:"?"}
+function checkNotices(){
+  const seen=ld("fn_seen",[]),u=allSh().filter(x=>x.k==="nt"&&x.must&&!seen.includes(x.id));let m=document.getElementById("ntmod");
+  if(!u.length){if(m)m.hidden=true;return}
+  if(!m){m=document.createElement("div");m.id="ntmod";m.innerHTML='<div class="nbox"></div>';document.body.appendChild(m);m.addEventListener("click",e=>{if(e.target.dataset.ok){const s=ld("fn_seen",[]);m._ids.forEach(i=>{if(!s.includes(i))s.push(i)});sv("fn_seen",s);m.hidden=true}})}
+  m._ids=u.map(x=>x.id);m.querySelector(".nbox").innerHTML='<h3 style="margin:0 0 8px">お知らせ</h3>'+u.map(x=>`<div class="sn-row"><b>${esc(String(x.t))}</b><br>${esc(String(x.x||"")).replace(/\n/g,"<br>")}</div>`).join("")+'<button class="sn-btn" data-ok="1" style="margin-top:12px">読みました</button>';m.hidden=false;
+}
 function myName(){return ld("fn_myname","")}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function shRow(x){
@@ -760,6 +888,126 @@ function initOnsen(root){
       want.unshift({n,a:v("ow-a"),m:v("ow-m")});sv("fn_os_want",want);render();
     }
   });
+  render();
+}
+/* みんなのページ */
+function initAll(root){
+  let tab=0,q="",ask=null,msg="";
+  const $=id=>root.querySelector("#"+id),pool=()=>ld("fn_pool",{}),mine=id=>!!pool()["管理者:"+id],L=k=>allSh().filter(x=>x.k===k),E=v=>esc(String(v==null?"":v));
+  const addPool=it=>{const p=pool();it.from="管理者";p["管理者:"+it.id]=it;sv("fn_pool",p)};
+  const delPool=id=>{const p=pool();delete p["管理者:"+id];sv("fn_pool",p)};
+  const nid=()=>"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const okUrl=u=>/^https?:\/\//i.test(String(u||""));
+  const hint='<p class="sn-note">追加したら、目次ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
+  const dB=k=>`<button class="sn-del${ask===k?" ask":""}" data-dp="${E(k)}">${ask===k?"本当に削除":"削除"}</button>`;
+  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-del" data-rd="${E(x.id)}">読んだ</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
+  const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
+  const own=()=>ld("fn_links",[]);
+  const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
+  const lkV=()=>'<div class="nl">みんなのリンク</div>'+(L("lk").map(x=>lkRow(x,mine(x.id)?"<br>"+dB("l"+x.id):"")).join("")||'<p class="sn-note">まだありません。</p>')+'<div class="nl">自分用のリンク</div>'+(own().map((x,i)=>lkRow(x,"<br>"+dB("o"+i))).join("")||'<p class="sn-note">まだありません。</p>')+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前" maxlength="30"><input class="sn-in" id="lk-u" placeholder="https://..." maxlength="200"><div class="sn-g"><button class="sn-btn sn-ghost" id="lk-own">自分用に追加</button><button class="sn-btn" id="lk-pub">みんなに追加（管理者）</button></div>${hint}</div>`;
+  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存されます。端末を替えるときは、目次ページの「データのバックアップ」で書き出してください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","正確な場所は送りません。約10km四方にぼかした位置だけを共有します。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["管理者が配信するには？","目次ページで取り込み、「配信ファイルの中身を書き出す」をコピーして、GitHubのshared.jsonに貼り付けて保存します。"]];
+  const manV=()=>QA.map(a=>`<details class="ic"><summary><b>${a[0]}</b></summary><p class="sn-note">${a[1]}</p></details>`).join("");
+  const goTo=pid=>{const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+2)};
+  const res=()=>{
+    const t=q.trim();if(!t)return '<p class="sn-note">図鑑・百名山・泉質・自分の記録・レシピ・メモをまとめて探せます。</p>';
+    const R=[],has=s=>String(s||"").includes(t),add=(pid,lb,tx)=>{if(R.length<60)R.push([pid,lb,tx])};
+    [["sansai","山菜採り",SN_DATA,"fn_sn_"],["fruit","果実と樹の実",FR_DATA,"fn_fr_"],["kinoko","きのこ",KN_DATA,"fn_kn_"]].forEach(([pid,lb,D,pre])=>{D.p.forEach(a=>{if(has(a[1])||has(a[5]))add(pid,lb+"・図鑑",a[1])});ld(pre+"custom",[]).forEach(c=>{if(has(c.n)||has(c.d))add(pid,lb+"・図鑑",c.n)});ld(pre+"rc",[]).forEach(r=>{if(has(r.n)||has(r.c))add(pid,lb+"・レシピ",r.n)});ld(pre+"mm",[]).forEach(m=>{if(has(m.x))add(pid,lb+"・メモ",String(m.x).slice(0,30))});ld(pre+"blog",[]).forEach(b=>{if(has(b.t)||has(b.x))add(pid,lb+"・ブログ",b.t)})});
+    MT.forEach(m=>{if(has(m.n)||has(m.y)||has(m.p))add("tozan","登山・百名山",m.n+"（"+m.h+"m）")});
+    ld("fn_tz_log",[]).forEach(l=>{if(has(l.n)||has(l.m))add("tozan","登山・山行記録",l.d+" "+l.n)});
+    SPR.forEach(p=>{if(has(p[0])||has(p[1]))add("onsen","温泉・泉質",p[0])});
+    ld("fn_os_log",[]).forEach(l=>{if(has(l.n)||has(l.a)||has(l.m))add("onsen","温泉・入湯記録",l.d+" "+l.n)});
+    ld("fn_os_info",[]).forEach(l=>{if(has(l.n)||has(l.a))add("onsen","温泉・日帰り情報",l.n)});
+    L("nt").forEach(x=>{if(has(x.t)||has(x.x))add("all","みんな・お知らせ",String(x.t))});
+    return R.length?R.map(r=>`<button class="sn-card" data-pj="${r[0]}" style="width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0"><div><b>${E(r[2])}</b><small>${E(r[1])}</small></div></button>`).join(""):'<p class="sn-note">見つかりませんでした。</p>';
+  };
+  const srV=()=>`<input class="sn-in" id="sr-q" placeholder="さがす（山名・山菜・温泉・メモなど）" value="${E(q)}"><div id="sr-l">${res()}</div>`;
+  const unread=()=>{const seen=ld("fn_seen",[]);return L("nt").filter(x=>!seen.includes(x.id)).length};
+  const render=()=>{const T=["お知らせ"+(unread()?"●":""),"メンバー","リンク","使い方","さがす"];root.innerHTML=`<div class="sn-tabs">${T.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[ntV,mbV,lkV,manV,srV][tab]()};
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;const d=b.dataset,g=id=>$(id).value.trim();
+    if(d.t!==undefined){tab=+d.t;ask=null;render()}
+    else if(d.pj){goTo(d.pj)}
+    else if(d.rd){const s=ld("fn_seen",[]);if(!s.includes(d.rd))s.push(d.rd);sv("fn_seen",s);render()}
+    else if(d.dp){if(ask===d.dp){const k=d.dp[0],id=d.dp.slice(1);if(k==="o"){const a=own();a.splice(+id,1);sv("fn_links",a)}else delPool(id);ask=null}else ask=d.dp;render()}
+    else if(b.id==="nt-add"){const t=g("nt-t");if(!t){$("nt-t").focus();return}addPool({k:"nt",id:nid(),t,x:g("nt-x"),d:td(),must:$("nt-m").checked?1:0});render()}
+    else if(b.id==="mb-add"){const n=g("mb-n");if(!n){$("mb-n").focus();return}addPool({k:"mb",id:nid(),n,r:g("mb-r"),m:g("mb-m")});render()}
+    else if(b.id==="lk-own"||b.id==="lk-pub"){const t=g("lk-t"),u=g("lk-u");if(!t||!okUrl(u)){$("lk-u").focus();return}if(b.id==="lk-own"){const a=own();a.push({t,u});sv("fn_links",a)}else addPool({k:"lk",id:nid(),t,u});render()}
+  });
+  root.addEventListener("input",e=>{if(e.target.id==="sr-q"){q=e.target.value;$("sr-l").innerHTML=res()}});
+  render();
+  document.addEventListener("click",ev=>{if(ev.target.dataset&&ev.target.dataset.ok)setTimeout(()=>{if(root.isConnected)render()},50)});
+}
+/* 情報ページ */
+function initInfo(root){
+  let loc=ld("fn_loc",null),wx=ld("fn_wx",null),tide=ld("fn_tide",null),emg=ld("fn_emg",{}),bear=ld("fn_bear",[]),msg={},bo=false,ask=null;
+  const $=id=>root.querySelector("#"+id),f2=n=>String(n).padStart(2,"0"),hm=d=>d&&!isNaN(d)?f2(d.getHours())+":"+f2(d.getMinutes()):"--:--";
+  const rad=Math.PI/180,DAY=864e5,J2000=2451545,J1970=2440588,toD=d=>d.valueOf()/DAY-0.5+J1970-J2000,fromJ=j=>new Date((j+0.5-J1970)*DAY);
+  function sunT(date,lat,lng,hd){
+    const lw=rad*-lng,phi=rad*lat,d=toD(date),n=Math.round(d-0.0009-lw/(2*Math.PI)),tr=(Ht)=>0.0009+(Ht+lw)/(2*Math.PI)+n;
+    const ds=tr(0),M=rad*(357.5291+0.98560028*ds),C=rad*(1.9148*Math.sin(M)+0.02*Math.sin(2*M)+0.0003*Math.sin(3*M)),L=M+C+rad*102.9372+Math.PI,dc=Math.asin(Math.sin(rad*23.4397)*Math.sin(L));
+    const sj=(x)=>J2000+x+0.0053*Math.sin(M)-0.0069*Math.sin(2*L),noon=sj(ds),w=Math.acos((Math.sin(rad*hd)-Math.sin(phi)*Math.sin(dc))/(Math.cos(phi)*Math.cos(dc))),set=sj(tr(w));
+    return isNaN(w)?null:{rise:fromJ(noon-(set-noon)),set:fromJ(set)};
+  }
+  const MR=Math.PI/180,MS=n=>Math.sin(n*MR),jdOf=d=>d.valueOf()/DAY+2440587.5;
+  function phJD(k,full){
+    const T=k/1236.85,E=1-0.002516*T-0.0000074*T*T,M=2.5534+29.1053567*k-0.0000014*T*T,Mp=201.5643+385.81693528*k+0.0107582*T*T,F=160.7108+390.67050284*k-0.0016118*T*T,O=124.7746-1.56375588*k+0.0020672*T*T;
+    const c=full?[-0.40614,0.17302,0.01614,0.01043,0.00734,-0.00515,0.00209]:[-0.4072,0.17241,0.01608,0.01039,0.00739,-0.00514,0.00208];
+    return 2451550.09766+29.530588861*k+0.00015437*T*T-0.00000015*T**3+0.00000000073*T**4+c[0]*MS(Mp)+c[1]*E*MS(M)+c[2]*MS(2*Mp)+c[3]*MS(2*F)+c[4]*E*MS(Mp-M)+c[5]*E*MS(Mp+M)+c[6]*E*E*MS(2*M)-0.00111*MS(Mp-2*F)-0.00057*MS(Mp+2*F)+0.00056*E*MS(2*Mp+M)-0.00042*MS(3*Mp)+0.00042*E*MS(M+2*F)+0.00038*E*MS(M-2*F)-0.00024*E*MS(2*Mp-M)-0.00017*MS(O);
+  }
+  function lunar(d){const jd=jdOf(d);let k=Math.floor((jd-2451550.09766)/29.530588861);while(phJD(k+1,0)<=jd)k++;while(phJD(k,0)>jd)k--;const nm=phJD(k,0),nn=phJD(k+1,0);let fm=phJD(k+0.5,1);if(fm<jd)fm=phJD(k+1.5,1);return{age:jd-nm,toNew:nn-jd,toFull:fm-jd,len:nn-nm}}
+  const phaseName=a=>a<1.5?"新月":a<6.4?"三日月":a<8.4?"上弦の月":a<13.3?"十日夜の頃":a<16.3?"満月":a<21.1?"寝待月の頃":a<23.1?"下弦の月":a<28?"有明月":"新月";
+  const moonSvg=p=>{const w=p<=.5,q=w?p:1-p,k=Math.cos(2*Math.PI*q),rx=Math.abs(k)*18,sw=k>0?0:1;return `<svg viewBox="-20 -20 40 40" width="48" height="48"><circle r="18" fill="#3a4258"/><path d="M0 -18A18 18 0 0 1 0 18A${rx} 18 0 0 ${sw} 0 -18Z" fill="#f3efd2" transform="${w?"":"scale(-1 1)"}"/><circle r="18" fill="none" stroke="#9aa" stroke-width=".6"/></svg>`};
+  const WC=c=>c===0?["☀️","快晴"]:c<=2?["🌤️","晴れ"]:c===3?["☁️","曇り"]:c<=48?["🌫️","霧"]:c<=57?["🌦️","霧雨"]:c<=67?["🌧️","雨"]:c<=77?["❄️","雪"]:c<=82?["🌦️","にわか雨"]:c<=86?["🌨️","雪"]:["⛈️","雷雨"];
+  const mo=new Date().getMonth()+1;
+  const gpsC=()=>`<div class="ic"><h4>① 現在地（GPS）</h4>${loc?`<div class="ib">${loc.la.toFixed(4)}°N　${loc.lo.toFixed(4)}°E</div><div class="sn-note">標高 ${loc.alt!=null?loc.alt+" m":(wx&&wx.elevation!=null?Math.round(wx.elevation)+" m（地図の値）":"不明")}　精度 ±${loc.acc} m　${new Date(loc.t).getMonth()+1}/${new Date(loc.t).getDate()} ${hm(new Date(loc.t))} 取得</div><a class="sn-del" href="https://www.google.com/maps?q=${loc.la},${loc.lo}" target="_blank" rel="noopener">地図で開く</a> <button class="sn-del" data-a="share">現在地を送る</button> `:`<p class="sn-note">現在地を取得すると、日の出・日の入りや天気が表示されます。</p>`}<button class="sn-btn sn-ghost" data-a="gps" style="margin-top:8px">${loc?"現在地を更新":"現在地を取得"}</button><p class="sn-note">${esc(msg.gps||"")}</p></div>`;
+  const sunC=()=>{
+    if(!loc)return `<div class="ic"><h4>② 日の出・日の入り</h4><p class="sn-note">現在地を取得すると表示されます。</p></div>`;
+    const n=new Date(),t=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12),T=sunT(t,loc.la,loc.lo,-0.833),Cv=sunT(t,loc.la,loc.lo,-6);
+    if(!T)return `<div class="ic"><h4>② 日の出・日の入り</h4><p class="sn-note">この地点では計算できません。</p></div>`;
+    const s0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime(),pc=d=>Math.max(0,Math.min(100,(d-s0)/DAY*100)),left=T.set-n,gl=new Date(T.set.getTime()-2*36e5);
+    return `<div class="ic"><h4>② 日の出・日の入り</h4><div class="ir"><div><div class="sn-note">日の出</div><div class="ib">${hm(T.rise)}</div></div><div><div class="sn-note">日の入り</div><div class="ib">${hm(T.set)}</div></div></div><div class="ibar"><i style="left:${pc(T.rise)}%;width:${pc(T.set)-pc(T.rise)}%"></i><u style="left:${pc(n)}%"></u></div><div class="sn-note">${left>0?"日没まで "+Math.floor(left/36e5)+"時間"+f2(Math.floor(left%36e5/6e4))+"分":"日没を過ぎています"}${Cv?"　明るくなる "+hm(Cv.rise)+"／暗くなる "+hm(Cv.set):""}</div></div>`;
+  };
+  const moonC=()=>{const L=lunar(new Date()),a=L.age,p=a/L.len,il=Math.round((1-Math.cos(2*Math.PI*p))/2*100);
+    return `<div class="ic"><h4>③ 月齢</h4><div style="display:flex;gap:12px;align-items:center">${moonSvg(p)}<div><div class="ib">${a.toFixed(1)}</div><div class="sn-note">${phaseName(a)}・明るさ ${il}%</div></div></div><div class="sn-note" style="margin-top:6px">満月まで 約${Math.round(L.toFull)}日　新月まで 約${Math.round(L.toNew)}日</div></div>`};
+  const tideC=()=>{
+    let b="";
+    if(tide&&tide.hourly&&tide.hourly.sea_level_height_msl){
+      const h=tide.hourly.sea_level_height_msl,t=tide.hourly.time,v=h.filter(x=>x!=null);
+      if(!v.length)b='<p class="sn-note">この地点の近くに海のデータがありません。</p>';
+      else{
+        const mn=Math.min(...v),mx=Math.max(...v),rg=mx-mn||1,pts=h.map((x,i)=>x==null?null:[i/(h.length-1)*300,46-(x-mn)/rg*40]).filter(Boolean),ex=[];
+        for(let i=1;i<h.length-1;i++){if(h[i]==null||h[i-1]==null||h[i+1]==null)continue;if(h[i]>h[i-1]&&h[i]>=h[i+1])ex.push("満潮 "+t[i].slice(11,16));else if(h[i]<h[i-1]&&h[i]<=h[i+1])ex.push("干潮 "+t[i].slice(11,16))}
+        const ni=t.findIndex(x=>new Date(x)>new Date());
+        b=`<svg viewBox="0 0 300 50" style="width:100%;height:56px"><path d="M${pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L")}" fill="none" stroke="#3b7ca3" stroke-width="2"/>${ni>0?`<line x1="${ni/(h.length-1)*300}" x2="${ni/(h.length-1)*300}" y1="0" y2="50" stroke="#b3412f" stroke-width="2"/>`:""}</svg><div class="sn-note">${ex.slice(0,6).join("　")}</div><div class="sn-note">潮位の変化は約${(rg*100).toFixed(0)}cm。世界の潮汐モデルによる目安です。</div>`;
+      }
+    }else b='<p class="sn-note">電波のあるときに「潮位を取得」を押してください。</p>';
+    return `<div class="ic"><h4>④ 潮の満干（現在地に近い海）</h4>${b}<button class="sn-btn sn-ghost" data-a="tide">潮位を取得</button><p class="sn-note">${esc(msg.tide||"")}釣りや海に入るときは、気象庁の潮位表も確認してください。</p></div>`;
+  };
+  const wxC=()=>{
+    let b='<p class="sn-note">電波のあるときに「天気を取得」を押してください。</p>';
+    if(wx&&wx.daily){const d=wx.daily,one=i=>{const w=WC(d.weather_code[i]);return `<div><div class="sn-note">${i?"明日":"今日"}</div><div class="ib">${w[0]}</div><div class="sn-note">${w[1]}　${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°<br>降水 ${d.precipitation_probability_max[i]==null?"-":d.precipitation_probability_max[i]+"%"}　風 ${Math.round(d.wind_speed_10m_max[i])} m/s</div></div>`};b=`<div class="ir">${one(0)}${one(1)}</div><div class="sn-note">${wx.current?"今の気温 "+Math.round(wx.current.temperature_2m)+"°　":""}${wx.got?new Date(wx.got).getHours()+":"+f2(new Date(wx.got).getMinutes())+" 取得":""}</div>`}
+    return `<div class="ic"><h4>⑤ 天気と気温</h4>${b}<button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}山の上の天気は、麓と大きく違うことがあります。</p></div>`;
+  };
+  const BEAR=[["予防",["鈴やラジオで人の存在を知らせる","できるだけ複数人で行動する","早朝・夕方・霧の日は特に注意する","食べ物やゴミを残さない","新しい糞・足跡・爪痕を見たら引き返す"]],["遠くで見つけたら",["落ち着いて、静かにその場を離れる","走らない・大声を出さない・写真を撮らない"]],["近くで遭遇したら",["背中を見せず、クマを見ながらゆっくり後ずさる","クマスプレーを持っているときは、すぐ使えるようにする","襲われたら、うつぶせで首の後ろを両手で守る"]]];
+  const safeC=()=>{
+    let gl="";if(loc){const n=new Date(),T=sunT(new Date(n.getFullYear(),n.getMonth(),n.getDate(),12),loc.la,loc.lo,-0.833);if(T)gl=`<div class="sn-note">下山の目安：${hm(new Date(T.set.getTime()-2*36e5))}（日の入りの2時間前）までに下山しましょう。</div>`}
+    return `<div class="ic wn"><h4>⑥ 安全のお知らせ</h4>${gl}<div class="sn-note" style="margin-top:6px">緊急連絡先</div><div class="sn-g"><input class="sn-in" id="em-n" placeholder="名前" maxlength="20" value="${esc(emg.n||"")}"><input class="sn-in" id="em-p" type="tel" placeholder="電話番号" maxlength="20" value="${esc(emg.p||"")}"></div><a class="sn-del" href="tel:110">警察 110</a> <a class="sn-del" href="tel:119">救急・消防 119</a> ${emg.p?`<a class="sn-del" href="tel:${esc(emg.p.replace(/[^0-9+]/g,""))}">${esc(emg.n||"連絡先")}に電話</a>`:""}<br><button class="sn-btn sn-ghost" data-a="bear" style="margin-top:10px">🐻 クマ対策${bo?"を閉じる":"を見る"}</button>${bo?BEAR.map(g=>`<div class="sn-dg" style="border-left-color:#c0392b"><b>${g[0]}</b>${g[1].map(x=>`<p>・${x}</p>`).join("")}</div>`).join("")+`<div class="nl">出没・遭遇の記録</div><div class="sn-g"><input class="sn-in" id="br-p" placeholder="場所" maxlength="30"><input class="sn-in" id="br-m" placeholder="メモ" maxlength="50"></div><button class="sn-btn" data-a="bradd">記録する</button>`+bear.map((x,i)=>`<div class="sn-row"><b>${esc(x.d)}</b>　${esc(x.p)}${x.m?"<br>"+esc(x.m):""}<br><button class="sn-del${ask===i?" ask":""}" data-bd="${i}">${ask===i?"本当に削除":"削除"}</button></div>`).join(""):""}</div>`;
+  };
+  const seasonC=()=>{const g=(d,k)=>d.p.filter(a=>a[3].includes(mo)).map(a=>esc(a[1]));const a=g(SN_DATA),b=g(FR_DATA),c=g(KN_DATA);return `<div class="ic"><h4>⑦ 今月（${mo}月）の旬</h4><div class="sn-note"><b>山菜</b>　${a.join("、")||"なし"}</div><div class="sn-note"><b>果実と樹の実</b>　${b.join("、")||"なし"}</div><div class="sn-note"><b>きのこ</b>　${c.join("、")||"なし"}</div></div>`};
+  const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()};
+  const go=async(u,key,m)=>{if(!loc){msg[m]="先に現在地を取得してください。";render();return}msg[m]="取得中… ";render();try{const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();if(m==="wx"){wx=j;sv("fn_wx",wx)}else{tide=j;sv("fn_tide",tide)}msg[m]=""}catch(e){msg[m]="取得できませんでした。電波のある場所で、もう一度試してください。"}render()};
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;const a=b.dataset.a;
+    if(a==="re")render();
+    else if(a==="gps"){if(!navigator.geolocation){msg.gps="この端末では取得できません。";render();return}msg.gps="取得中…";render();navigator.geolocation.getCurrentPosition(p=>{loc={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5),alt:p.coords.altitude==null?null:Math.round(p.coords.altitude),acc:Math.round(p.coords.accuracy),t:Date.now()};sv("fn_loc",loc);msg.gps="";render()},()=>{msg.gps="現在地を取得できませんでした。位置情報の許可を確認してください。";render()},{enableHighAccuracy:true,timeout:15000})}
+    else if(a==="share"&&loc){const t=`現在地：${loc.la}, ${loc.lo}\nhttps://www.google.com/maps?q=${loc.la},${loc.lo}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);msg.gps="現在地をコピーしました。"}catch(x){}render()}}
+    else if(a==="wx")go(`https://api.open-meteo.com/v1/forecast?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2`,"fn_wx","wx");
+    else if(a==="tide")go(`https://marine-api.open-meteo.com/v1/marine?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2&cell_selection=sea`,"fn_tide","tide");
+    else if(a==="bear"){bo=!bo;render()}
+    else if(a==="bradd"){const p=$("br-p").value.trim(),m=$("br-m").value.trim();if(!p&&!m)return;const n=new Date();bear.unshift({d:n.getFullYear()+"-"+f2(n.getMonth()+1)+"-"+f2(n.getDate()),p,m});sv("fn_bear",bear);render()}
+    else if(b.dataset.bd!==undefined){const i=+b.dataset.bd;if(ask===i){bear.splice(i,1);sv("fn_bear",bear);ask=null}else ask=i;render()}
+  });
+  root.addEventListener("input",e=>{if(e.target.id==="em-n"||e.target.id==="em-p"){emg={n:$("em-n").value,p:$("em-p").value};sv("fn_emg",emg)}});
   render();
 }
 drawCover();renderPages();
