@@ -234,9 +234,80 @@ html[data-pgno="off"] .pgno,html[data-fold="off"] .fold{display:none}
 #lbox{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.85);display:grid;place-items:center}#lbox[hidden]{display:none}#lbox img{max-width:96vw;max-height:90vh}
 #ntmod{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.5);display:grid;place-items:center}#ntmod[hidden]{display:none}
 .pgin details>summary{cursor:pointer}
+#lg{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));box-sizing:border-box;overflow-y:auto;color:#e2c36e;font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 4px),repeating-linear-gradient(-45deg,rgba(0,0,0,.06) 0 2px,transparent 2px 4px),#2f5a3c}
+#lg[hidden]{display:none}
+body:not(.adm) .adm-only{display:none!important}
+#lg .lgc{width:100%;max-width:340px;border:2px solid #e2c36e;outline:1px solid #e2c36e;outline-offset:4px;padding:26px 20px 18px;box-sizing:border-box;background:rgba(0,0,0,.14);text-align:center}
+#lg .lgt{font:700 34px "Cormorant Garamond",Georgia,serif;letter-spacing:.1em}
+#lg .lgs{margin:6px 0 16px;font-size:14px;letter-spacing:.2em;opacity:.9}
+#lg .lgin{display:block;width:100%;box-sizing:border-box;margin:0 0 10px;padding:12px;font:inherit;font-size:16px;border:1px solid #e2c36e;border-radius:6px;background:#f6f1de;color:#2b3526}
+#lg .lgw{position:relative}#lg .lgw .lgin{padding-right:46px}
+#lg .lgw button{position:absolute;right:4px;top:3px;width:40px;height:40px;border:0;background:none;font-size:18px;cursor:pointer}
+#lg .lgk{display:flex;gap:8px;align-items:center;justify-content:center;margin:2px 0 12px;font-size:13px;color:#f4e9cc}
+#lg .lgb{width:100%;padding:13px;font:inherit;font-size:16px;font-weight:700;letter-spacing:.2em;border:0;border-radius:6px;background:#e2c36e;color:#2b3526;cursor:pointer}
+#lg .lgm{min-height:20px;margin:10px 0 0;font-size:13px;line-height:1.6;color:#ffd9d0}
+#lg .lga{margin-top:6px;border:0;background:none;color:#f4e9cc;font:inherit;font-size:12px;text-decoration:underline;opacity:.8;cursor:pointer}
 </style>
 </head>
 <body>
+<div id="lg" role="dialog" aria-modal="true"><div class="lgc">
+<div class="lgt">Field Note</div><div class="lgs" id="lg-s">ログイン</div>
+<input id="lg-i" class="lgin" placeholder="ID" autocomplete="username" autocapitalize="off" spellcheck="false">
+<div class="lgw"><input id="lg-p" class="lgin" type="password" placeholder="パスワード" autocomplete="current-password"><button type="button" id="lg-e" aria-label="パスワードの表示切替">👁</button></div>
+<input id="lg-p2" class="lgin" type="password" placeholder="パスワード（確認のためもう一度）" autocomplete="new-password" hidden>
+<label class="lgk"><input type="checkbox" id="lg-k" checked> この端末ではログインしたままにする</label>
+<button type="button" id="lg-b" class="lgb">ログイン</button><p id="lg-m" class="lgm"></p>
+<button type="button" id="lg-a" class="lga">管理者：初回設定・パスワード変更</button>
+</div></div>
+<script>
+(function(){
+const E=new TextEncoder(),SALT="fieldnote-v1|tsurughi",$=id=>document.getElementById(id);
+const b64=u=>{let s="";for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const ub=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+const rd=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+document.body.classList.toggle("adm",!!rd("fn_admin"));
+window.fnAdmHash=async pw=>b64(new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:E.encode("fieldnote-adm-v1"),iterations:200000},await crypto.subtle.importKey("raw",E.encode(pw),"PBKDF2",false,["deriveBits"]),256)));
+async function derive(id,pw){const km=await crypto.subtle.importKey("raw",E.encode(id.trim()+"\n"+pw),"PBKDF2",false,["deriveBits"]);return new Uint8Array(await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt:E.encode(SALT),iterations:200000},km,256))}
+async function vh(k){const x=new Uint8Array(k.length+6);x.set(k);x.set(E.encode("verify"),k.length);return b64(new Uint8Array(await crypto.subtle.digest("SHA-256",x)))}
+function curKey(){let t=null;try{t=localStorage.getItem("fn_key")||sessionStorage.getItem("fn_key")}catch(e){}return t?ub(t):null}
+const aes=k=>crypto.subtle.importKey("raw",k,"AES-GCM",false,["encrypt","decrypt"]);
+window.fnEnc=async o=>{const k=curKey();if(!k)throw 0;const iv=crypto.getRandomValues(new Uint8Array(12));const c=await crypto.subtle.encrypt({name:"AES-GCM",iv},await aes(k),E.encode(JSON.stringify(o)));return JSON.stringify({v:2,enc:"AES-GCM",iv:b64(iv),data:b64(new Uint8Array(c))})};
+window.fnDec=async(j,key)=>{const k=key||curKey();if(!k)throw 0;const p=await crypto.subtle.decrypt({name:"AES-GCM",iv:ub(j.iv)},await aes(k),ub(j.data));return JSON.parse(new TextDecoder().decode(p))};
+let mode="login";
+const say=t=>{$("lg-m").textContent=t||""};
+function show(m,msg){mode=m;const su=m==="setup";$("lg-s").textContent=su?"管理者の設定":"ログイン";$("lg-p2").hidden=!su;$("lg-b").textContent=su?"設定する":"ログイン";$("lg-a").textContent=su?"ログイン画面にもどる":"管理者：初回設定・パスワード変更";$("lg-p").autocomplete=su?"new-password":"current-password";say(msg);$("lg").hidden=false}
+function unlock(key,remember){try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key");(remember?localStorage:sessionStorage).setItem("fn_key",b64(key))}catch(e){}$("lg").hidden=true;$("lg-p").value=$("lg-p2").value="";if(window.fetchShared)fetchShared().then(()=>window.checkNotices&&checkNotices())}
+window.fnLogout=()=>{try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key")}catch(e){}location.reload()};
+window.fnRelogin=msg=>{if(!$("lg").hidden)return;try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key")}catch(e){}show("login",msg)};
+async function go(){
+  const id=$("lg-i").value.trim(),pw=$("lg-p").value,rem=$("lg-k").checked;
+  if(!id||!pw){say("IDとパスワードを入力してください。");return}
+  if(!(window.crypto&&crypto.subtle)){say("このブラウザでは使えません。ChromeまたはSafariで開いてください。");return}
+  $("lg-b").disabled=true;say("確認しています…");
+  try{
+    const key=await derive(id,pw),h=await vh(key);
+    if(mode==="setup"){
+      let sj=null;try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(r.ok)sj=await r.json()}catch(e){}
+      if(sj&&sj.enc&&!rd("fn_admin")){say("すでに設定ずみです。IDとパスワードの変更は、管理者の端末だけでできます。");return}
+      if(pw.length<10){say("パスワードは10文字以上にしてください。");return}
+      if(pw!==$("lg-p2").value){say("確認用のパスワードが一致しません。");return}
+      wr("fn_auth",{vh:h});wr("fn_admin",1);unlock(key,rem);return}
+    let j=null;try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(r.ok)j=await r.json()}catch(e){}
+    const au=rd("fn_auth");let ok=false;
+    if(j&&j.enc){try{await window.fnDec(j,key);ok=true}catch(e){say("IDまたはパスワードが違います。");return}}
+    else if(au&&au.vh===h)ok=true;
+    else{say(j?"配信ファイルがまだ暗号化されていません。管理者の準備が終わるまでお待ちください。":"通信できません。初めてのログインには通信が必要です。");return}
+    if(ok){wr("fn_auth",{vh:h});unlock(key,rem)}
+  }catch(e){say("エラーが発生しました。もう一度お試しください。")}finally{$("lg-b").disabled=false}
+}
+$("lg-b").onclick=go;
+$("lg-e").onclick=()=>{const t=$("lg-p").type==="password"?"text":"password";$("lg-p").type=t;$("lg-p2").type=t};
+$("lg-a").onclick=()=>show(mode==="setup"?"login":"setup");
+["lg-i","lg-p","lg-p2"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")go()}));
+if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
+})();
+</script>
 <svg width="0" height="0" style="position:absolute"><filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/></filter><filter id="worn" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="3" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -1.6" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></svg>
 <div class="book" id="book">
   <section class="pg cover" id="cover" data-d="0">
@@ -638,7 +709,7 @@ function wrapPg(s,id,label){
 (function(){
   const d=document.createElement("div");d.className="pp";let out="",inMsg="",pubOut="",st="",clr=false;
   const pool=()=>ld("fn_pool",{});
-  const draw=()=>{const n=Object.keys(pool()).length;d.innerHTML=`<h3>みんなで共有</h3><p class="sn-note">山行記録・入湯記録・日帰り情報のうち、「共有する」にした記録を、みんなで見られます。</p><div class="nl">あなたの名前（共有するときに表示）</div><input class="sn-in" id="sh-nm" maxlength="20" value="${esc(myName())}"><button class="sn-btn" data-s="sub">共有する記録を、提出用の文字にする</button>${out?`<textarea class="sn-in" id="sh-out" rows="5" style="margin-top:8px">${esc(out)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-s="cp">コピー</button><button class="sn-btn" data-s="send">送る</button></div>`:""}<p class="sn-note">${out==="-"?"共有にしている記録がありません。":"できた文字を、LINEなどで管理者に送ってください。"}</p><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">管理者用：取り込みと配信</div><textarea class="sn-in" id="sh-in" rows="3" placeholder="メンバーから届いた文字を貼り付け"></textarea><button class="sn-btn sn-ghost" data-s="imp">取り込む</button><p class="sn-note">${esc(inMsg)}　取り込み済み：${n}件</p><button class="sn-btn sn-ghost" data-s="pub">配信ファイル（shared.json）の中身を書き出す</button>${pubOut?`<textarea class="sn-in" id="sh-pub" rows="5" style="margin-top:8px">${esc(pubOut)}</textarea><button class="sn-btn sn-ghost" data-s="cp2">コピー</button><p class="sn-note">コピーして、GitHubの shared.json に貼り付けて保存してください。</p>`:""}<button class="sn-del${clr?" ask":""}" data-s="clr">${clr?"本当にすべて消す":"取り込み済みをすべて消す"}</button><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">みんなの記録を受け取る</div><button class="sn-btn sn-ghost" data-s="get">最新を受け取る</button><p class="sn-note">${esc(st)}</p>`};
+  const draw=()=>{const n=Object.keys(pool()).length;d.innerHTML=`<h3>みんなで共有</h3><p class="sn-note">山行記録・入湯記録・日帰り情報のうち、「共有する」にした記録を、みんなで見られます。</p><div class="nl">あなたの名前（共有するときに表示）</div><input class="sn-in" id="sh-nm" maxlength="20" value="${esc(myName())}"><button class="sn-btn" data-s="sub">共有する記録を、提出用の文字にする</button>${out?`<textarea class="sn-in" id="sh-out" rows="5" style="margin-top:8px">${esc(out)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-s="cp">コピー</button><button class="sn-btn" data-s="send">送る</button></div>`:""}<p class="sn-note">${out==="-"?"共有にしている記録がありません。":"できた文字を、LINEなどで管理者に送ってください。"}</p><div class="adm-only"><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">管理者用：取り込みと配信</div><textarea class="sn-in" id="sh-in" rows="3" placeholder="メンバーから届いた文字を貼り付け"></textarea><button class="sn-btn sn-ghost" data-s="imp">取り込む</button><p class="sn-note">${esc(inMsg)}　取り込み済み：${n}件</p><button class="sn-btn sn-ghost" data-s="pub">配信ファイル（shared.json）の中身を書き出す</button>${pubOut?`<textarea class="sn-in" id="sh-pub" rows="5" style="margin-top:8px">${esc(pubOut)}</textarea><button class="sn-btn sn-ghost" data-s="cp2">コピー</button><p class="sn-note">暗号化された文字です。コピーして、GitHubの shared.json に貼り付けて保存してください。</p>`:""}<button class="sn-del${clr?" ask":""}" data-s="clr">${clr?"本当にすべて消す":"取り込み済みをすべて消す"}</button></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">みんなの記録を受け取る</div><button class="sn-btn sn-ghost" data-s="get">最新を受け取る</button><p class="sn-note">${esc(st)}</p>`};
   draw();
   const cp=id=>{const t=$(id);t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}};
   d.addEventListener("input",e=>{if(e.target.id==="sh-nm")sv("fn_myname",e.target.value.trim())});
@@ -653,7 +724,7 @@ function wrapPg(s,id,label){
       if(!o||o.t!=="fn-share"||!Array.isArray(o.items)){inMsg="取り込める形式ではありません。";draw();return}
       const p=pool();let n=0;o.items.forEach(x=>{if(x&&x.id&&["tz","os","oi","ar","bl"].includes(x.k)){const r=Object.assign({},x,{from:String(o.from||"?")});delete r.sh;if(r.k==="ar"){r.la=Math.round(+r.la*10)/10;r.lo=Math.round(+r.lo*10)/10}p[r.from+":"+x.id]=r;n++}});
       sv("fn_pool",p);inMsg=n+"件を取り込みました。";draw()}
-    else if(k==="pub"){pubOut=JSON.stringify({v:1,updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool())});draw()}
+    else if(k==="pub"){window.fnEnc({updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool()),adm:ld("fn_admh",null)||undefined}).then(t=>{pubOut=t;draw()}).catch(()=>{pubOut="";inMsg="暗号化できませんでした。ログインし直してください。";draw()})}
     else if(k==="cp2")cp("sh-pub");
     else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>v.from==="管理者")));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
     else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
@@ -662,7 +733,7 @@ function wrapPg(s,id,label){
   fetchShared().then(()=>checkNotices());
 })();
 (function(){
-  const d=document.createElement("div");d.className="pp";
+  const d=document.createElement("div");d.className="pp adm-only";
   d.innerHTML='<h3>山菜手帳の図鑑を取り込む</h3><p class="sn-note">山菜手帳のバックアップファイルを選ぶと、図鑑を「山菜採り」「果実と樹の実」「きのこ」に振り分けて取り込みます。</p><input type="file" id="imp-f" accept=".json,.txt,application/json"><p class="sn-note" id="imp-m"></p>';
   const MR=/(茸|きのこ|キノコ|シメジ|ナメコ|マツタケ|マイタケ|シイタケ|ヒラタケ|ナラタケ|ムキタケ|クリタケ|ハツタケ|エノキタケ|ナメタケ|ショウゲンジ|チチタケ|アミタケ|タモギタケ|カノシタ|コウタケ|ホウキタケ|キクラゲ)/;
   const FRR=/(アケビ|ムベ|ヤマブドウ|山ブドウ|サルナシ|コクワ|キイチゴ|木苺|野イチゴ|ノイチゴ|ヤマモモ|グミ|桑の実|クワの実|ナツハゼ|ガマズミ|ブルーベリー|ヤマボウシ|柿|柚子|ユズ|林檎|リンゴ|梨|桃|梅|ミカン|蜜柑|金柑|キンカン|枇杷|ビワ|ザクロ|石榴|スモモ|アンズ|杏|カリン|花梨|イチジク|キウイ|イチゴ|苺|スダチ|カボス)/,FE=/[🍇🍒🍓🫐🍎🍏🍑🍊🍐🍋🍈🍉🍌🍍🥭🥝]/u;
@@ -691,7 +762,7 @@ wrapPg($("tocpg"),"toc","目次");
 /* 登山・温泉 */
 const td=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 function remote(){const r=ld("fn_shared_remote",null);return r&&Array.isArray(r.items)?r:{items:[],updated:""}}
-async function fetchShared(){try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(!j||!Array.isArray(j.items))throw 0;sv("fn_shared_remote",j);return j.items.length}catch(e){return -1}}
+async function fetchShared(){try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;let j=await r.json();if(j&&j.enc){try{j=await window.fnDec(j)}catch(e){if(window.fnRelogin)fnRelogin("パスワードが変更されたようです。もう一度ログインしてください。");return -1}}if(!j||!Array.isArray(j.items))throw 0;sv("fn_shared_remote",j);return j.items.length}catch(e){return -1}}
 function allSh(){const r=remote().items.slice(),seen=new Set(r.map(x=>(x.from||"")+":"+x.id));Object.values(ld("fn_pool",{})).forEach(x=>{const k=(x.from||"")+":"+x.id;if(!seen.has(k)){r.push(x);seen.add(k)}});return r}
 function spName(pg,id){const D={sn:SN_DATA,fr:FR_DATA,kn:KN_DATA}[pg],a=D.p.find(a=>a[0]===id);if(a)return a[1];const c=ld({sn:"fn_sn_",fr:"fn_fr_",kn:"fn_kn_"}[pg]+"custom",[]).find(c=>c.id===id);return c?c.n:"?"}
 function checkNotices(){
@@ -907,12 +978,12 @@ function initAll(root){
   const okUrl=u=>/^https?:\/\//i.test(String(u||""));
   const hint='<p class="sn-note">追加したら、目次ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
   const dB=k=>`<button class="sn-del${ask===k?" ask":""}" data-dp="${E(k)}">${ask===k?"本当に削除":"削除"}</button>`;
-  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-del" data-rd="${E(x.id)}">読んだ</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
-  const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
+  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-del" data-rd="${E(x.id)}">読んだ</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
+  const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic adm-only"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
   const own=()=>ld("fn_links",[]);
   const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
-  const lkV=()=>'<div class="nl">みんなのリンク</div>'+(L("lk").map(x=>lkRow(x,mine(x.id)?"<br>"+dB("l"+x.id):"")).join("")||'<p class="sn-note">まだありません。</p>')+'<div class="nl">自分用のリンク</div>'+(own().map((x,i)=>lkRow(x,"<br>"+dB("o"+i))).join("")||'<p class="sn-note">まだありません。</p>')+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前" maxlength="30"><input class="sn-in" id="lk-u" placeholder="https://..." maxlength="200"><div class="sn-g"><button class="sn-btn sn-ghost" id="lk-own">自分用に追加</button><button class="sn-btn" id="lk-pub">みんなに追加（管理者）</button></div>${hint}</div>`;
-  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存されます。端末を替えるときは、目次ページの「データのバックアップ」で書き出してください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","正確な場所は送りません。約10km四方にぼかした位置だけを共有します。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["管理者が配信するには？","目次ページで取り込み、「配信ファイルの中身を書き出す」をコピーして、GitHubのshared.jsonに貼り付けて保存します。"]];
+  const lkV=()=>'<div class="nl">みんなのリンク</div>'+(L("lk").map(x=>lkRow(x,mine(x.id)?"<br>"+dB("l"+x.id):"")).join("")||'<p class="sn-note">まだありません。</p>')+'<div class="nl">自分用のリンク</div>'+(own().map((x,i)=>lkRow(x,"<br>"+dB("o"+i))).join("")||'<p class="sn-note">まだありません。</p>')+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前" maxlength="30"><input class="sn-in" id="lk-u" placeholder="https://..." maxlength="200"><div class="sn-g"><button class="sn-btn sn-ghost" id="lk-own">自分用に追加</button><button class="sn-btn adm-only" id="lk-pub">みんなに追加（管理者）</button></div><span class="adm-only">${hint}</span></div>`;
+  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["最初にどうすればいいですか？","開くとログイン画面が出ます。管理者から教えてもらったIDとパスワードを入れてください。初めてのときだけ通信が必要です。「この端末ではログインしたままにする」にしておくと、次からは入力不要です。"],["ログインできません","IDとパスワードの大文字・小文字、余分な空白を確認してください（👁で表示できます）。パスワードが変わったときは、管理者に新しいものを聞いてください。"],["ログアウトしたい","目次ページの「ログイン・管理者」にある「ログアウト」を押します。"],["ホーム画面にアイコンを置きたい","Chromeで開き、右上の︙から「アプリをインストール」（または「ホーム画面に追加」）を選びます。iPhoneはSafariの共有ボタンから「ホーム画面に追加」です。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存され、端末ごとに別です。ブラウザの「サイトデータの削除」をすると消えるので、大事な記録は目次ページの「データのバックアップ」で書き出しておいてください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","正確な場所は送りません。約10km四方にぼかした位置だけを共有します。配信ファイルも暗号化されています。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["【管理者】配信するには？","目次ページの「管理者用：取り込みと配信」で取り込み、「配信ファイルの中身を書き出す」をコピーして、GitHubのshared.jsonに貼り付けて保存します（暗号化されて出力されます）。"],["【管理者】管理者モードにするには？","目次ページの「ログイン・管理者」で管理者パスワードを入れます。管理者パスワードは、管理者の端末で設定し、配信ファイルを書き出し直すと、ほかの端末でも使えます。"],["【管理者】パスワードを変えるには？","管理者の端末でログアウトし、ログイン画面の「管理者：初回設定・パスワード変更」から新しいIDとパスワードを設定します。そのあと配信ファイルを書き出してGitHubに上げ直し、メンバーに新しいパスワードを伝えてください。"]];
   const manV=()=>QA.map(a=>`<details class="ic"><summary><b>${a[0]}</b></summary><p class="sn-note">${a[1]}</p></details>`).join("");
   const goTo=pid=>{const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+2)};
   const res=()=>{
@@ -1017,6 +1088,19 @@ function initInfo(root){
   root.addEventListener("input",e=>{if(e.target.id==="em-n"||e.target.id==="em-p"){emg={n:$("em-n").value,p:$("em-p").value};sv("fn_emg",emg)}});
   render();
 }
+(function(){
+  const d=document.createElement("div");d.className="pp";const ad=ld("fn_admin",0);
+  d.innerHTML='<h3>ログイン・管理者</h3>'+(ad
+   ?'<p class="sn-note">この端末は<b>管理者モード</b>です。取り込み・配信などの画面が使えます。管理者パスワードを決めておくと、ほかの端末でも管理者モードにできます（設定したあと、配信ファイルを書き出してGitHubに上げ直してください）。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード（8文字以上）" autocomplete="new-password"><button class="sn-btn sn-ghost" id="am-set">管理者パスワードを設定・変更</button><button class="sn-btn sn-ghost" id="am-off">管理者モードをやめる</button>'
+   :'<p class="sn-note">管理者の方は、管理者パスワードを入れると、取り込み・配信などの画面が表示されます。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード" autocomplete="off"><button class="sn-btn sn-ghost" id="am-on">管理者モードにする</button>')
+   +'<p class="sn-note" id="am-m"></p><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><p class="sn-note">ログアウトすると、次に開くときIDとパスワードが必要です。</p><button class="sn-btn sn-ghost" id="lo-b">ログアウト</button>';
+  $("ppanel").appendChild(d);
+  const q=i=>d.querySelector("#"+i),m=t=>{q("am-m").textContent=t};
+  q("lo-b").onclick=()=>window.fnLogout();
+  if(q("am-set"))q("am-set").onclick=async()=>{const v=q("am-p").value;if(v.length<8){m("8文字以上にしてください。");return}sv("fn_admh",await window.fnAdmHash(v));q("am-p").value="";m("設定しました。「配信ファイルの中身を書き出す」をして、GitHubのshared.jsonを更新してください。")};
+  if(q("am-off"))q("am-off").onclick=()=>{sv("fn_admin",0);location.reload()};
+  if(q("am-on"))q("am-on").onclick=async()=>{const v=q("am-p").value;if(!v)return;const h=await window.fnAdmHash(v),ex=remote().adm||ld("fn_admh",null);if(!ex){m("管理者パスワードがまだ配信されていません。");return}if(h===ex){sv("fn_admin",1);location.reload()}else m("管理者パスワードが違います。")};
+})();
 drawCover();renderPages();
 </script>
 <script>
