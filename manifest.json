@@ -1,0 +1,16 @@
+{
+  "name": "フィールドノート",
+  "short_name": "フィールドノート",
+  "description": "山菜・果実と樹の実・きのこの記録帳",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2f5a3c",
+  "theme_color": "#2f5a3c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
