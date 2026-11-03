@@ -365,7 +365,7 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 </div>
 <div id="dots"></div>
 <script>
-const BASE=[{id:"info",name:"情報",icon:"🧭",color:"#2f6f8f"},{id:"all",name:"みんな",icon:"👥",color:"#7a5aa3"},{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
+const BASE=[{id:"info",name:"情報",icon:"🧭",color:"#2f6f8f"},{id:"all",name:"みんな",icon:"👥",color:"#7a5aa3"},{id:"members",name:"メンバー",icon:"🧑‍🤝‍🧑",color:"#8a5a7a"},{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
 const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟"];
 const COLORS=["#4f8446","#b9473a","#a06a36","#3b7ca3","#835aa3","#b8922a"];
 const SC=[
@@ -426,9 +426,9 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"?p:CFGS[kd]);
+    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"?p:CFGS[kd]);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
   const bk=document.createElement("section");bk.className="pg dyn bk";
@@ -741,7 +741,7 @@ function wrapPg(s,id,label){
       if(!o||o.t!=="fn-share"||!Array.isArray(o.items)){inMsg="取り込める形式ではありません。";draw();return}
       const p=pool();let n=0;o.items.forEach(x=>{if(x&&x.id&&["tz","os","oi","ar","bl"].includes(x.k)){const r=Object.assign({},x,{from:String(o.from||"?")});delete r.sh;if(r.k==="ar"){r.la=Math.round(+r.la*10)/10;r.lo=Math.round(+r.lo*10)/10}p[r.from+":"+x.id]=r;n++}});
       sv("fn_pool",p);inMsg=n+"件を取り込みました。";draw()}
-    else if(k==="pub"){window.fnEnc({updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool()),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined}).then(t=>{pubOut=t;draw()}).catch(()=>{pubOut="";inMsg="暗号化できませんでした。ログインし直してください。";draw()})}
+    else if(k==="pub"){window.fnEnc({updated:new Date().toLocaleString("ja-JP"),items:Object.values(pool()),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,members:ld("fn_members",null)||undefined}).then(t=>{pubOut=t;draw()}).catch(()=>{pubOut="";inMsg="暗号化できませんでした。ログインし直してください。";draw()})}
     else if(k==="cp2")cp("sh-pub");
     else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>v.from==="管理者")));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
     else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
@@ -1206,11 +1206,53 @@ function initRegion(root){
     const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}sv("fn_gcal",v||null);draw()}};
   draw();$("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).cal=a;
 })();
+(function(){
+  const d=document.createElement("div");d.className="pp";
+  d.innerHTML='<h3>山菜手帳のメンバー名簿を取り込む</h3><p class="sn-note">山菜手帳のバックアップファイルを選ぶと、メンバーの名前・ニックネーム・役割・ランク・入会日・紹介文・メモ・写真を、すべて取り込みます。写真は配信しやすいよう小さくします。取り込んだあと、「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、メンバー全員に名簿が届きます。</p><input type="file" id="mem-f" accept=".json,.txt,application/json"><p class="sn-note" id="mem-m"></p>';
+  const shrink=(src,max,sq,q)=>new Promise(res=>{if(!src){res("");return}const im=new Image();im.onload=()=>{let w=im.width,h=im.height,sx=0,sy=0,cw=w,ch=h,W,H;if(sq){const s=Math.min(w,h);sx=(w-s)/2;sy=(h-s)/2;cw=ch=s;W=H=max}else{const k=Math.min(1,max/Math.max(w,h));W=Math.round(w*k);H=Math.round(h*k)}const c=document.createElement("canvas");c.width=W;c.height=H;c.getContext("2d").drawImage(im,sx,sy,cw,ch,0,0,W,H);res(c.toDataURL("image/jpeg",q||.7))};im.onerror=()=>res("");im.src=src});
+  d.querySelector("#mem-f").addEventListener("change",e=>{
+    const f=e.target.files[0];if(!f)return;const say=t=>{d.querySelector("#mem-m").textContent=t};
+    const r=new FileReader();
+    r.onload=async()=>{
+      let o=null;try{o=JSON.parse(r.result)}catch(x){}
+      const D=o&&(o.data||o);let list=D&&D.sansai_members;
+      if(typeof list==="string"){try{list=JSON.parse(list)}catch(x){list=null}}
+      if(!Array.isArray(list)){say("メンバー名簿が見つかりませんでした。山菜手帳のバックアップファイルを選んでください。");return}
+      say("取り込み中です…");
+      const ph=(o&&o.photos)||{},cur=ld("fn_members",[]);let n=0;
+      for(const m of list){
+        if(!m||!m.name)continue;
+        const p=await shrink(ph[m.photoId]||ph[m.avatarId]||m.photo||m.avatar||"",128,true,.7),g=await shrink(ph[m.bigPhotoId]||m.bigPhoto||"",400,false,.6);
+        const x={id:m.id||Date.now()+n,n:String(m.name),nn:String(m.nickname||""),role:Array.isArray(m.role)?m.role.map(String):(m.role?[String(m.role)]:[]),rank:String(m.rank||""),joined:String(m.joined||""),bio:String(m.bio||""),memo:String(m.memo||""),ph:p,bg:g};
+        const i=cur.findIndex(c=>c.id===x.id);if(i>=0)cur[i]=x;else cur.push(x);n++;
+      }
+      try{sv("fn_members",cur)}catch(x){say("保存できませんでした（容量が足りません）。");return}
+      say(n+"人を取り込みました（名簿は全部で"+cur.length+"人）。");
+      if(window.fnMemRedraw)fnMemRedraw();
+    };
+    r.readAsText(f);e.target.value="";
+  });
+  (window.fnAdm=window.fnAdm||{}).mem=d;
+})();
+function initMembers(root){
+  const E=v=>esc(String(v==null?"":v));
+  const list=()=>ld("fn_members",null)||remote().members||[];
+  let open=null;
+  const render=()=>{
+    const a=list();
+    root.innerHTML=a.length?'<p class="sn-note">グループのメンバーです（'+a.length+'人）。名前をタップすると、くわしく見られます。</p>'+a.map((m,i)=>{
+      const av=m.ph?`<img src="${E(m.ph)}" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none">`:'<span style="width:48px;height:48px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none">🌿</span>';
+      const det=open===i?`<div style="margin-top:10px">${m.bg?`<img src="${E(m.bg)}" alt="" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:""}<div class="sn-chips">${(m.role||[]).map(r=>`<span class="sn-chip on">${E(r)}</span>`).join("")}</div>${m.joined?`<p class="sn-note">入会：${E(m.joined)}</p>`:""}${m.bio?`<p class="sn-note">${E(m.bio)}</p>`:""}${m.memo?`<p class="sn-note">${E(m.memo)}</p>`:""}</div>`:"";
+      return `<div class="sn-row" data-mi="${i}" style="cursor:pointer"><div style="display:flex;gap:10px;align-items:center">${av}<div><b>${E(m.n)}</b>${m.nn?`　<small class="sn-note">「${E(m.nn)}」</small>`:""}<br><small class="sn-note">${E(m.rank)}</small></div></div>${det}</div>`}).join(""):'<p class="sn-note">まだメンバーが登録されていません。</p>';
+  };
+  root.addEventListener("click",e=>{const r=e.target.closest("[data-mi]");if(!r)return;const i=+r.dataset.mi;open=open===i?null:i;render()});
+  window.fnMemRedraw=render;render();
+}
 function initAdmin(root){
   if(!ld("fn_admin",0)){root.innerHTML='<p class="sn-note">このページは管理者だけが使えます。</p>';return}
   const A=window.fnAdm||{};
   root.innerHTML='<p class="sn-note">管理者だけが使うものを、ここにまとめています。メンバーには、このページは表示されません。</p>';
-  ["acct","deliver","imp","cal"].forEach(k=>{if(A[k])root.appendChild(A[k])});
+  ["acct","deliver","imp","mem","cal"].forEach(k=>{if(A[k])root.appendChild(A[k])});
 }
 drawCover();renderPages();
 </script>
