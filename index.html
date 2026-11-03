@@ -427,10 +427,12 @@ function renderPages(){
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
     const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    if(kd&&p.id!=="admin"&&p.id!=="members")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
     if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"?p:CFGS[kd]);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
+  fnPgMem();
   const bk=document.createElement("section");bk.className="pg dyn bk";
   bk.innerHTML=`<div class="spine bsp"></div><div class="bk-card"><div class="bk-t gf">Colophon</div>${[["k","監修","監修者名"],["p","発行所在","発行所在地"],["d","発行日","2026年10月31日"],["v","バージョン","Ver. 1.0"]].map(([k,l,ph])=>`<label><span class="gf">${l}</span><input data-k="${k}" maxlength="40" placeholder="${ph}" value="${esc(colo[k]||"")}"></label>`).join("")}</div>`;
   bk.addEventListener("input",e=>{const k=e.target.dataset.k;if(k){colo[k]=e.target.value;sv("fn_colo",colo)}});
@@ -1225,7 +1227,7 @@ function initRegion(root){
         if(!m||!m.name)continue;
         const p=await shrink(ph[m.photoId]||ph[m.avatarId]||m.photo||m.avatar||"",128,true,.7),g=await shrink(ph[m.bigPhotoId]||m.bigPhoto||"",400,false,.6);
         const x={id:m.id||Date.now()+n,n:String(m.name),nn:String(m.nickname||""),role:Array.isArray(m.role)?m.role.map(String):(m.role?[String(m.role)]:[]),rank:String(m.rank||""),joined:String(m.joined||""),bio:String(m.bio||""),memo:String(m.memo||""),ph:p,bg:g};
-        const i=cur.findIndex(c=>c.id===x.id);if(i>=0)cur[i]=x;else cur.push(x);n++;
+        const i=cur.findIndex(c=>c.id===x.id);if(i>=0){x.pg=cur[i].pg||[];cur[i]=x}else{x.pg=[];cur.push(x)}n++;
       }
       try{sv("fn_members",cur)}catch(x){say("保存できませんでした（容量が足りません）。");return}
       say(n+"人を取り込みました（名簿は全部で"+cur.length+"人）。");
@@ -1235,22 +1237,30 @@ function initRegion(root){
   });
   window.fnShrink=shrink;(window.fnAdm=window.fnAdm||{}).mem=d;
 })();
+function fnPgMem(){
+  const a=ld("fn_members",null)||remote().members||[];
+  document.querySelectorAll(".pgmem").forEach(e=>{
+    const id=e.dataset.pm,ms=a.filter(m=>(m.pg||[]).includes(id));
+    e.innerHTML=ms.length?'<div class="nl">参加メンバー（'+ms.length+'人）</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px">'+ms.map(m=>'<span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 4px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.35)">'+(m.ph?'<img src="'+esc(m.ph)+'" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover">':'<span style="font-size:16px">🌿</span>')+'<span>'+esc(m.n)+'</span></span>').join("")+'</div>':"";
+  });
+}
 function initMembers(root){
   const E=v=>esc(String(v==null?"":v)),adm=()=>!!ld("fn_admin",0);
   const list=()=>ld("fn_members",null)||remote().members||[];
   const cur=()=>(ld("fn_members",null)||(remote().members||[])).slice();
   let open=null,edit=null,ask=null,msg="";
-  const grab=()=>{const v=id=>root.querySelector("#"+id);if(!edit||!v("mf-n"))return;Object.assign(edit,{n:v("mf-n").value.trim(),nn:v("mf-nn").value.trim(),role:v("mf-r").value.split(/[、,，]/).map(s=>s.trim()).filter(Boolean),rank:v("mf-k").value.trim(),joined:v("mf-j").value,bio:v("mf-b").value.trim(),memo:v("mf-m").value.trim()})};
-  const form=()=>{const f=edit;return `<div class="sn-row"><div class="nl">${f.i<0?"メンバーを追加":"メンバーを編集"}</div><input class="sn-in" id="mf-n" placeholder="名前" maxlength="20" value="${E(f.n)}"><input class="sn-in" id="mf-nn" placeholder="ニックネーム" maxlength="20" value="${E(f.nn)}"><input class="sn-in" id="mf-r" placeholder="役割（、で区切る　例：採取リーダー、記録係）" value="${E(f.role.join("、"))}"><input class="sn-in" id="mf-k" list="mf-kl" placeholder="ランク" value="${E(f.rank)}"><datalist id="mf-kl"><option value="初級（初心者）"><option value="中級"><option value="上級"></datalist><div class="nl">入会日</div><input class="sn-in" type="date" id="mf-j" value="${E(f.joined)}"><textarea class="sn-in" id="mf-b" rows="3" placeholder="紹介文">${E(f.bio)}</textarea><textarea class="sn-in" id="mf-m" rows="2" placeholder="メモ（得意な山菜など）">${E(f.memo)}</textarea><div class="nl">写真</div>${f.ph?`<img src="${E(f.ph)}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover">`:""}<input type="file" id="mf-f" accept="image/*">${f.ph?'<button class="sn-btn sn-ghost" data-a="nophoto">写真を外す</button>':""}<div class="sn-g"><button class="sn-btn" data-a="save">保存</button><button class="sn-btn sn-ghost" data-a="cancel">やめる</button></div><p class="sn-note">${E(msg)}</p></div>`};
+  const grab=()=>{const v=id=>root.querySelector("#"+id);if(!edit||!v("mf-n"))return;Object.assign(edit,{n:v("mf-n").value.trim(),nn:v("mf-nn").value.trim(),role:v("mf-r").value.split(/[、,，]/).map(s=>s.trim()).filter(Boolean),pg:[...root.querySelectorAll(".mf-pg:checked")].map(c=>c.value),rank:v("mf-k").value.trim(),joined:v("mf-j").value,bio:v("mf-b").value.trim(),memo:v("mf-m").value.trim()})};
+  const form=()=>{const f=edit;return `<div class="sn-row"><div class="nl">${f.i<0?"メンバーを追加":"メンバーを編集"}</div><input class="sn-in" id="mf-n" placeholder="名前" maxlength="20" value="${E(f.n)}"><input class="sn-in" id="mf-nn" placeholder="ニックネーム" maxlength="20" value="${E(f.nn)}"><input class="sn-in" id="mf-r" placeholder="役割（、で区切る　例：採取リーダー、記録係）" value="${E(f.role.join("、"))}"><input class="sn-in" id="mf-k" list="mf-kl" placeholder="ランク" value="${E(f.rank)}"><datalist id="mf-kl"><option value="初級（初心者）"><option value="中級"><option value="上級"></datalist><div class="nl">参加するページ</div><div class="sn-chips">${pages().filter(p=>p.id!=="info"&&p.id!=="all"&&p.id!=="members").map(p=>`<label class="sn-chip" style="cursor:pointer"><input type="checkbox" class="mf-pg" value="${E(p.id)}"${f.pg.includes(p.id)?" checked":""}> ${p.icon} ${E(p.name)}</label>`).join("")}</div><div class="nl">入会日</div><input class="sn-in" type="date" id="mf-j" value="${E(f.joined)}"><textarea class="sn-in" id="mf-b" rows="3" placeholder="紹介文">${E(f.bio)}</textarea><textarea class="sn-in" id="mf-m" rows="2" placeholder="メモ（得意な山菜など）">${E(f.memo)}</textarea><div class="nl">写真</div>${f.ph?`<img src="${E(f.ph)}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover">`:""}<input type="file" id="mf-f" accept="image/*">${f.ph?'<button class="sn-btn sn-ghost" data-a="nophoto">写真を外す</button>':""}<div class="sn-g"><button class="sn-btn" data-a="save">保存</button><button class="sn-btn sn-ghost" data-a="cancel">やめる</button></div><p class="sn-note">${E(msg)}</p></div>`};
   const render=()=>{
     if(edit){root.innerHTML=form();return}
     const a=list(),ad=adm();
     root.innerHTML=(ad?'<button class="sn-btn" data-a="add">＋ メンバーを追加</button>':"")+(msg?`<p class="sn-note">${E(msg)}</p>`:"")+(a.length?'<p class="sn-note">グループのメンバーです（'+a.length+'人）。名前をタップすると、くわしく見られます。</p>'+a.map((m,i)=>{
       const av=m.ph?`<img src="${E(m.ph)}" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none">`:'<span style="width:48px;height:48px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none">🌿</span>';
-      const det=open===i?`<div style="margin-top:10px">${m.bg?`<img src="${E(m.bg)}" alt="" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:""}<div class="sn-chips">${(m.role||[]).map(r=>`<span class="sn-chip on">${E(r)}</span>`).join("")}</div>${m.joined?`<p class="sn-note">入会：${E(m.joined)}</p>`:""}${m.bio?`<p class="sn-note">${E(m.bio)}</p>`:""}${m.memo?`<p class="sn-note">${E(m.memo)}</p>`:""}${ad?`<div class="sn-g"><button class="sn-btn sn-ghost" data-a="edit">編集</button><button class="sn-del${ask===i?" ask":""}" data-a="del">${ask===i?"本当に削除":"削除"}</button></div>`:""}</div>`:"";
+      const det=open===i?`<div style="margin-top:10px">${m.bg?`<img src="${E(m.bg)}" alt="" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:""}<div class="sn-chips">${(m.role||[]).map(r=>`<span class="sn-chip on">${E(r)}</span>`).join("")}</div>${(m.pg||[]).length?`<p class="sn-note">参加：${(m.pg||[]).map(id=>{const q=pages().find(p=>p.id===id);return q?E(q.icon+" "+q.name):""}).filter(Boolean).join("、")}</p>`:""}${m.joined?`<p class="sn-note">入会：${E(m.joined)}</p>`:""}${m.bio?`<p class="sn-note">${E(m.bio)}</p>`:""}${m.memo?`<p class="sn-note">${E(m.memo)}</p>`:""}${ad?`<div class="sn-g"><button class="sn-btn sn-ghost" data-a="edit">編集</button><button class="sn-del${ask===i?" ask":""}" data-a="del">${ask===i?"本当に削除":"削除"}</button></div>`:""}</div>`:"";
       return `<div class="sn-row" data-mi="${i}" style="cursor:pointer"><div style="display:flex;gap:10px;align-items:center">${av}<div><b>${E(m.n)}</b>${m.nn?`　<small class="sn-note">「${E(m.nn)}」</small>`:""}<br><small class="sn-note">${E(m.rank)}</small></div></div>${det}</div>`}).join(""):'<p class="sn-note">まだメンバーが登録されていません。</p>');
+    fnPgMem();
   };
-  const blank=i=>{const m=i>=0?list()[i]:{};return{i,id:m.id,n:m.n||"",nn:m.nn||"",role:(m.role||[]).slice(),rank:m.rank||"",joined:m.joined||"",bio:m.bio||"",memo:m.memo||"",ph:m.ph||"",bg:m.bg||""}};
+  const blank=i=>{const m=i>=0?list()[i]:{};return{i,id:m.id,n:m.n||"",nn:m.nn||"",role:(m.role||[]).slice(),pg:(m.pg||[]).slice(),rank:m.rank||"",joined:m.joined||"",bio:m.bio||"",memo:m.memo||"",ph:m.ph||"",bg:m.bg||""}};
   root.addEventListener("click",e=>{
     const b=e.target.closest("button"),row=e.target.closest("[data-mi]"),i=row?+row.dataset.mi:-1;
     if(b&&b.dataset.a){const a=b.dataset.a;
@@ -1260,7 +1270,7 @@ function initMembers(root){
       else if(a==="cancel"){edit=null;msg=""}
       else if(a==="nophoto"){grab();edit.ph="";edit.bg=""}
       else if(a==="save"){grab();if(!edit.n){msg="名前を入れてください。";render();return}
-        const arr=cur(),x={id:edit.id||Date.now(),n:edit.n,nn:edit.nn,role:edit.role,rank:edit.rank,joined:edit.joined,bio:edit.bio,memo:edit.memo,ph:edit.ph,bg:edit.bg};
+        const arr=cur(),x={id:edit.id||Date.now(),n:edit.n,nn:edit.nn,role:edit.role,pg:edit.pg,rank:edit.rank,joined:edit.joined,bio:edit.bio,memo:edit.memo,ph:edit.ph,bg:edit.bg};
         if(edit.i<0)arr.push(x);else arr[edit.i]=x;
         try{sv("fn_members",arr)}catch(err){msg="保存できませんでした（容量が足りません）。";render();return}
         edit=null;open=null;msg="保存しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。"}
