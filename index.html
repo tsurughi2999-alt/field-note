@@ -287,6 +287,7 @@ let mode="login";
 const say=t=>{$("lg-m").textContent=t||""};
 function show(m,msg){mode=m;const su=m==="setup";$("lg-s").textContent=su?"管理者の設定":"ログイン";$("lg-p2").hidden=!su;$("lg-b").textContent=su?"設定する":"ログイン";$("lg-a").textContent=su?"ログイン画面にもどる":"管理者：初回設定・パスワード変更";$("lg-p").autocomplete=su?"new-password":"current-password";say(msg);$("lg").hidden=false}
 function unlock(key,remember){try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key");(remember?localStorage:sessionStorage).setItem("fn_key",b64(key))}catch(e){}$("lg").hidden=true;$("lg-p").value=$("lg-p2").value="";if(window.fetchShared)fetchShared().then(()=>window.checkNotices&&checkNotices())}
+window.fnOpenSetup=()=>show("setup");
 window.fnLogout=()=>{try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key")}catch(e){}location.reload()};
 window.fnRelogin=msg=>{if(!$("lg").hidden)return;try{localStorage.removeItem("fn_key");sessionStorage.removeItem("fn_key")}catch(e){}show("login",msg)};
 async function go(){
@@ -301,7 +302,7 @@ async function go(){
       if(sj&&sj.enc&&!rd("fn_admin")){say("すでに設定ずみです。IDとパスワードの変更は、管理者の端末だけでできます。");return}
       if(pw.length<10){say("パスワードは10文字以上にしてください。");return}
       if(pw!==$("lg-p2").value){say("確認用のパスワードが一致しません。");return}
-      wr("fn_auth",{vh:h});wr("fn_admin",1);unlock(key,rem);return}
+      wr("fn_auth",{vh:h});wr("fn_admin",1);unlock(key,rem);setTimeout(()=>location.reload(),400);return}
     let j=null;try{const r=await fetch("shared.json?t="+Date.now(),{cache:"no-store"});if(r.ok)j=await r.json()}catch(e){}
     const au=rd("fn_auth");let ok=false;
     if(j&&j.enc){try{await window.fnDec(j,key);ok=true}catch(e){say("IDまたはパスワードが違います。");return}}
@@ -390,7 +391,9 @@ let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"}];
+const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
+const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+1;
 const pages=()=>bl().concat(custom);
 
 const X={
@@ -419,13 +422,14 @@ $("picker").addEventListener("click",e=>{const b=e.target.closest(".sw");if(!b)r
 function go(i){book.scrollTo({left:i*book.clientWidth,behavior:"smooth"})}
 function renderPages(){
   document.querySelectorAll(".pg.dyn").forEach(n=>n.remove());
-  pages().forEach((p,i)=>{
+  adm().concat(pages()).forEach((p,i0)=>{
+    const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
-    s.innerHTML=`${band(p)}<button class="back" data-go="1">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
-    book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"?p:CFGS[kd]);
-    {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,"– "+(i+1)+" –");
+    s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
+    const kd=p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
+    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"?p:CFGS[kd]);
+    {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
   const bk=document.createElement("section");bk.className="pg dyn bk";
   bk.innerHTML=`<div class="spine bsp"></div><div class="bk-card"><div class="bk-t gf">Colophon</div>${[["k","監修","監修者名"],["p","発行所在","発行所在地"],["d","発行日","2026年10月31日"],["v","バージョン","Ver. 1.0"]].map(([k,l,ph])=>`<label><span class="gf">${l}</span><input data-k="${k}" maxlength="40" placeholder="${ph}" value="${esc(colo[k]||"")}"></label>`).join("")}</div>`;
@@ -433,9 +437,9 @@ function renderPages(){
   book.appendChild(bk);paintEl(bk);
   $("toc").innerHTML=pages().map((p,i)=>{
     const c=i>=bl().length;
-    return `<div style="display:flex;align-items:center"><button class="toc" data-go="${i+2}"><span class="ico" style="background:${p.color}">${p.icon}</span><span class="nm">${esc(p.name)}</span><span class="no">${i+1}ページ</span></button>${c?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
+    return `<div style="display:flex;align-items:center"><button class="toc" data-go="${i+TI()+1}"><span class="ico" style="background:${p.color}">${p.icon}</span><span class="nm">${esc(p.name)}</span><span class="no">${i+1}ページ</span></button>${c?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
   }).join("");
-  $("dots").innerHTML=Array.from({length:pages().length+3},(_,i)=>`<button data-go="${i}" aria-label="${i+1}ページ目"></button>`).join("");
+  $("dots").innerHTML=Array.from({length:pages().length+3+adm().length},(_,i)=>`<button data-go="${i}" aria-label="${i+1}ページ目"></button>`).join("");
   upd();
 }
 function upd(){
@@ -452,7 +456,7 @@ document.addEventListener("click",e=>{
     else{d.classList.add("ask");d.textContent="本当に削除";setTimeout(()=>{d.classList.remove("ask");d.textContent="削除"},3000)}
   }
 });
-$("open").onclick=()=>go(1);
+$("open").onclick=()=>go(TI());
 $("addb").onclick=()=>{$("addp").classList.toggle("show")};
 function opts(id,arr,get,set,fmt){
   $(id).innerHTML=arr.map(v=>`<button class="opt${get()===v?" on":""}" data-v="${v}" ${fmt?`style="background:${v}"`:""}>${fmt?"":v}</button>`).join("");
@@ -718,13 +722,15 @@ function wrapPg(s,id,label){
   $("ppanel").appendChild(d);
 })();
 (function(){
-  const d=document.createElement("div");d.className="pp";let out="",inMsg="",pubOut="",st="",clr=false;
+  const d=document.createElement("div");d.className="pp";const a=document.createElement("div");let out="",inMsg="",pubOut="",st="",clr=false;
   const pool=()=>ld("fn_pool",{});
-  const draw=()=>{const n=Object.keys(pool()).length;d.innerHTML=`<h3>みんなで共有</h3><p class="sn-note">山行記録・入湯記録・日帰り情報のうち、「共有する」にした記録を、みんなで見られます。</p><div class="nl">あなたの名前（共有するときに表示）</div><input class="sn-in" id="sh-nm" maxlength="20" value="${esc(myName())}"><button class="sn-btn" data-s="sub">共有する記録を、提出用の文字にする</button>${out?`<textarea class="sn-in" id="sh-out" rows="5" style="margin-top:8px">${esc(out)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-s="cp">コピー</button><button class="sn-btn" data-s="send">送る</button></div>`:""}<p class="sn-note">${out==="-"?"共有にしている記録がありません。":"できた文字を、LINEなどで管理者に送ってください。"}</p><div class="adm-only"><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">管理者用：取り込みと配信</div><textarea class="sn-in" id="sh-in" rows="3" placeholder="メンバーから届いた文字を貼り付け"></textarea><button class="sn-btn sn-ghost" data-s="imp">取り込む</button><p class="sn-note">${esc(inMsg)}　取り込み済み：${n}件</p><button class="sn-btn sn-ghost" data-s="pub">配信ファイル（shared.json）の中身を書き出す</button>${pubOut?`<textarea class="sn-in" id="sh-pub" rows="5" style="margin-top:8px">${esc(pubOut)}</textarea><button class="sn-btn sn-ghost" data-s="cp2">コピー</button><p class="sn-note">暗号化された文字です。コピーして、GitHubの shared.json に貼り付けて保存してください。</p>`:""}<button class="sn-del${clr?" ask":""}" data-s="clr">${clr?"本当にすべて消す":"取り込み済みをすべて消す"}</button></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">みんなの記録を受け取る</div><button class="sn-btn sn-ghost" data-s="get">最新を受け取る</button><p class="sn-note">${esc(st)}</p>`};
+  const drawM=()=>{d.innerHTML=`<h3>みんなで共有</h3><p class="sn-note">山行記録・入湯記録・日帰り情報のうち、「共有する」にした記録を、みんなで見られます。</p><div class="nl">あなたの名前（共有するときに表示）</div><input class="sn-in" id="sh-nm" maxlength="20" value="${esc(myName())}"><button class="sn-btn" data-s="sub">共有する記録を、提出用の文字にする</button>${out?`<textarea class="sn-in" id="sh-out" rows="5" style="margin-top:8px">${esc(out)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" data-s="cp">コピー</button><button class="sn-btn" data-s="send">送る</button></div>`:""}<p class="sn-note">${out==="-"?"共有にしている記録がありません。":"できた文字を、LINEなどで管理者に送ってください。"}</p><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="nl">みんなの記録を受け取る</div><button class="sn-btn sn-ghost" data-s="get">最新を受け取る</button><p class="sn-note">${esc(st)}</p>`};
+  const drawA=()=>{const n=Object.keys(pool()).length;a.innerHTML=`<div class="pp"><h3>取り込みと配信</h3><p class="sn-note">メンバーから届いた文字を取り込み、みんなに配るファイルを作ります。</p><textarea class="sn-in" id="sh-in" rows="3" placeholder="メンバーから届いた文字を貼り付け"></textarea><button class="sn-btn sn-ghost" data-s="imp">取り込む</button><p class="sn-note">${esc(inMsg)}　取り込み済み：${n}件</p><button class="sn-btn sn-ghost" data-s="pub">配信ファイル（shared.json）の中身を書き出す</button>${pubOut?`<textarea class="sn-in" id="sh-pub" rows="5" style="margin-top:8px">${esc(pubOut)}</textarea><button class="sn-btn sn-ghost" data-s="cp2">コピー</button><p class="sn-note">暗号化された文字です。コピーして、GitHubの shared.json に貼り付けて保存してください。</p>`:""}<button class="sn-del${clr?" ask":""}" data-s="clr">${clr?"本当にすべて消す":"取り込み済みをすべて消す"}</button></div>`};
+  const draw=()=>{drawM();drawA()};
   draw();
   const cp=id=>{const t=$(id);t.select();try{navigator.clipboard.writeText(t.value)}catch(x){try{document.execCommand("copy")}catch(y){}}};
   d.addEventListener("input",e=>{if(e.target.id==="sh-nm")sv("fn_myname",e.target.value.trim())});
-  d.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!b.dataset.s)return;const k=b.dataset.s;
+  const onClk=e=>{const b=e.target.closest("button");if(!b||!b.dataset.s)return;const k=b.dataset.s;
     if(k==="sub"){const nm=$("sh-nm").value.trim()||"名無し";sv("fn_myname",nm);const items=[];
       [["tz","fn_tz_log"],["os","fn_os_log"],["oi","fn_os_info"]].forEach(([t,key])=>ld(key,[]).forEach(x=>{if(x.sh&&x.id)items.push(Object.assign({k:t},x))}));
       [["sn","fn_sn_"],["fr","fn_fr_"],["kn","fn_kn_"]].forEach(([pg,pre])=>{ld(pre+"blog",[]).forEach(x=>{if(x.sh&&x.id)items.push({k:"bl",pg,id:x.id,t:x.t,x:x.x,d:x.d})});ld(pre+"harv",[]).forEach(x=>{if(x.sh&&x.id&&x.la!=null)items.push({k:"ar",pg,id:x.id,p:spName(pg,x.p),mo:+String(x.d).slice(5,7)||0,la:Math.round(x.la*10)/10,lo:Math.round(x.lo*10)/10,d:String(x.d).slice(0,7)})})});
@@ -739,8 +745,8 @@ function wrapPg(s,id,label){
     else if(k==="cp2")cp("sh-pub");
     else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>v.from==="管理者")));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
     else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
-  });
-  $("ppanel").appendChild(d);
+  };d.addEventListener("click",onClk);a.addEventListener("click",onClk);
+  $("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).deliver=a;
   fetchShared().then(()=>checkNotices());
 })();
 (function(){
@@ -767,7 +773,7 @@ function wrapPg(s,id,label){
     };
     r.readAsText(f);
   });
-  $("ppanel").appendChild(d);
+  (window.fnAdm=window.fnAdm||{}).imp=d;
 })();
 wrapPg($("tocpg"),"toc","目次");
 /* 登山・温泉 */
@@ -987,16 +993,16 @@ function initAll(root){
   const delPool=id=>{const p=pool();delete p["管理者:"+id];sv("fn_pool",p)};
   const nid=()=>"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   const okUrl=u=>/^https?:\/\//i.test(String(u||""));
-  const hint='<p class="sn-note">追加したら、目次ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
+  const hint='<p class="sn-note">追加したら、「管理者専用」ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
   const dB=k=>`<button class="sn-del${ask===k?" ask":""}" data-dp="${E(k)}">${ask===k?"本当に削除":"削除"}</button>`;
   const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-del" data-rd="${E(x.id)}">読んだ</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
   const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic adm-only"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
   const own=()=>ld("fn_links",[]);
   const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
   const lkV=()=>'<div class="nl">みんなのリンク</div>'+(L("lk").map(x=>lkRow(x,mine(x.id)?"<br>"+dB("l"+x.id):"")).join("")||'<p class="sn-note">まだありません。</p>')+'<div class="nl">自分用のリンク</div>'+(own().map((x,i)=>lkRow(x,"<br>"+dB("o"+i))).join("")||'<p class="sn-note">まだありません。</p>')+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前" maxlength="30"><input class="sn-in" id="lk-u" placeholder="https://..." maxlength="200"><div class="sn-g"><button class="sn-btn sn-ghost" id="lk-own">自分用に追加</button><button class="sn-btn adm-only" id="lk-pub">みんなに追加（管理者）</button></div><span class="adm-only">${hint}</span></div>`;
-  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["最初にどうすればいいですか？","開くとログイン画面が出ます。管理者から教えてもらったIDとパスワードを入れてください。初めてのときだけ通信が必要です。「この端末ではログインしたままにする」にしておくと、次からは入力不要です。"],["ログインできません","IDとパスワードの大文字・小文字、余分な空白を確認してください（👁で表示できます）。パスワードが変わったときは、管理者に新しいものを聞いてください。"],["ログアウトしたい","目次ページの「ログイン・管理者」にある「ログアウト」を押します。"],["ホーム画面にアイコンを置きたい","Chromeで開き、右上の︙から「アプリをインストール」（または「ホーム画面に追加」）を選びます。iPhoneはSafariの共有ボタンから「ホーム画面に追加」です。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存され、端末ごとに別です。ブラウザの「サイトデータの削除」をすると消えるので、大事な記録は目次ページの「データのバックアップ」で書き出しておいてください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。大きさは「小・中・大」のほか、幅と高さのスライダーで自由に決められます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","正確な場所は送りません。約10km四方にぼかした位置だけを共有します。配信ファイルも暗号化されています。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["参考資料ページは何ですか？","天気・地図・登山・安全などのリンク集です。カテゴリで絞り込めて、自分で追加・削除もできます。追加したリンクはこの端末だけに保存されます。"],["自分で追加したページの使い方は？","目次ページで追加したページには、予定（カレンダー）・記録・スポット・メモ・リンクの5つのタブがあります。スポットで「現在地も記録する」を選ぶと、地図で開くリンクが付きます。"],["地域マップは何ですか？","長野・岐阜・愛知・福井・石川・富山・新潟・山梨のスポット数を、県ごとに表示します。スポットの「県・地域」に県名を入れると集計されます。場所を守るため、管理者モードの端末だけに表示されます。"],["グループのカレンダーとは？","管理者が設定したGoogleカレンダーを、目次ページで見られます。予定は、各ページの「予定」タブから「Googleカレンダーに追加」で、自分のカレンダーにも入れられます。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["【管理者】配信するには？","目次ページの「管理者用：取り込みと配信」で取り込み、「配信ファイルの中身を書き出す」をコピーして、GitHubのshared.jsonに貼り付けて保存します（暗号化されて出力されます）。"],["【管理者】管理者モードにするには？","目次ページの「ログイン・管理者」で管理者パスワードを入れます。管理者パスワードは、管理者の端末で設定し、配信ファイルを書き出し直すと、ほかの端末でも使えます。"],["【管理者】パスワードを変えるには？","管理者の端末でログアウトし、ログイン画面の「管理者：初回設定・パスワード変更」から新しいIDとパスワードを設定します。そのあと配信ファイルを書き出してGitHubに上げ直し、メンバーに新しいパスワードを伝えてください。"]];
-  const manV=()=>QA.map(a=>`<details class="ic"><summary><b>${a[0]}</b></summary><p class="sn-note">${a[1]}</p></details>`).join("");
-  const goTo=pid=>{const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+2)};
+  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["最初にどうすればいいですか？","開くとログイン画面が出ます。管理者から教えてもらったIDとパスワードを入れてください。初めてのときだけ通信が必要です。「この端末ではログインしたままにする」にしておくと、次からは入力不要です。"],["ログインできません","IDとパスワードの大文字・小文字、余分な空白を確認してください（👁で表示できます）。パスワードが変わったときは、管理者に新しいものを聞いてください。"],["ログアウトしたい","目次ページの「ログアウト」にある「ログアウト」ボタンを押します。"],["ホーム画面にアイコンを置きたい","Chromeで開き、右上の︙から「アプリをインストール」（または「ホーム画面に追加」）を選びます。iPhoneはSafariの共有ボタンから「ホーム画面に追加」です。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存され、端末ごとに別です。ブラウザの「サイトデータの削除」をすると消えるので、大事な記録は目次ページの「データのバックアップ」で書き出しておいてください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。大きさは「小・中・大」のほか、幅と高さのスライダーで自由に決められます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","正確な場所は送りません。約10km四方にぼかした位置だけを共有します。配信ファイルも暗号化されています。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["参考資料ページは何ですか？","天気・地図・登山・安全などのリンク集です。カテゴリで絞り込めて、自分で追加・削除もできます。追加したリンクはこの端末だけに保存されます。"],["自分で追加したページの使い方は？","目次ページで追加したページには、予定（カレンダー）・記録・スポット・メモ・リンクの5つのタブがあります。スポットで「現在地も記録する」を選ぶと、地図で開くリンクが付きます。"],["地域マップは何ですか？","長野・岐阜・愛知・福井・石川・富山・新潟・山梨のスポット数を、県ごとに表示します。スポットの「県・地域」に県名を入れると集計されます。場所を守るため、管理者モードの端末だけに表示されます。"],["グループのカレンダーとは？","管理者が設定したGoogleカレンダーを、目次ページで見られます。予定は、各ページの「予定」タブから「Googleカレンダーに追加」で、自分のカレンダーにも入れられます。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["【管理者】配信するには？","「管理者専用」ページの「取り込みと配信」で取り込み、「配信ファイルの中身を書き出す」をコピーして、GitHubのshared.jsonに貼り付けて保存します（暗号化されて出力されます）。"],["【管理者】管理者モードにするには？","目次ページの「ログアウト」の「管理者の方はこちら」で管理者パスワードを入れます。管理者パスワードは、管理者の端末の「管理者専用」ページで設定し、配信ファイルを書き出し直すと、ほかの端末でも使えます。"],["【管理者】パスワードを変えるには？","管理者の端末の「管理者専用」ページで、「メンバー用のIDとパスワードを設定・変更」を押して、新しいIDとパスワードを設定します。そのあと配信ファイルを書き出してGitHubに上げ直し、メンバーに新しいパスワードを伝えてください。"]];
+  const manV=()=>QA.filter(a=>ld("fn_admin",0)||!a[0].startsWith("【管理者】")).map(a=>`<details class="ic"><summary><b>${a[0]}</b></summary><p class="sn-note">${a[1]}</p></details>`).join("");
+  const goTo=pid=>{const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+TI()+1)};
   const res=()=>{
     const t=q.trim();if(!t)return '<p class="sn-note">図鑑・百名山・泉質・自分の記録・レシピ・メモをまとめて探せます。</p>';
     const R=[],has=s=>String(s||"").includes(t),add=(pid,lb,tx)=>{if(R.length<60)R.push([pid,lb,tx])};
@@ -1101,12 +1107,12 @@ function initInfo(root){
 }
 (function(){
   const d=document.createElement("div");d.className="pp";const ad=ld("fn_admin",0);
-  d.innerHTML='<h3>ログイン・管理者</h3>'+(ad
-   ?'<p class="sn-note">この端末は<b>管理者モード</b>です。取り込み・配信などの画面が使えます。管理者パスワードを決めておくと、ほかの端末でも管理者モードにできます（設定したあと、配信ファイルを書き出してGitHubに上げ直してください）。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード（8文字以上）" autocomplete="new-password"><button class="sn-btn sn-ghost" id="am-set">管理者パスワードを設定・変更</button><button class="sn-btn sn-ghost" id="am-off">管理者モードをやめる</button><button class="sn-btn sn-ghost" id="qr-b">新しいメンバー用のQRコードを表示</button><div id="qr-v"></div>'
-   :'<p class="sn-note">管理者の方は、管理者パスワードを入れると、取り込み・配信などの画面が表示されます。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード" autocomplete="off"><button class="sn-btn sn-ghost" id="am-on">管理者モードにする</button>')
-   +'<p class="sn-note" id="am-m"></p><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><p class="sn-note">ログアウトすると、次に開くときIDとパスワードが必要です。</p><button class="sn-btn sn-ghost" id="lo-b">ログアウト</button>';
-  $("ppanel").appendChild(d);
-  const q=i=>d.querySelector("#"+i),m=t=>{q("am-m").textContent=t};
+  const a=document.createElement("div");
+  d.innerHTML='<h3>ログアウト</h3>'+(ad?'':'<details class="ic"><summary>管理者の方はこちら</summary><p class="sn-note">管理者パスワードを入れると、管理者モードになり、「管理者専用」ページが現れます。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード" autocomplete="off"><button class="sn-btn sn-ghost" id="am-on">管理者モードにする</button><p class="sn-note" id="am-m"></p></details>')+'<p class="sn-note">ログアウトすると、次に開くときIDとパスワードが必要です。</p><button class="sn-btn sn-ghost" id="lo-b">ログアウト</button>';
+  if(ad)a.innerHTML='<div class="pp"><h3>メンバー用のIDとパスワード</h3><p class="sn-note">メンバーがログインに使うIDとパスワードを、ここで設定・変更します。ログイン画面の「管理者の設定」が開きます。設定したあと、「取り込みと配信」で配信ファイルを書き出し、GitHubのshared.jsonを上げ直して、メンバーに新しいIDとパスワードを伝えてください。</p><button class="sn-btn sn-ghost" id="mc-set">メンバー用のIDとパスワードを設定・変更</button></div><div class="pp"><h3>管理者パスワード</h3><p class="sn-note">この端末は<b>管理者モード</b>です。管理者パスワードを決めておくと、ほかの端末でも管理者モードにできます（設定したあと、配信ファイルを書き出してGitHubに上げ直してください）。</p><input class="sn-in" id="am-p" type="password" placeholder="管理者パスワード（8文字以上）" autocomplete="new-password"><button class="sn-btn sn-ghost" id="am-set">管理者パスワードを設定・変更</button><button class="sn-btn sn-ghost" id="am-off">管理者モードをやめる</button><p class="sn-note" id="am-m"></p></div><div class="pp"><h3>新しいメンバー</h3><button class="sn-btn sn-ghost" id="qr-b">新しいメンバー用のQRコードを表示</button><div id="qr-v"></div></div>';
+  $("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).acct=a;
+  const q=i=>d.querySelector("#"+i)||a.querySelector("#"+i),m=t=>{q("am-m").textContent=t};
+  if(q("mc-set"))q("mc-set").onclick=()=>{if(window.fnOpenSetup)window.fnOpenSetup()};
   q("lo-b").onclick=()=>window.fnLogout();
   if(q("am-set"))q("am-set").onclick=async()=>{const v=q("am-p").value;if(v.length<8){m("8文字以上にしてください。");return}sv("fn_admh",await window.fnAdmHash(v));q("am-p").value="";m("設定しました。「配信ファイルの中身を書き出す」をして、GitHubのshared.jsonを更新してください。")};
   if(q("qr-b"))q("qr-b").onclick=()=>{const v=q("qr-v");if(v.innerHTML){v.innerHTML="";return}v.innerHTML='<div style="background:#fff;padding:8px;border-radius:8px;max-width:260px;margin:10px auto 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM27 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM32 4h1v1h-1zM33 4h1v1h-1zM34 4h1v1h-1zM35 4h1v1h-1zM36 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM22 5h1v1h-1zM26 5h1v1h-1zM27 5h1v1h-1zM28 5h1v1h-1zM30 5h1v1h-1zM36 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM13 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM33 6h1v1h-1zM34 6h1v1h-1zM36 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM15 7h1v1h-1zM18 7h1v1h-1zM20 7h1v1h-1zM23 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM30 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM34 7h1v1h-1zM36 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM24 8h1v1h-1zM28 8h1v1h-1zM30 8h1v1h-1zM32 8h1v1h-1zM33 8h1v1h-1zM34 8h1v1h-1zM36 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM25 9h1v1h-1zM30 9h1v1h-1zM36 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM33 10h1v1h-1zM34 10h1v1h-1zM35 10h1v1h-1zM36 10h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM16 12h1v1h-1zM18 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM28 12h1v1h-1zM30 12h1v1h-1zM33 12h1v1h-1zM35 12h1v1h-1zM36 12h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM12 13h1v1h-1zM15 13h1v1h-1zM20 13h1v1h-1zM22 13h1v1h-1zM23 13h1v1h-1zM27 13h1v1h-1zM30 13h1v1h-1zM31 13h1v1h-1zM33 13h1v1h-1zM34 13h1v1h-1zM36 13h1v1h-1zM4 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM21 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM29 14h1v1h-1zM31 14h1v1h-1zM32 14h1v1h-1zM33 14h1v1h-1zM35 14h1v1h-1zM36 14h1v1h-1zM4 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM22 15h1v1h-1zM23 15h1v1h-1zM27 15h1v1h-1zM29 15h1v1h-1zM31 15h1v1h-1zM33 15h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM19 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM25 16h1v1h-1zM29 16h1v1h-1zM31 16h1v1h-1zM32 16h1v1h-1zM33 16h1v1h-1zM36 16h1v1h-1zM5 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM28 17h1v1h-1zM31 17h1v1h-1zM34 17h1v1h-1zM35 17h1v1h-1zM5 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM15 18h1v1h-1zM17 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM22 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM34 18h1v1h-1zM5 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM14 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM24 19h1v1h-1zM25 19h1v1h-1zM27 19h1v1h-1zM29 19h1v1h-1zM30 19h1v1h-1zM34 19h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM28 20h1v1h-1zM29 20h1v1h-1zM30 20h1v1h-1zM32 20h1v1h-1zM33 20h1v1h-1zM34 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM22 21h1v1h-1zM25 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM33 21h1v1h-1zM35 21h1v1h-1zM36 21h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM24 22h1v1h-1zM26 22h1v1h-1zM29 22h1v1h-1zM31 22h1v1h-1zM32 22h1v1h-1zM34 22h1v1h-1zM35 22h1v1h-1zM4 23h1v1h-1zM6 23h1v1h-1zM7 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM14 23h1v1h-1zM18 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM32 23h1v1h-1zM6 24h1v1h-1zM10 24h1v1h-1zM13 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM19 24h1v1h-1zM22 24h1v1h-1zM24 24h1v1h-1zM29 24h1v1h-1zM33 24h1v1h-1zM34 24h1v1h-1zM36 24h1v1h-1zM4 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM11 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM22 25h1v1h-1zM27 25h1v1h-1zM30 25h1v1h-1zM33 25h1v1h-1zM36 25h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM15 26h1v1h-1zM16 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM22 26h1v1h-1zM27 26h1v1h-1zM29 26h1v1h-1zM30 26h1v1h-1zM31 26h1v1h-1zM34 26h1v1h-1zM35 26h1v1h-1zM36 26h1v1h-1zM5 27h1v1h-1zM6 27h1v1h-1zM8 27h1v1h-1zM11 27h1v1h-1zM13 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM27 27h1v1h-1zM28 27h1v1h-1zM29 27h1v1h-1zM33 27h1v1h-1zM35 27h1v1h-1zM36 27h1v1h-1zM4 28h1v1h-1zM6 28h1v1h-1zM7 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM11 28h1v1h-1zM13 28h1v1h-1zM15 28h1v1h-1zM16 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM24 28h1v1h-1zM27 28h1v1h-1zM28 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM32 28h1v1h-1zM35 28h1v1h-1zM36 28h1v1h-1zM12 29h1v1h-1zM13 29h1v1h-1zM14 29h1v1h-1zM15 29h1v1h-1zM17 29h1v1h-1zM18 29h1v1h-1zM19 29h1v1h-1zM20 29h1v1h-1zM21 29h1v1h-1zM23 29h1v1h-1zM24 29h1v1h-1zM26 29h1v1h-1zM28 29h1v1h-1zM32 29h1v1h-1zM33 29h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM7 30h1v1h-1zM8 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM12 30h1v1h-1zM13 30h1v1h-1zM17 30h1v1h-1zM23 30h1v1h-1zM24 30h1v1h-1zM26 30h1v1h-1zM27 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM35 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM18 31h1v1h-1zM20 31h1v1h-1zM25 31h1v1h-1zM26 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM32 31h1v1h-1zM33 31h1v1h-1zM34 31h1v1h-1zM36 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM8 32h1v1h-1zM10 32h1v1h-1zM14 32h1v1h-1zM16 32h1v1h-1zM18 32h1v1h-1zM21 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM30 32h1v1h-1zM31 32h1v1h-1zM32 32h1v1h-1zM34 32h1v1h-1zM36 32h1v1h-1zM4 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM8 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM13 33h1v1h-1zM14 33h1v1h-1zM15 33h1v1h-1zM16 33h1v1h-1zM17 33h1v1h-1zM18 33h1v1h-1zM21 33h1v1h-1zM22 33h1v1h-1zM23 33h1v1h-1zM24 33h1v1h-1zM27 33h1v1h-1zM28 33h1v1h-1zM31 33h1v1h-1zM33 33h1v1h-1zM35 33h1v1h-1zM36 33h1v1h-1zM4 34h1v1h-1zM6 34h1v1h-1zM7 34h1v1h-1zM8 34h1v1h-1zM10 34h1v1h-1zM12 34h1v1h-1zM14 34h1v1h-1zM16 34h1v1h-1zM17 34h1v1h-1zM21 34h1v1h-1zM23 34h1v1h-1zM28 34h1v1h-1zM29 34h1v1h-1zM30 34h1v1h-1zM31 34h1v1h-1zM4 35h1v1h-1zM10 35h1v1h-1zM15 35h1v1h-1zM18 35h1v1h-1zM19 35h1v1h-1zM20 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM27 35h1v1h-1zM28 35h1v1h-1zM29 35h1v1h-1zM31 35h1v1h-1zM32 35h1v1h-1zM36 35h1v1h-1zM4 36h1v1h-1zM5 36h1v1h-1zM6 36h1v1h-1zM7 36h1v1h-1zM8 36h1v1h-1zM9 36h1v1h-1zM10 36h1v1h-1zM12 36h1v1h-1zM14 36h1v1h-1zM15 36h1v1h-1zM16 36h1v1h-1zM17 36h1v1h-1zM19 36h1v1h-1zM20 36h1v1h-1zM21 36h1v1h-1zM22 36h1v1h-1zM24 36h1v1h-1zM25 36h1v1h-1zM26 36h1v1h-1zM27 36h1v1h-1zM32 36h1v1h-1zM34 36h1v1h-1z" fill="#1d3b27"/></svg></div><p class="sn-note" style="text-align:center">https://tsurughi2999-alt.github.io/field-note/<br>読み取るとアプリが開きます。IDとパスワードは別にお伝えください。</p>'};
@@ -1193,11 +1199,19 @@ function initRegion(root){
 (function(){
   const d=document.createElement("div");d.className="pp";
   const ad=ld("fn_admin",0),ok=v=>/^[\w.+\-@%]{6,200}$/.test(String(v||""));
+  const a=document.createElement("div");a.className="pp";
   const draw=()=>{const g=ld("fn_gcal",null)||remote().gcal||"";
-    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>')+(ad?`<input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"");
-    const b=d.querySelector("#gc-s");if(b)b.onclick=()=>{const v=d.querySelector("#gc-i").value.trim();if(v&&!ok(v)){d.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}sv("fn_gcal",v||null);draw()}};
-  draw();$("ppanel").appendChild(d);
+    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>');
+    a.innerHTML=ad?`<h3>グループのカレンダー設定</h3><input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"";
+    const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}sv("fn_gcal",v||null);draw()}};
+  draw();$("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).cal=a;
 })();
+function initAdmin(root){
+  if(!ld("fn_admin",0)){root.innerHTML='<p class="sn-note">このページは管理者だけが使えます。</p>';return}
+  const A=window.fnAdm||{};
+  root.innerHTML='<p class="sn-note">管理者だけが使うものを、ここにまとめています。メンバーには、このページは表示されません。</p>';
+  ["acct","deliver","imp","cal"].forEach(k=>{if(A[k])root.appendChild(A[k])});
+}
 drawCover();renderPages();
 </script>
 <script>
