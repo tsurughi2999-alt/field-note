@@ -302,6 +302,7 @@ body:not(.adm) .adm-only{display:none!important}
 <button type="button" id="lg-b" class="lgb">ログイン</button><p id="lg-m" class="lgm"></p>
 <button type="button" id="lg-a" class="lga">管理者：初回設定・パスワード変更</button>
 <div><button type="button" id="lg-ap" class="lga" style="font-size:14px;opacity:1">はじめての方：参加を申請する</button></div>
+<div><button type="button" id="lg-bk" class="lga" style="font-size:14px;opacity:1">管理者：バックアップファイルから戻す</button><input type="file" id="lg-bf" accept=".json,application/json" hidden></div>
 </div></div>
 <div id="ap" role="dialog" aria-modal="true" hidden><div class="lgc">
 <div class="lgt">Field Note</div><div class="lgs">参加を申請する</div>
@@ -382,6 +383,11 @@ async function go(){
 $("lg-b").onclick=go;
 $("lg-e").onclick=()=>{const t=$("lg-p").type==="password"?"text":"password";$("lg-p").type=t;$("lg-p2").type=t};
 $("lg-a").onclick=()=>show(mode==="setup"?"login":"setup");
+$("lg-bk").onclick=()=>$("lg-bf").click();
+$("lg-bf").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let o=null;try{o=JSON.parse(r.result)}catch(x){}
+  if(!o||o.app!=="fieldnote-admin"||!o.ls||!o.ls.fn_key||!o.ls.fn_auth||!o.ls.fn_admin){say("管理者データのファイルではありません。");return}
+  try{["fn_key","fn_auth","fn_admin"].forEach(k=>{if(o.ls[k]!=null)localStorage.setItem(k,o.ls[k])});Object.keys(o.ls).forEach(k=>{if(localStorage.getItem(k)===null)localStorage.setItem(k,o.ls[k])})}catch(x){say("戻せませんでした。");return}
+  say("戻しました。まもなく開き直します。");setTimeout(()=>location.reload(),700)};r.readAsText(f);e.target.value=""};
 ["lg-i","lg-p","lg-p2"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")go()}));
 if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 
