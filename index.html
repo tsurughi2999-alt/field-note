@@ -798,20 +798,25 @@ function repaintAll(){document.querySelectorAll(".pg[data-pid]").forEach(el=>pai
 const NC=["#fff2a3","#ffc7d4","#bfe3ff","#cdeeb5","#ffd6a3","#e1cdfa"],NS=[["小",86],["中",120],["大",160]];
 let draft=null,ndel=false;
 const nmod=document.createElement("div");nmod.id="nmod";nmod.hidden=true;
-nmod.innerHTML='<div class="nbox"><textarea id="nt" rows="4" maxlength="200" placeholder="メモを書く"></textarea><div class="nl">大きさ</div><div class="sn-chips" id="ns"></div><div class="nl">幅　<b id="nwv"></b></div><input type="range" id="nw" min="60" max="320" step="2" style="width:100%" aria-label="幅"><div class="nl">高さ　<b id="nhv"></b></div><input type="range" id="nh" min="60" max="320" step="2" style="width:100%" aria-label="高さ"><div class="nl">色</div><div class="nrow" id="nc"></div><div class="nrow"><button class="sn-btn" id="nsv">保存</button><button class="sn-btn sn-ghost" id="nd">削除</button><button class="sn-btn sn-ghost" id="nx">閉じる</button></div></div>';
+nmod.innerHTML='<div class="nbox"><textarea id="nt" rows="4" maxlength="200" placeholder="メモを書く"></textarea><div class="nl">大きさ</div><div class="sn-chips" id="ns"></div><div class="nl">幅　<b id="nwv"></b></div><input type="range" id="nw" min="60" max="320" step="2" style="width:100%" aria-label="幅"><div class="nl">高さ　<b id="nhv"></b></div><input type="range" id="nh" min="60" max="320" step="2" style="width:100%" aria-label="高さ"><div class="nl">文字の大きさ　<b id="nfv"></b></div><div class="sn-chips" id="nf"></div><input type="range" id="nfs" min="10" max="48" step="1" style="width:100%" aria-label="文字の大きさ"><p class="sn-note" style="margin:4px 0 0">文字が入りきらないときは、幅と高さも大きくしてください。</p><div class="nl">色</div><div class="nrow" id="nc"></div><div class="nrow"><button class="sn-btn" id="nsv">保存</button><button class="sn-btn sn-ghost" id="nd">削除</button><button class="sn-btn sn-ghost" id="nx">閉じる</button></div></div>';
 document.body.appendChild(nmod);
+const NF=[["自動",0],["小",12],["中",16],["大",22],["特大",30]];
+const nfz=n=>n.f>0?n.f:Math.max(11,Math.min(n.w,(n.h||n.w*.95)/.95)/9);
 function drawNm(){
   $("ns").innerHTML=NS.map(([l,w])=>`<button class="sn-chip${draft.d.w===w&&draft.d.h===Math.round(w*.95)?" on":""}" data-w="${w}">${l}</button>`).join("");
   $("nw").value=draft.d.w;$("nh").value=draft.d.h;$("nwv").textContent=draft.d.w+"px";$("nhv").textContent=draft.d.h+"px";
   $("nc").innerHTML=NC.map(c=>`<button class="nsw${draft.d.c===c?" on":""}" data-c="${c}" style="background:${c}" aria-label="色"></button>`).join("");
+  $("nf").innerHTML=NF.map(([l,v])=>`<button class="sn-chip${(draft.d.f||0)===v?" on":""}" data-f="${v}">${l}</button>`).join("");
+  $("nfs").value=Math.round(nfz(draft.d));$("nfv").textContent=draft.d.f>0?draft.d.f+"px":"自動（"+Math.round(nfz(draft.d))+"px）";
   $("nd").textContent=ndel?"本当に削除":"削除";
 }
-function openEdit(n,w,id){draft={n,w,id,d:{t:n.t,w:n.w,h:n.h||Math.round(n.w*.95),c:n.c}};ndel=false;$("nt").value=n.t;drawNm();nmod.hidden=false}
-nmod.addEventListener("input",e=>{const t=e.target;if(t.id==="nw"){draft.d.w=+t.value;drawNm()}else if(t.id==="nh"){draft.d.h=+t.value;drawNm()}});
+function openEdit(n,w,id){draft={n,w,id,d:{t:n.t,w:n.w,h:n.h||Math.round(n.w*.95),c:n.c,f:n.f||0}};ndel=false;$("nt").value=n.t;drawNm();nmod.hidden=false}
+nmod.addEventListener("input",e=>{const t=e.target;if(t.id==="nw"){draft.d.w=+t.value;drawNm()}else if(t.id==="nh"){draft.d.h=+t.value;drawNm()}else if(t.id==="nfs"){draft.d.f=+t.value;drawNm()}});
 nmod.addEventListener("click",e=>{
   if(e.target===nmod){nmod.hidden=true;return}
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.w){draft.d.w=+b.dataset.w;draft.d.h=Math.round(draft.d.w*.95);drawNm()}
+  else if(b.dataset.f!==undefined){draft.d.f=+b.dataset.f;drawNm()}
   else if(b.dataset.c){draft.d.c=b.dataset.c;drawNm()}
   else if(b.id==="nsv"){draft.d.t=$("nt").value;Object.assign(draft.n,draft.d);sv("fn_notes",notes);nmod.hidden=true;renderNotes(draft.w,draft.id)}
   else if(b.id==="nd"){if(ndel){notes[draft.id]=(notes[draft.id]||[]).filter(x=>x!==draft.n);sv("fn_notes",notes);nmod.hidden=true;renderNotes(draft.w,draft.id)}else{ndel=true;drawNm()}}
@@ -821,7 +826,7 @@ function renderNotes(w,id){
   w.querySelectorAll(".note").forEach(x=>x.remove());
   (notes[id]||[]).forEach(n=>{
     const e=document.createElement("div");e.className="note";
-    const draw=()=>{e.style.cssText=`left:${n.x*100}%;top:${n.y}px;width:${n.w}px;height:${n.h||n.w*.95}px;background:${n.c};transform:rotate(${n.r}deg);font-size:${Math.max(11,Math.min(n.w,(n.h||n.w*.95)/.95)/9)}px`;e.textContent=n.t||"タップで編集"};
+    const draw=()=>{e.style.cssText=`left:${n.x*100}%;top:${n.y}px;width:${n.w}px;height:${n.h||n.w*.95}px;background:${n.c};transform:rotate(${n.r}deg);font-size:${nfz(n)}px`;e.textContent=n.t||"タップで編集"};
     draw();
     e.onpointerdown=ev=>{
       ev.preventDefault();e.setPointerCapture(ev.pointerId);
