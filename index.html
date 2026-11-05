@@ -494,7 +494,7 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 <div id="dots"></div>
 <script>
 const BASE=[{id:"info",name:"情報",icon:"🧭",color:"#2f6f8f"},{id:"all",name:"みんな",icon:"👥",color:"#7a5aa3"},{id:"members",name:"メンバー",icon:"🧑‍🤝‍🧑",color:"#8a5a7a"},{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
-const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟"];
+const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟","🏊","🌊"];
 const COLORS=["#4f8446","#b9473a","#a06a36","#3b7ca3","#835aa3","#b8922a"];
 const SC=[
 {n:"新緑",sky:["#bfe2c6","#f4f8dc"],sun:"#fff6b0",m1:"#8fbf8a",m2:"#5e9a62",gr:"#3f7a45",tr:"#2d6a3a",d:"pine",x:""},
@@ -519,7 +519,9 @@ function isAdm(){return !!ld("fn_admin",0)}
 function gateOn(){return !isAdm()&&!!remote().gate}
 function meRec(){const u=ld("fn_uid",null);return u?(remote().members||[]).find(m=>m.uid===u)||null:null}
 function canView(p){if(!gateOn()||FIXED.includes(p.id)||p.id==="admin")return true;const m=meRec();return !!(m&&(m.st||"ok")==="ok"&&(m.pg||[]).includes(p.id))}
-function loadCustom(){return gateOn()?(remote().pages||[]):ld("fn_pages",[])}
+const POOL_RE=/プール|水泳|スイム/,POOL_SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="40" height="40" aria-label="水泳"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 34.5q4-4 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.6"/><path d="M4 40.5q4-3.5 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.2" opacity=".6"/><path d="M4 45.5q4-3 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2" opacity=".32"/><path d="M28 27.5C21 28 14 28 8.5 27.8" stroke="#fff" stroke-width="4.6"/><path d="M24.5 26.5C24.5 16 17 12.5 10.5 16.5" stroke="#fff" stroke-width="3.8"/></g><circle cx="32" cy="21" r="5.4" fill="#fff"/><path d="M26.6 21a5.4 5.4 0 0 1 10.8 0z" fill="#ffd166"/><rect x="32.6" y="20.1" width="4.6" height="2.6" rx="1.3" fill="#1f4560"/><g fill="#fff"><circle cx="6.5" cy="23" r="1.7"/><circle cx="10.5" cy="20" r="1.2" opacity=".85"/><circle cx="4.5" cy="18.5" r="1" opacity=".7"/></g></svg>';
+const icoOf=p=>POOL_RE.test((p&&p.name)||"")?POOL_SVG:p.icon;
+function loadCustom(){const L=gateOn()?(remote().pages||[]):ld("fn_pages",[]);return L.map(p=>POOL_RE.test((p&&p.name)||"")?Object.assign({},p,{icon:"🏊",color:"#3b7ca3"}):p)}
 let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_bands",{}),uid=0,colo=ld("fn_colo",{});
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
@@ -559,7 +561,7 @@ function renderPages(){
   adm().concat(pages()).forEach((p,i0)=>{
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
-    s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${p.icon}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
+    s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
     const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
@@ -573,7 +575,7 @@ function renderPages(){
   book.appendChild(bk);paintEl(bk);
   $("toc").innerHTML=pages().map((p,i)=>{
     const c=i>=bl().length;
-    return `<div style="display:flex;align-items:center"><button class="toc${canView(p)?"":" lock"}" data-go="${i+TI()+1}"><span class="ico" style="background:${p.color}">${p.icon}</span><span class="nm">${esc(p.name)}</span>${FIXED.includes(p.id)?'<span class="fx">固定</span>':""}<span class="no">${i+1}ページ</span></button>${c&&isAdm()?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
+    return `<div style="display:flex;align-items:center"><button class="toc${canView(p)?"":" lock"}" data-go="${i+TI()+1}"><span class="ico" style="background:${p.color}">${icoOf(p)}</span><span class="nm">${esc(p.name)}</span>${FIXED.includes(p.id)?'<span class="fx">固定</span>':""}<span class="no">${i+1}ページ</span></button>${c&&isAdm()?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
   }).join("");
   $("dots").innerHTML=Array.from({length:pages().length+3+adm().length},(_,i)=>`<button data-go="${i}" aria-label="${i+1}ページ目"></button>`).join("");
   $("addb").textContent=gateOn()?"＋ ページの作成を申請":"＋ ページを追加";$("asave").textContent=gateOn()?"申請の文字を作る":"このページを追加";
@@ -1443,7 +1445,7 @@ function initSwim(root,pg){
 }
 
 function initCustom(root,pg){
-  if(/プール|水泳|スイム/.test(pg.name||"")){initSwim(root,pg);return}
+  if(POOL_RE.test(pg.name||"")){initSwim(root,pg);return}
   const pre="fn_cu_"+pg.id+"_",E=v=>esc(String(v==null?"":v)),$=i=>root.querySelector("#"+i),okUrl=u=>/^https?:\/\//i.test(String(u||""));
   const K=["予定","記録","スポット","メモ","リンク"],KEY=["ev","lg","sp","mm","lk"];
   const D={};KEY.forEach(k=>D[k]=ld(pre+k,[]));
