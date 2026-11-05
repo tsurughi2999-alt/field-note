@@ -885,7 +885,7 @@ function wrapPg(s,id,label){
     else if(k==="pub"){window.fnPublish().then(s=>{pubOut=s;inMsg=window.__pubWarn||"";draw()}).catch(e=>{pubOut="";inMsg=(e&&e.message)||"暗号化できませんでした。";draw()})}
     else if(k==="cp2")cp("sh-pub");
     else if(k==="dl"){try{const u=URL.createObjectURL(new Blob([pubOut],{type:"application/json"})),l=document.createElement("a");l.href=u;l.download="shared.json";document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(x){inMsg="保存できませんでした。コピーを使ってください。";draw()}}
-    else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>v.from==="管理者")));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
+    else if(k==="clr"){if(clr){sv("fn_pool",Object.fromEntries(Object.entries(pool()).filter(([k,v])=>!["tz","os","oi","ar","bl"].includes(v.k))));clr=false;inMsg="";pubOut=""}else clr=true;draw()}
     else if(k==="get"){st="受信中…";draw();fetchShared().then(n=>{st=n<0?"受け取れませんでした。通信やアプリの置き場所を確認してください。":"受け取りました（"+n+"件）。";draw()})}
   };d.addEventListener("click",onClk);a.addEventListener("click",onClk);
   $("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).deliver=a;
