@@ -1322,7 +1322,94 @@ function initRef(root){
   });
   render();
 }
+function initSwim(root,pg){
+  const pre="fn_cu_"+pg.id+"_",E=v=>esc(String(v==null?"":v)),$=i=>root.querySelector("#"+i);
+  const SW=[["cr","クロール","#3b7ca3"],["br","平泳ぎ","#4f8446"],["ba","背泳ぎ","#b8622a"],["bf","バタフライ","#7a5aa3"],["ot","その他","#8a8a6a"],["un","泳法未入力","#b9a24a"]];
+  const f2=n=>String(n).padStart(2,"0"),WD=["日","月","火","水","木","金","土"];
+  let L=ld(pre+"sw",[]),G=ld(pre+"swg",{}),tab=0,ask=null,msg="",gp="w",gv=td(),cym=td().slice(0,7),csel=td();
+  if(!Array.isArray(L))L=[];if(!G||typeof G!=="object")G={};
+  const idg=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const pd=s=>{const a=String(s).split("-").map(Number);return new Date(a[0],a[1]-1,a[2])};
+  const fd=d=>d.getFullYear()+"-"+f2(d.getMonth()+1)+"-"+f2(d.getDate());
+  const add=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return fd(d)};
+  const mon=s=>add(s,-((pd(s).getDay()+6)%7));
+  const km=m=>m<1000?m+"m":(m/1000).toFixed(2).replace(/\.?0+$/,"")+"km";
+  const sum=(a,b)=>{let m=0,n=0;L.forEach(x=>{if(x.d>=a&&x.d<=b){m+=x.m;n++}});return [m,n]};
+  const pace=x=>(!x.t||x.m<100)?0:Math.round(x.t*60/(x.m/100));
+  const pf=s=>s?Math.floor(s/60)+":"+f2(s%60):"";
+  const byDay=()=>{const o={};L.forEach(x=>{o[x.d]=(o[x.d]||0)+x.m});return o};
+  const streaks=()=>{const o=byDay(),ds=Object.keys(o).sort();let best=0,run=0,prev=null;
+    ds.forEach(d=>{run=prev&&add(prev,1)===d?run+1:1;if(run>best)best=run;prev=d});
+    let cur=0,c=o[td()]?td():add(td(),-1);while(o[c]){cur++;c=add(c,-1)}return [cur,best]};
+  const sorted=()=>L.map((x,i)=>({x,i})).sort((a,b)=>b.x.d.localeCompare(a.x.d)||b.i-a.i);
+  const top=()=>{const t=td(),a=mon(t),mo=t.slice(0,7),y=t.slice(0,4),
+    d0=sum(t,t),w0=sum(a,add(a,6)),m0=sum(mo+"-01",mo+"-31"),y0=sum(y+"-01-01",y+"-12-31");
+    const c=(l,v)=>`<div class="ic" style="margin:0;text-align:center"><div class="sn-note" style="margin:0">${l}</div><b style="font-size:20px">${km(v[0])}</b><div class="sn-note" style="margin:0">${v[1]}回</div></div>`;
+    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">${c("今日",d0)}${c("今週",w0)}${c("今月",m0)}${c("今年",y0)}</div>`};
+  const best=()=>{if(!L.length)return "";
+    const mx=L.reduce((a,x)=>x.m>a.m?x:a,L[0]),mo={};L.forEach(x=>{const k=x.d.slice(0,7);mo[k]=(mo[k]||0)+x.m});
+    const bk=Object.keys(mo).sort((a,b)=>mo[b]-mo[a])[0];let bp=null;
+    L.forEach(x=>{const p=pace(x);if(p&&(!bp||p<bp.p))bp={p,d:x.d}});
+    const cs=streaks(),tot=L.reduce((a,x)=>a+x.m,0);
+    return `<div class="ic"><h4>自己ベスト</h4><div class="sn-row">最長（1回）：<b>${km(mx.m)}</b>　<small>${E(mx.d)}</small></div><div class="sn-row">月間の最長：<b>${km(mo[bk])}</b>　<small>${E(bk)}</small></div>${bp?`<div class="sn-row">最速ペース：<b>${pf(bp.p)}／100m</b>　<small>${E(bp.d)}</small></div>`:""}<div class="sn-row">連続：<b>${cs[0]}日</b>（最長 ${cs[1]}日）</div><div class="sn-row">累計：<b>${km(tot)}</b>　${L.length}回</div></div>`};
+  const form=()=>`<div class="ic"><h4>泳いだ記録を書く</h4><input class="sn-in" type="date" id="sw-d" value="${td()}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${SW.slice(0,5).map(s=>`<label class="sn-note" style="margin:0">${s[1]}（m）<input class="sn-in" type="number" inputmode="numeric" min="0" step="25" id="sw-${s[0]}" placeholder="0" style="margin:2px 0 0"></label>`).join("")}<label class="sn-note" style="margin:0">合計だけ（m）<input class="sn-in" type="number" inputmode="numeric" min="0" step="25" id="sw-tt" placeholder="0" style="margin:2px 0 0"></label></div><p class="sn-note" style="margin:4px 0 8px">泳法を分けるときは泳法ごとに、分けないときは「合計だけ」に入れます。</p><input class="sn-in" type="number" inputmode="decimal" min="0" id="sw-t" placeholder="時間（分）・任意"><input class="sn-in" id="sw-p" placeholder="プール名・任意" maxlength="30" value="${E(ld(pre+"swp",""))}"><input class="sn-in" id="sw-x" placeholder="ひとこと・任意" maxlength="80"><button class="sn-btn" id="sw-add">記録を追加</button><p class="sn-note" id="sw-m">${E(msg)}</p></div>`;
+  const row=(x,i)=>{const p=pace(x),st=SW.filter(s=>x.s&&x.s[s[0]]).map(s=>s[1]+" "+km(x.s[s[0]])).join("・");
+    return `<div class="sn-row"><b>${km(x.m)}</b>　<small>${E(x.d)}（${WD[pd(x.d).getDay()]}）${x.p?"　"+E(x.p):""}</small>${st?`<br><small>${E(st)}</small>`:""}${x.t?`<br><small>${E(x.t)}分${p?"　100mあたり "+pf(p):""}</small>`:""}${x.x?"<br>"+E(x.x):""}<br><button class="sn-del${ask==="sw"+i?" ask":""}" data-dl="${i}">${ask==="sw"+i?"本当に削除":"削除"}</button></div>`};
+  const list=a=>a.length?a.map(o=>row(o.x,o.i)).join(""):'<p class="sn-note">記録はまだありません。</p>';
+  const recV=()=>best()+form()+'<div class="nl">最近の記録</div>'+list(sorted().slice(0,30))+(L.length>30?'<p class="sn-note">新しい順に30件まで表示しています。</p>':"");
+  const gV=()=>{
+    let a,b,labels=[],vals=[],title;const o=byDay();
+    if(gp==="w"){a=mon(gv);b=add(a,6);for(let i=0;i<7;i++){const d=add(a,i);labels.push(WD[pd(d).getDay()]);vals.push(o[d]||0)}title=a+" 〜 "+b}
+    else if(gp==="m"){const y=+gv.slice(0,4),m=+gv.slice(5,7),n=new Date(y,m,0).getDate();a=gv.slice(0,7)+"-01";b=gv.slice(0,7)+"-"+f2(n);for(let i=1;i<=n;i++){labels.push(i);vals.push(o[gv.slice(0,7)+"-"+f2(i)]||0)}title=y+"年"+m+"月"}
+    else{const y=gv.slice(0,4);a=y+"-01-01";b=y+"-12-31";for(let i=1;i<=12;i++){labels.push(i+"月");vals.push(L.filter(x=>x.d.slice(0,7)===y+"-"+f2(i)).reduce((s,x)=>s+x.m,0))}title=y+"年"}
+    const mx=Math.max(100,...vals),step=mx<=500?100:mx<=2000?500:mx<=5000?1000:mx<=20000?5000:10000,tp=Math.ceil(mx/step)*step;
+    const W=340,H=170,l=34,r=6,t=14,bt=24,cw=W-l-r,ch=H-t-bt,bw=cw/vals.length;let g="";
+    for(let i=0;i<=2;i++){const v=tp*i/2,y=t+ch-ch*i/2;g+=`<line x1="${l}" x2="${W-r}" y1="${y}" y2="${y}" style="stroke:var(--line)"/><text x="${l-4}" y="${y+4}" text-anchor="end" style="font-size:9px;fill:var(--sub)">${v>=1000?(v/1000)+"k":v}</text>`}
+    vals.forEach((v,i)=>{const h=ch*v/tp,x=l+i*bw+bw*0.15,y=t+ch-h;
+      g+=`<rect x="${x}" y="${y}" width="${bw*0.7}" height="${h}" rx="2" style="fill:var(--acc)"/>`;
+      if(gp!=="m"&&v)g+=`<text x="${x+bw*0.35}" y="${y-2}" text-anchor="middle" style="font-size:8px;fill:var(--sub)">${v>=1000?(v/1000).toFixed(1)+"k":v}</text>`;
+      if(gp!=="m"||i===0||(i+1)%5===0)g+=`<text x="${l+i*bw+bw/2}" y="${H-8}" text-anchor="middle" style="font-size:9px;fill:var(--sub)">${labels[i]}</text>`});
+    const sb={};let tot=0,n=0;L.forEach(x=>{if(x.d>=a&&x.d<=b){n++;tot+=x.m;Object.keys(x.s||{}).forEach(k=>{sb[k]=(sb[k]||0)+x.s[k]})}});
+    const parts=SW.filter(s=>sb[s[0]]&&tot);
+    const bar=parts.map(s=>`<span style="display:block;height:14px;width:${sb[s[0]]/tot*100}%;background:${s[2]}"></span>`).join("");
+    const leg=parts.map(s=>`<div class="sn-row"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s[2]};margin-right:6px"></span>${s[1]}：<b>${km(sb[s[0]])}</b>　<small>${Math.round(sb[s[0]]/tot*100)}%</small></div>`).join("");
+    return `<div class="sn-tabs" style="position:static;margin-bottom:6px">${[["w","週"],["m","月"],["y","年"]].map(p=>`<button class="${gp===p[0]?"on":""}" data-gp="${p[0]}">${p[1]}</button>`).join("")}</div><div class="cmv"><button data-gm="-1" aria-label="前へ">‹</button><b>${E(title)}</b><button data-gm="1" aria-label="次へ">›</button></div><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">${g}</svg><p class="sn-note">縦軸はm、kは1000mです。この期間：<b>${km(tot)}</b>　${n}回${n?"　1回平均 "+km(Math.round(tot/n)):""}</p>`+(parts.length?`<div class="ic"><h4>泳法ごと</h4><div style="display:flex;border-radius:7px;overflow:hidden;margin-bottom:8px">${bar}</div>${leg}</div>`:"")};
+  const goalV=()=>{const t=td(),a=mon(t),mo=t.slice(0,7),y=t.slice(0,4);
+    const P=[["w","今週",sum(a,add(a,6))[0],"例：5"],["m","今月",sum(mo+"-01",mo+"-31")[0],"例：20"],["y","今年",sum(y+"-01-01",y+"-12-31")[0],"例：250"]];
+    const rows=P.map(p=>{const g=+G[p[0]]||0,v=p[2],full=g?Math.round(v/(g*1000)*100):0;let hint="";
+      if(g){const left=Math.max(0,g*1000-v);if(!left)hint="🎉 目標達成です！";else{
+        const dl=p[0]==="w"?7-((pd(t).getDay()+6)%7):p[0]==="m"?new Date(+y,+mo.slice(5,7),0).getDate()-pd(t).getDate()+1:Math.round((new Date(+y,11,31)-pd(t))/864e5)+1;
+        hint="あと "+km(left)+"（残り"+dl+"日、1日あたり約 "+km(Math.ceil(left/dl))+"）"}}
+      return `<div class="ic"><h4>${p[1]}の目標</h4><label class="sn-note" style="display:flex;gap:8px;align-items:center;margin:0">目標（km）<input class="sn-in" type="number" inputmode="decimal" min="0" step="0.5" id="sg-${p[0]}" value="${g||""}" placeholder="${p[3]}" style="margin:0;flex:1"></label>${g?`<div style="height:12px;border-radius:6px;background:var(--line);margin:10px 0 6px;overflow:hidden"><div style="height:100%;width:${Math.min(100,full)}%;background:var(--acc)"></div></div><div><b style="font-size:18px">${full}%</b>　<small>${km(v)} ／ ${km(Math.round(g*1000))}</small></div><p class="sn-note" style="margin:4px 0 0">${hint}</p>`:'<p class="sn-note" style="margin:6px 0 0">目標を入れて保存すると、進み具合が見えます。</p>'}</div>`}).join("");
+    return rows+'<button class="sn-btn" id="sg-save">目標を保存</button><p class="sn-note">空にして保存すると、その目標を消します。</p>'};
+  const calV=()=>{const y=+cym.slice(0,4),m=+cym.slice(5,7),first=new Date(y,m-1,1).getDay(),n=new Date(y,m,0).getDate(),o=byDay();
+    let g=WD.map(w=>`<b>${w}</b>`).join("")+"<span></span>".repeat(first),cnt=0,sm=0;
+    for(let i=1;i<=n;i++){const ds=cym+"-"+f2(i),v=o[ds]||0;if(v){cnt++;sm+=v}
+      g+=`<button data-cd="${ds}" class="${ds===csel?"on ":""}${ds===td()?"tdy":""}" style="${v?"background:rgba(59,124,163,.28)":""}">${i}${v?`<small style="display:block;font-size:9px;line-height:1">${(v/1000).toFixed(1)}</small>`:""}</button>`}
+    const cs=streaks();
+    return `<div class="cmv"><button data-cm="-1" aria-label="前の月">‹</button><b>${y}年${m}月</b><button data-cm="1" aria-label="次の月">›</button></div><div class="cg">${g}</div><p class="sn-note">泳いだ日：<b>${cnt}日</b>　距離：<b>${km(sm)}</b>　連続：<b>${cs[0]}日</b>（最長 ${cs[1]}日）<br>日付の下の数字はkmです。</p><div class="nl">${E(csel)} の記録</div>`+list(sorted().filter(a=>a.x.d===csel))};
+  const K=["記録","グラフ","目標","カレンダー"];
+  const render=()=>{root.innerHTML=`<div class="sn-tabs">${K.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+top()+[recV,gV,goalV,calV][tab]()};
+  root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+    if(d.t!==undefined){tab=+d.t;ask=null;msg="";render()}
+    else if(d.gp){gp=d.gp;gv=td();render()}
+    else if(d.gm){const k=+d.gm;if(gp==="w")gv=add(gv,7*k);else if(gp==="m"){const q=pd(gv);gv=fd(new Date(q.getFullYear(),q.getMonth()+k,1))}else gv=(+gv.slice(0,4)+k)+gv.slice(4);render()}
+    else if(d.cm){const y=+cym.slice(0,4),m=+cym.slice(5,7),q=new Date(y,m-1+ +d.cm,1);cym=q.getFullYear()+"-"+f2(q.getMonth()+1);csel=cym+"-01";render()}
+    else if(d.cd){csel=d.cd;render()}
+    else if(d.dl!==undefined){const i=+d.dl;if(ask==="sw"+i){L.splice(i,1);sv(pre+"sw",L);ask=null}else ask="sw"+i;render()}
+    else if(b.id==="sw-add"){const nn=i=>Math.min(100000,Math.max(0,Math.round(+($(i).value)||0))),s={};let m=0;
+      ["cr","br","ba","bf","ot"].forEach(k=>{const v=nn("sw-"+k);if(v){s[k]=v;m+=v}});
+      if(!m){const v=nn("sw-tt");if(v){s.un=v;m=v}}
+      if(!m){$("sw-m").textContent="距離（m）を入れてください。";return}
+      const t=Math.max(0,Math.round((+$("sw-t").value||0)*10)/10),p=$("sw-p").value.trim();sv(pre+"swp",p);
+      L.unshift({id:idg(),d:$("sw-d").value||td(),m,s,t,p,x:$("sw-x").value.trim()});sv(pre+"sw",L);msg="追加しました。";render()}
+    else if(b.id==="sg-save"){["w","m","y"].forEach(k=>{const v=Math.max(0,Math.round((+$("sg-"+k).value||0)*10)/10);if(v)G[k]=v;else delete G[k]});sv(pre+"swg",G);render()}
+  });
+  render();
+}
+
 function initCustom(root,pg){
+  if(/プール|水泳|スイム/.test(pg.name||"")){initSwim(root,pg);return}
   const pre="fn_cu_"+pg.id+"_",E=v=>esc(String(v==null?"":v)),$=i=>root.querySelector("#"+i),okUrl=u=>/^https?:\/\//i.test(String(u||""));
   const K=["予定","記録","スポット","メモ","リンク"],KEY=["ev","lg","sp","mm","lk"];
   const D={};KEY.forEach(k=>D[k]=ld(pre+k,[]));
