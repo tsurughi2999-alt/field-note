@@ -291,6 +291,35 @@ body:not(.adm) .adm-only{display:none!important}
 #rmod[hidden]{display:none}
 #rmod .nbox{background:#fbf8ec;color:#2b3526;border-radius:12px;padding:18px;max-width:380px;width:100%;max-height:85vh;overflow:auto}
 </style>
+<style>
+.ad-hero{background:linear-gradient(135deg,rgba(79,132,70,.18),rgba(59,124,163,.14));border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px}
+.ad-hero h3{margin:0 0 4px;font-size:17px;letter-spacing:.06em}
+.ad-flow{display:flex;align-items:stretch;gap:4px;margin-top:10px}
+.ad-st{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.55);border-radius:10px;padding:8px 4px;text-align:center;font-size:11px;line-height:1.5;color:var(--ink)}
+.ad-st b{display:block;font-size:13px;color:var(--acc)}
+.ad-ar{align-self:center;color:var(--sub);font-size:11px}
+.ad-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 6px}
+.ad-tile{border:1px solid var(--line);background:rgba(255,255,255,.55);border-radius:12px;padding:10px 2px 8px;font-size:11px;line-height:1.4;color:var(--ink);text-align:center}
+.ad-tile span{display:block;font-size:24px;margin-bottom:2px}
+.ad-grp{font-size:12px;letter-spacing:.12em;color:var(--sub);margin:18px 0 6px;padding-left:2px}
+.adc{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.5);margin:0 0 10px;overflow:hidden}
+.adc>summary{list-style:none;display:flex;gap:10px;align-items:center;padding:12px;cursor:pointer}
+.adc>summary::-webkit-details-marker{display:none}
+.adc>summary::after{content:"▾";color:var(--sub);transition:transform .2s}
+.adc[open]>summary::after{transform:rotate(180deg)}
+.adc[open]>summary{border-bottom:1px solid var(--line)}
+.adi{flex:0 0 42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:22px}
+.adt{flex:1;min-width:0}
+.adt b{display:block;font-size:15px}
+.adt small{display:block;font-size:12px;color:var(--sub);line-height:1.5;margin-top:2px}
+.adg{font-style:normal;font-size:11px;font-weight:400;color:#fff;background:#b3412f;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:1px}
+.adg:empty{display:none}
+.adb{padding:4px 12px 12px}
+.adb .pp{margin-top:14px;padding-top:12px}
+.adb>.pp:first-child{border-top:0;margin-top:6px;padding-top:0}
+.adb h3{font-size:14px;letter-spacing:.04em;border-left:4px solid var(--acc);padding-left:8px;margin:0 0 8px}
+.adx h3{display:none}
+</style>
 </head>
 <body>
 <div id="lg" role="dialog" aria-modal="true"><div class="lgc">
@@ -1711,8 +1740,44 @@ function initLocked(root,p){
 function initAdmin(root){
   if(!ld("fn_admin",0)){root.innerHTML='<p class="sn-note">このページは管理者だけが使えます。</p>';return}
   const A=window.fnAdm||{};
-  root.innerHTML='<p class="sn-note">管理者だけが使うものを、ここにまとめています。メンバーには、このページは表示されません。</p>';
-  ["bk","req","acct","deliver","imp","mem","cal","rules"].forEach(k=>{if(A[k])root.appendChild(A[k])});
+  const GR=[
+    ["いつもの作業",[
+      ["req","📥","#4f8446","申請","参加・閲覧の申請","新しい人の参加申請を許可・却下します。許可するとIDとパスワードが自動で発行されます。（メンバーが申請したとき）",1,1],
+      ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1]]],
+    ["ログイン・メンバー",[
+      ["acct","🔑","#8a5a7a","パスワード","管理者パスワード・QRコード","管理者パスワードの設定、管理者モードの解除、新しいメンバー用のQRコードの表示ができます。（管理者の設定を変えるとき・メンバーを募るとき）",0,0]]],
+    ["データ",[
+      ["bk","💾","#b8622a","バックアップ","管理者データのバックアップ","名簿・ID・許可の情報をファイルに保存します。端末をなくしたときの備えです。（変更したら、こまめに）",0,1],
+      ["mem","👥","#7a5aa3","名簿取込","山菜手帳の名簿を取り込む","山菜手帳のバックアップから、メンバー名簿を取り込みます。（山菜手帳の名簿を移すとき）",0,1],
+      ["imp","🌿","#5a9e52","図鑑コピー","山菜手帳の図鑑をコピー","山菜手帳の図鑑を、このアプリにコピーして、みんなに配ります。（図鑑を移すとき）",0,0]]],
+    ["グループの設定",[
+      ["cal","📅","#2f6f8f","カレンダー","グループのカレンダー","グループ共通のGoogleカレンダーを設定します。（カレンダーを決める・変えるとき）",0,1],
+      ["rules","📜","#8a8a6a","ルール","利用ルール","メンバーが同意する利用ルールの文章を編集します。保存すると、全員があらためて同意します。（ルールを変えるとき）",0,1]]]
+  ];
+  const all=[];GR.forEach(g=>g[1].forEach(it=>{if(A[it[0]])all.push(it)}));
+  root.innerHTML='<div class="ad-hero"><h3>管理者ページ</h3><p class="sn-note" style="margin:0">管理者だけが使うものを、用途ごとにまとめました。メンバーには表示されません。下のボタンで、使いたい項目へ移動できます。</p><div class="ad-flow"><div class="ad-st"><b>① 変更する</b>申請を許可<br>名簿・ルールを変更</div><span class="ad-ar">▶</span><div class="ad-st"><b>② 書き出す</b>「取り込みと配信」で<br>shared.json を保存</div><span class="ad-ar">▶</span><div class="ad-st"><b>③ 上げる</b>GitHubに<br>Upload files</div></div><p class="sn-note" style="margin:8px 0 0">メンバーに反映されるのは、③のあとです。</p></div>'
+    +'<div class="ad-grid">'+all.map(it=>'<button class="ad-tile" data-go="'+it[0]+'"><span>'+it[1]+'</span>'+it[3]+'</button>').join("")+'</div>';
+  GR.forEach(g=>{
+    const its=g[1].filter(it=>A[it[0]]);if(!its.length)return;
+    const gl=document.createElement("div");gl.className="ad-grp";gl.textContent=g[0];root.appendChild(gl);
+    its.forEach(it=>{
+      const dt=document.createElement("details");dt.className="adc"+(it[7]?" adx":"");dt.id="adc-"+it[0];if(it[6])dt.open=true;
+      dt.innerHTML='<summary><span class="adi" style="background:'+it[2]+'">'+it[1]+'</span><span class="adt"><b>'+it[4]+'<em class="adg" data-b="'+it[0]+'"></em></b><small>'+it[5]+'</small></span></summary>';
+      const body=document.createElement("div");body.className="adb";body.appendChild(A[it[0]]);dt.appendChild(body);root.appendChild(dt);
+    });
+  });
+  const bd=()=>{
+    const r=root.querySelector('[data-b="req"]');
+    if(r){const n=ld("fn_reqs",[]).filter(x=>x.st==="wait").length;r.textContent=n?"承認待ち "+n+"件":""}
+    const k=root.querySelector('[data-b="bk"]');
+    if(k){const b=ld("fn_bk",{at:0,dirty:0});k.textContent=(!b.at||Date.now()-b.at>30*864e5||(b.dirty||0)>=10)?"おすすめ":""}
+  };
+  bd();
+  root.addEventListener("click",e=>{
+    const t=e.target.closest(".ad-tile");
+    if(t){const c=root.querySelector("#adc-"+t.dataset.go);if(c){c.open=true;c.scrollIntoView({behavior:"smooth",block:"start"})}return}
+    setTimeout(bd,80);
+  });
 }
 drawCover();renderPages();__sig=sigNow();checkAgree();
 </script>
