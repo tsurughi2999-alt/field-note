@@ -1518,11 +1518,84 @@ function initRegion(root){
   const ad=ld("fn_admin",0),ok=v=>/^[\w.+\-@%]{6,200}$/.test(String(v||""));
   const a=document.createElement("div");a.className="pp";
   const draw=()=>{const g=ld("fn_gcal",null)||remote().gcal||"";
-    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>');
-    a.innerHTML=ad?`<h3>グループのカレンダー設定</h3><input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"";
-    const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}sv("fn_gcal",v||null);draw()}};
-  draw();$("ppanel").appendChild(d);(window.fnAdm=window.fnAdm||{}).cal=a;
+    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details open><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>');
+    a.innerHTML=ad?`<h3>グループのカレンダー設定</h3><input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><input class="sn-in" id="gc-k" placeholder="APIキー（AIza…）予定の通知用" value="${esc(ld("fn_gkey","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"";
+    const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}const k=a.querySelector("#gc-k").value.trim();if(k&&!/^[\w\-]{20,80}$/.test(k)){a.querySelector("#gc-m").textContent="APIキーの形式が正しくありません。";return}sv("fn_gkey",k||null);sv("fn_gcal",v||null);draw();if(window.fnEvRefresh)window.fnEvRefresh()}};
+  draw();{const tp=$("tocpg");tp.insertBefore(d,tp.firstChild)}(window.fnAdm=window.fnAdm||{}).cal=a;
 })();
+(function(){
+  const KEY="fn_evseen",LAST="fn_evlast",REM="fn_evrem",W="日月火水木金土",f2=n=>String(n).padStart(2,"0");
+  const tp=document.getElementById("tocpg");if(!tp)return;
+  const ev=document.createElement("div");ev.className="pp";ev.id="gc-ev";
+  if(tp.firstChild)tp.firstChild.after(ev);else tp.appendChild(ev);
+  let bn=document.getElementById("gc-bn");
+  if(!bn){bn=document.createElement("div");bn.id="gc-bn";bn.style.cssText="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none";document.body.appendChild(bn)}
+  const esc2=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const pop=async t=>{if(!("Notification" in window)||Notification.permission!=="granted")return;try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r&&r.showNotification)await r.showNotification("フィールドノート",{body:t,tag:"fn-"+t});else new Notification("フィールドノート",{body:t})}catch(x){}};
+  const say=t=>{const e=document.createElement("div");e.style.cssText="pointer-events:auto;background:#fff3a8;color:#3a3220;border:1px solid #d9c35a;border-radius:10px;padding:10px 36px 10px 12px;box-shadow:0 3px 10px rgba(0,0,0,.25);font-size:14px;line-height:1.5;position:relative";e.innerHTML=esc2(t)+'<button type="button" aria-label="閉じる" style="position:absolute;right:6px;top:4px;border:0;background:none;font-size:18px;color:#6a5a3a">✕</button>';e.querySelector("button").onclick=()=>e.remove();bn.appendChild(e);setTimeout(()=>{if(e.parentNode)e.remove()},30000);pop(t)};
+  const st=e=>e.start&&(e.start.dateTime?new Date(e.start.dateTime):e.start.date?new Date(e.start.date+"T00:00:00"):null);
+  const en=e=>e.end&&(e.end.dateTime?Date.parse(e.end.dateTime):e.end.date?Date.parse(e.end.date+"T00:00:00"):0)||st(e).getTime();
+  const ad=e=>!!(e.start&&e.start.date&&!e.start.dateTime);
+  const fm=e=>{const d=st(e);return (d.getMonth()+1)+"/"+d.getDate()+"("+W[d.getDay()]+")"+(ad(e)?"":" "+f2(d.getHours())+":"+f2(d.getMinutes()))};
+  const ti=e=>(e.summary||"予定")+(e.location?"（"+e.location+"）":"");
+  let list=[],err="",off=true;
+  async function load(){
+    const g=ld("fn_gcal",null)||remote().gcal||"",k=ld("fn_gkey",null)||remote().gkey||"";
+    if(!g||!k){off=true;list=[];return false}
+    off=false;
+    const t0=new Date(Date.now()-864e5).toISOString(),t1=new Date(Date.now()+90*864e5).toISOString();
+    try{
+      const r=await fetch("https://www.googleapis.com/calendar/v3/calendars/"+encodeURIComponent(g)+"/events?singleEvents=true&orderBy=startTime&maxResults=100&timeMin="+encodeURIComponent(t0)+"&timeMax="+encodeURIComponent(t1)+"&key="+encodeURIComponent(k));
+      if(!r.ok)throw new Error("エラー"+r.status);
+      const j=await r.json();list=(j.items||[]).filter(e=>e.status!=="cancelled"&&st(e));err="";return true;
+    }catch(x){err=String(x&&x.message||x);return false}
+  }
+  function check(){
+    const now=Date.now(),seen=ld(KEY,null),last=ld(LAST,0),next={};
+    list.forEach(e=>{next[e.id]=e.updated||""});
+    if(seen===null){sv(KEY,next);sv(LAST,now)}
+    else{
+      list.forEach(e=>{
+        if(en(e)<now)return;
+        const o=seen[e.id],cr=Date.parse(e.created||"")||0,up=Date.parse(e.updated||"")||0;
+        if(o===undefined){if(cr>last-6e4)say("📅 新しい予定が入りました："+fm(e)+" "+ti(e))}
+        else if(o!==(e.updated||"")&&up>last-6e4)say("📅 予定が変更されました："+fm(e)+" "+ti(e));
+      });
+      sv(KEY,Object.assign({},seen,next));sv(LAST,now);
+    }
+    const rem=ld(REM,{});
+    Object.keys(rem).forEach(k=>{if(rem[k]<now-30*864e5)delete rem[k]});
+    list.forEach(e=>{
+      const s=st(e).getTime(),d=s-now,id=e.id+"@"+s;
+      let tier="",msg="";
+      if(ad(e)){
+        if(d<=0&&now<s+864e5){tier="t";msg="⏰ 今日の予定："}
+        else if(d>0&&d<=864e5){tier="d";msg="⏰ 明日の予定："}
+      }else if(d>0&&d<=36e5){tier="h";msg="⏰ まもなく（約"+Math.max(1,Math.round(d/6e4))+"分後）："}
+      else if(d>0&&d<=864e5){tier="d";msg="⏰ もうすぐ予定があります："}
+      if(tier&&!rem[id+tier]){rem[id+tier]=now;if(tier==="h")rem[id+"d"]=now;say(msg+fm(e)+" "+ti(e))}
+    });
+    sv(REM,rem);
+  }
+  function draw(){
+    if(off){ev.innerHTML="";return}
+    const now=Date.now(),up=list.filter(e=>en(e)>now).slice(0,5);
+    let nb="";
+    if("Notification" in window){
+      if(Notification.permission==="default")nb='<button class="sn-btn sn-ghost" id="gc-nb">🔔 端末の通知を許可する</button><p class="sn-note">アプリを開いている間、予定の前に端末の通知でもお知らせします。</p>';
+      else if(Notification.permission==="granted")nb='<p class="sn-note">端末の通知：オン（アプリを開いている間だけ届きます）</p>';
+    }
+    ev.innerHTML='<h3>近日の予定</h3>'+(up.length?up.map(e=>'<div class="sn-row"><b>'+esc2(fm(e))+'</b>　'+esc2(e.summary||"予定")+(e.location?'<br><small>'+esc2(e.location)+'</small>':'')+'</div>').join(""):'<p class="sn-note">'+(err?"予定を読み込めませんでした（"+esc2(err)+"）。":"これからの予定はありません。")+'</p>')+nb;
+    const b=ev.querySelector("#gc-nb");if(b)b.onclick=()=>{try{Notification.requestPermission().then(draw)}catch(x){}};
+  }
+  let busy=false;
+  async function run(){if(busy)return;busy=true;try{const ok=await load();if(ok)check();draw()}finally{busy=false}}
+  window.fnEvRefresh=run;
+  run();setTimeout(run,4000);
+  setInterval(()=>{if(!document.hidden)run()},120000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)run()});
+})();
+
 (function(){
   const d=document.createElement("div");d.className="pp";
   d.innerHTML='<h3>山菜手帳のメンバー名簿を取り込む</h3><p class="sn-note">山菜手帳のバックアップファイルを選ぶと、メンバーの名前・ニックネーム・役割・ランク・入会日・紹介文・メモ・写真を、すべて取り込みます。写真は配信しやすいよう小さくします。取り込んだあと、「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、メンバー全員に名簿が届きます。</p><input type="file" id="mem-f" accept=".json,.txt,application/json"><p class="sn-note" id="mem-m"></p>';
@@ -1649,7 +1722,7 @@ function initMembers(root){
     const accts=[{uid,wk:mk}];let miss=[];
     mem.forEach(m=>{if(!ok(m))return;if(m.uid&&keys[m.uid]){if(m.uid!==uid)accts.push({uid:m.uid,wk:keys[m.uid].wk})}else miss.push(m.n)});
     const rules=ld("fn_rules",null)||{text:window.FN_RULES_DEF,v:1};
-    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
+    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,gkey:ld("fn_gkey",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
     window.__pubWarn=miss.length?"ID未発行のため、ログインできないメンバー："+miss.join("、"):"";
     const stm=ld("fn_st",{}),ks=Object.keys(stm),st={};ks.slice(-300).forEach(k=>st[k]=stm[k]);
     return window.fnPub3(payload,accts,{st,rules:rules.text});
@@ -1727,7 +1800,7 @@ function initMembers(root){
   rlDraw();A.rules=rl;
   /* ---- バックアップ ---- */
   const bk=document.createElement("div");bk.className="pp";
-  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued"];
+  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_gkey","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued"];
   const bkDraw=()=>{const b=ld("fn_bk",{at:0,dirty:0}),need=!b.at||Date.now()-b.at>30*864e5||(b.dirty||0)>=10;
     bk.innerHTML=`<h3>管理者データのバックアップ</h3>${need?'<p class="sn-note" style="color:#b9473a"><b>バックアップをおすすめします。</b>名簿・ID・許可の情報は、この端末にしかありません。端末をなくすと、メンバーのログインができなくなります。</p>':'<p class="sn-note">名簿・ID・許可の情報は、この端末にしかありません。変更したら、バックアップを取ってください。</p>'}<p class="sn-note">前回：${b.at?new Date(b.at).toLocaleDateString("ja-JP"):"まだありません"}　（それ以降の変更：${b.dirty||0}回）</p><button class="sn-btn" data-b="out">管理者データをファイルで保存</button><p class="sn-note">ファイルには、メンバーのログイン情報が含まれます。ほかの人に渡さないでください。</p><div class="nl">復元する</div><input type="file" id="bk-f" accept=".json,application/json"><p class="sn-note" id="bk-m"></p>`};
   bk.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.dataset.b!=="out")return;
