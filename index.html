@@ -1521,13 +1521,13 @@ function initRegion(root){
     d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details open><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>');
     a.innerHTML=ad?`<h3>グループのカレンダー設定</h3><input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><input class="sn-in" id="gc-k" placeholder="APIキー（AIza…）予定の通知用" value="${esc(ld("fn_gkey","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"";
     const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}const k=a.querySelector("#gc-k").value.trim();if(k&&!/^[\w\-]{20,80}$/.test(k)){a.querySelector("#gc-m").textContent="APIキーの形式が正しくありません。";return}sv("fn_gkey",k||null);sv("fn_gcal",v||null);draw();if(window.fnEvRefresh)window.fnEvRefresh()}};
-  draw();{const tp=$("tocpg");tp.insertBefore(d,tp.firstChild)}(window.fnAdm=window.fnAdm||{}).cal=a;
+  draw();{const tp=$("tocpg"),pg=tp.querySelector(".pgin")||tp,h=pg.querySelector("h2");d.id="gc-cal";if(h)pg.insertBefore(d,h);else pg.insertBefore(d,pg.firstChild)}(window.fnAdm=window.fnAdm||{}).cal=a;
 })();
 (function(){
   const KEY="fn_evseen",LAST="fn_evlast",REM="fn_evrem",W="日月火水木金土",f2=n=>String(n).padStart(2,"0");
   const tp=document.getElementById("tocpg");if(!tp)return;
   const ev=document.createElement("div");ev.className="pp";ev.id="gc-ev";
-  if(tp.firstChild)tp.firstChild.after(ev);else tp.appendChild(ev);
+  const c0=document.getElementById("gc-cal");if(c0)c0.after(ev);else (tp.querySelector(".pgin")||tp).appendChild(ev);
   let bn=document.getElementById("gc-bn");
   if(!bn){bn=document.createElement("div");bn.id="gc-bn";bn.style.cssText="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none";document.body.appendChild(bn)}
   const esc2=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
