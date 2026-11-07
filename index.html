@@ -299,6 +299,14 @@ body:not(.adm) .adm-only{display:none!important}
 #toc[data-c="2"] .toc,#toc[data-c="3"] .toc{gap:8px;padding:12px 2px}
 #toc[data-c="2"] .toc .nm,#toc[data-c="3"] .toc .nm{font-size:15px;line-height:1.3;word-break:break-all;min-width:0}
 #toc[data-c="2"] .toc .no,#toc[data-c="3"] .toc .no,#toc[data-c="2"] .toc .fx,#toc[data-c="3"] .toc .fx{display:none}
+
+.inv-pgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 10px;margin:6px 0 10px}
+.inv-pg{display:flex;align-items:center;gap:6px;font-size:15px}
+.inv-pg input{width:20px;height:20px}
+.qa{border-bottom:1px solid var(--line);padding:10px 0}
+.qa summary{cursor:pointer;font-weight:700;line-height:1.5}
+.qa p{margin:8px 0 6px;line-height:1.8;white-space:pre-wrap;color:var(--ink)}
+.mp-t{font-weight:700}.mp-x{white-space:pre-wrap;line-height:1.7;margin:4px 0 8px}
 </style>
 <style>
 .ad-hero{background:linear-gradient(135deg,rgba(79,132,70,.18),rgba(59,124,163,.14));border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px}
@@ -528,7 +536,7 @@ const PAL=[CV,YC,HC],DG=["古い辞書風","野帳風","植物標本帳風"];
 const DEF={info:6,all:4,sansai:8,fruit:2,kinoko:9,tozan:6,onsen:7,ref:4,region:5};
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-const FIXED=["info","all","members","ref","region"],DEFPG=["sansai","fruit","kinoko"];
+const FIXED=["info","all","members","ref","region","howto","memo"],DEFPG=["sansai","fruit","kinoko"];
 function isAdm(){return !!ld("fn_admin",0)}
 function gateOn(){return !isAdm()&&!!remote().gate}
 function meRec(){const u=ld("fn_uid",null);return u?(remote().members||[]).find(m=>m.uid===u)||null:null}
@@ -548,7 +556,7 @@ let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_b
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"}].map(skinPg);
+const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"}].map(skinPg);
 const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
 const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+2;
@@ -584,10 +592,10 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
-    if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
+    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
   fnPgMem();
@@ -1372,7 +1380,7 @@ function initInfo(root){
   if(q("mc-set"))q("mc-set").onclick=()=>{if(window.fnOpenSetup)window.fnOpenSetup()};
   q("lo-b").onclick=()=>window.fnLogout();
   if(q("am-set"))q("am-set").onclick=async()=>{const v=q("am-p").value;if(v.length<8){m("8文字以上にしてください。");return}sv("fn_admh",await window.fnAdmHash(v));q("am-p").value="";m("設定しました。「配信ファイルの中身を書き出す」をして、GitHubのshared.jsonを更新してください。")};
-  if(q("qr-b"))q("qr-b").onclick=()=>{const v=q("qr-v");if(v.innerHTML){v.innerHTML="";return}v.innerHTML='<div style="background:#fff;padding:8px;border-radius:8px;max-width:260px;margin:10px auto 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM27 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM32 4h1v1h-1zM33 4h1v1h-1zM34 4h1v1h-1zM35 4h1v1h-1zM36 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM22 5h1v1h-1zM26 5h1v1h-1zM27 5h1v1h-1zM28 5h1v1h-1zM30 5h1v1h-1zM36 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM13 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM33 6h1v1h-1zM34 6h1v1h-1zM36 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM15 7h1v1h-1zM18 7h1v1h-1zM20 7h1v1h-1zM23 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM30 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM34 7h1v1h-1zM36 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM24 8h1v1h-1zM28 8h1v1h-1zM30 8h1v1h-1zM32 8h1v1h-1zM33 8h1v1h-1zM34 8h1v1h-1zM36 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM25 9h1v1h-1zM30 9h1v1h-1zM36 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM33 10h1v1h-1zM34 10h1v1h-1zM35 10h1v1h-1zM36 10h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM16 12h1v1h-1zM18 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM28 12h1v1h-1zM30 12h1v1h-1zM33 12h1v1h-1zM35 12h1v1h-1zM36 12h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM12 13h1v1h-1zM15 13h1v1h-1zM20 13h1v1h-1zM22 13h1v1h-1zM23 13h1v1h-1zM27 13h1v1h-1zM30 13h1v1h-1zM31 13h1v1h-1zM33 13h1v1h-1zM34 13h1v1h-1zM36 13h1v1h-1zM4 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM21 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM29 14h1v1h-1zM31 14h1v1h-1zM32 14h1v1h-1zM33 14h1v1h-1zM35 14h1v1h-1zM36 14h1v1h-1zM4 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM22 15h1v1h-1zM23 15h1v1h-1zM27 15h1v1h-1zM29 15h1v1h-1zM31 15h1v1h-1zM33 15h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM19 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM25 16h1v1h-1zM29 16h1v1h-1zM31 16h1v1h-1zM32 16h1v1h-1zM33 16h1v1h-1zM36 16h1v1h-1zM5 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM28 17h1v1h-1zM31 17h1v1h-1zM34 17h1v1h-1zM35 17h1v1h-1zM5 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM15 18h1v1h-1zM17 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM22 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM34 18h1v1h-1zM5 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM14 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM24 19h1v1h-1zM25 19h1v1h-1zM27 19h1v1h-1zM29 19h1v1h-1zM30 19h1v1h-1zM34 19h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM28 20h1v1h-1zM29 20h1v1h-1zM30 20h1v1h-1zM32 20h1v1h-1zM33 20h1v1h-1zM34 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM22 21h1v1h-1zM25 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM33 21h1v1h-1zM35 21h1v1h-1zM36 21h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM24 22h1v1h-1zM26 22h1v1h-1zM29 22h1v1h-1zM31 22h1v1h-1zM32 22h1v1h-1zM34 22h1v1h-1zM35 22h1v1h-1zM4 23h1v1h-1zM6 23h1v1h-1zM7 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM14 23h1v1h-1zM18 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM32 23h1v1h-1zM6 24h1v1h-1zM10 24h1v1h-1zM13 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM19 24h1v1h-1zM22 24h1v1h-1zM24 24h1v1h-1zM29 24h1v1h-1zM33 24h1v1h-1zM34 24h1v1h-1zM36 24h1v1h-1zM4 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM11 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM22 25h1v1h-1zM27 25h1v1h-1zM30 25h1v1h-1zM33 25h1v1h-1zM36 25h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM15 26h1v1h-1zM16 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM22 26h1v1h-1zM27 26h1v1h-1zM29 26h1v1h-1zM30 26h1v1h-1zM31 26h1v1h-1zM34 26h1v1h-1zM35 26h1v1h-1zM36 26h1v1h-1zM5 27h1v1h-1zM6 27h1v1h-1zM8 27h1v1h-1zM11 27h1v1h-1zM13 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM27 27h1v1h-1zM28 27h1v1h-1zM29 27h1v1h-1zM33 27h1v1h-1zM35 27h1v1h-1zM36 27h1v1h-1zM4 28h1v1h-1zM6 28h1v1h-1zM7 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM11 28h1v1h-1zM13 28h1v1h-1zM15 28h1v1h-1zM16 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM24 28h1v1h-1zM27 28h1v1h-1zM28 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM32 28h1v1h-1zM35 28h1v1h-1zM36 28h1v1h-1zM12 29h1v1h-1zM13 29h1v1h-1zM14 29h1v1h-1zM15 29h1v1h-1zM17 29h1v1h-1zM18 29h1v1h-1zM19 29h1v1h-1zM20 29h1v1h-1zM21 29h1v1h-1zM23 29h1v1h-1zM24 29h1v1h-1zM26 29h1v1h-1zM28 29h1v1h-1zM32 29h1v1h-1zM33 29h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM7 30h1v1h-1zM8 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM12 30h1v1h-1zM13 30h1v1h-1zM17 30h1v1h-1zM23 30h1v1h-1zM24 30h1v1h-1zM26 30h1v1h-1zM27 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM35 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM18 31h1v1h-1zM20 31h1v1h-1zM25 31h1v1h-1zM26 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM32 31h1v1h-1zM33 31h1v1h-1zM34 31h1v1h-1zM36 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM8 32h1v1h-1zM10 32h1v1h-1zM14 32h1v1h-1zM16 32h1v1h-1zM18 32h1v1h-1zM21 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM30 32h1v1h-1zM31 32h1v1h-1zM32 32h1v1h-1zM34 32h1v1h-1zM36 32h1v1h-1zM4 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM8 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM13 33h1v1h-1zM14 33h1v1h-1zM15 33h1v1h-1zM16 33h1v1h-1zM17 33h1v1h-1zM18 33h1v1h-1zM21 33h1v1h-1zM22 33h1v1h-1zM23 33h1v1h-1zM24 33h1v1h-1zM27 33h1v1h-1zM28 33h1v1h-1zM31 33h1v1h-1zM33 33h1v1h-1zM35 33h1v1h-1zM36 33h1v1h-1zM4 34h1v1h-1zM6 34h1v1h-1zM7 34h1v1h-1zM8 34h1v1h-1zM10 34h1v1h-1zM12 34h1v1h-1zM14 34h1v1h-1zM16 34h1v1h-1zM17 34h1v1h-1zM21 34h1v1h-1zM23 34h1v1h-1zM28 34h1v1h-1zM29 34h1v1h-1zM30 34h1v1h-1zM31 34h1v1h-1zM4 35h1v1h-1zM10 35h1v1h-1zM15 35h1v1h-1zM18 35h1v1h-1zM19 35h1v1h-1zM20 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM27 35h1v1h-1zM28 35h1v1h-1zM29 35h1v1h-1zM31 35h1v1h-1zM32 35h1v1h-1zM36 35h1v1h-1zM4 36h1v1h-1zM5 36h1v1h-1zM6 36h1v1h-1zM7 36h1v1h-1zM8 36h1v1h-1zM9 36h1v1h-1zM10 36h1v1h-1zM12 36h1v1h-1zM14 36h1v1h-1zM15 36h1v1h-1zM16 36h1v1h-1zM17 36h1v1h-1zM19 36h1v1h-1zM20 36h1v1h-1zM21 36h1v1h-1zM22 36h1v1h-1zM24 36h1v1h-1zM25 36h1v1h-1zM26 36h1v1h-1zM27 36h1v1h-1zM32 36h1v1h-1zM34 36h1v1h-1z" fill="#1d3b27"/></svg></div><p class="sn-note" style="text-align:center">https://tsurughi2999-alt.github.io/field-note/<br>読み取るとアプリが開きます。IDとパスワードは別にお伝えください。</p>'};
+  window.fnQrHtml='<div style="background:#fff;padding:8px;border-radius:8px;max-width:260px;margin:10px auto 0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="M4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM23 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM27 4h1v1h-1zM30 4h1v1h-1zM31 4h1v1h-1zM32 4h1v1h-1zM33 4h1v1h-1zM34 4h1v1h-1zM35 4h1v1h-1zM36 4h1v1h-1zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM13 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM22 5h1v1h-1zM26 5h1v1h-1zM27 5h1v1h-1zM28 5h1v1h-1zM30 5h1v1h-1zM36 5h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM13 6h1v1h-1zM14 6h1v1h-1zM15 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM28 6h1v1h-1zM30 6h1v1h-1zM32 6h1v1h-1zM33 6h1v1h-1zM34 6h1v1h-1zM36 6h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM15 7h1v1h-1zM18 7h1v1h-1zM20 7h1v1h-1zM23 7h1v1h-1zM24 7h1v1h-1zM28 7h1v1h-1zM30 7h1v1h-1zM32 7h1v1h-1zM33 7h1v1h-1zM34 7h1v1h-1zM36 7h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM15 8h1v1h-1zM16 8h1v1h-1zM18 8h1v1h-1zM21 8h1v1h-1zM24 8h1v1h-1zM28 8h1v1h-1zM30 8h1v1h-1zM32 8h1v1h-1zM33 8h1v1h-1zM34 8h1v1h-1zM36 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM13 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM25 9h1v1h-1zM30 9h1v1h-1zM36 9h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h1v1h-1zM28 10h1v1h-1zM30 10h1v1h-1zM31 10h1v1h-1zM32 10h1v1h-1zM33 10h1v1h-1zM34 10h1v1h-1zM35 10h1v1h-1zM36 10h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM24 11h1v1h-1zM26 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM16 12h1v1h-1zM18 12h1v1h-1zM20 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM28 12h1v1h-1zM30 12h1v1h-1zM33 12h1v1h-1zM35 12h1v1h-1zM36 12h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM12 13h1v1h-1zM15 13h1v1h-1zM20 13h1v1h-1zM22 13h1v1h-1zM23 13h1v1h-1zM27 13h1v1h-1zM30 13h1v1h-1zM31 13h1v1h-1zM33 13h1v1h-1zM34 13h1v1h-1zM36 13h1v1h-1zM4 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM14 14h1v1h-1zM15 14h1v1h-1zM16 14h1v1h-1zM18 14h1v1h-1zM21 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM29 14h1v1h-1zM31 14h1v1h-1zM32 14h1v1h-1zM33 14h1v1h-1zM35 14h1v1h-1zM36 14h1v1h-1zM4 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM22 15h1v1h-1zM23 15h1v1h-1zM27 15h1v1h-1zM29 15h1v1h-1zM31 15h1v1h-1zM33 15h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM9 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM15 16h1v1h-1zM16 16h1v1h-1zM19 16h1v1h-1zM22 16h1v1h-1zM23 16h1v1h-1zM25 16h1v1h-1zM29 16h1v1h-1zM31 16h1v1h-1zM32 16h1v1h-1zM33 16h1v1h-1zM36 16h1v1h-1zM5 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM11 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM20 17h1v1h-1zM22 17h1v1h-1zM25 17h1v1h-1zM28 17h1v1h-1zM31 17h1v1h-1zM34 17h1v1h-1zM35 17h1v1h-1zM5 18h1v1h-1zM7 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM15 18h1v1h-1zM17 18h1v1h-1zM18 18h1v1h-1zM19 18h1v1h-1zM20 18h1v1h-1zM22 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM30 18h1v1h-1zM31 18h1v1h-1zM32 18h1v1h-1zM33 18h1v1h-1zM34 18h1v1h-1zM5 19h1v1h-1zM6 19h1v1h-1zM7 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM14 19h1v1h-1zM16 19h1v1h-1zM20 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM24 19h1v1h-1zM25 19h1v1h-1zM27 19h1v1h-1zM29 19h1v1h-1zM30 19h1v1h-1zM34 19h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM12 20h1v1h-1zM14 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM28 20h1v1h-1zM29 20h1v1h-1zM30 20h1v1h-1zM32 20h1v1h-1zM33 20h1v1h-1zM34 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM21 21h1v1h-1zM22 21h1v1h-1zM25 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM33 21h1v1h-1zM35 21h1v1h-1zM36 21h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM7 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM15 22h1v1h-1zM16 22h1v1h-1zM17 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM21 22h1v1h-1zM24 22h1v1h-1zM26 22h1v1h-1zM29 22h1v1h-1zM31 22h1v1h-1zM32 22h1v1h-1zM34 22h1v1h-1zM35 22h1v1h-1zM4 23h1v1h-1zM6 23h1v1h-1zM7 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM14 23h1v1h-1zM18 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM30 23h1v1h-1zM32 23h1v1h-1zM6 24h1v1h-1zM10 24h1v1h-1zM13 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM18 24h1v1h-1zM19 24h1v1h-1zM22 24h1v1h-1zM24 24h1v1h-1zM29 24h1v1h-1zM33 24h1v1h-1zM34 24h1v1h-1zM36 24h1v1h-1zM4 25h1v1h-1zM7 25h1v1h-1zM8 25h1v1h-1zM11 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM22 25h1v1h-1zM27 25h1v1h-1zM30 25h1v1h-1zM33 25h1v1h-1zM36 25h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM15 26h1v1h-1zM16 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM22 26h1v1h-1zM27 26h1v1h-1zM29 26h1v1h-1zM30 26h1v1h-1zM31 26h1v1h-1zM34 26h1v1h-1zM35 26h1v1h-1zM36 26h1v1h-1zM5 27h1v1h-1zM6 27h1v1h-1zM8 27h1v1h-1zM11 27h1v1h-1zM13 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM27 27h1v1h-1zM28 27h1v1h-1zM29 27h1v1h-1zM33 27h1v1h-1zM35 27h1v1h-1zM36 27h1v1h-1zM4 28h1v1h-1zM6 28h1v1h-1zM7 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM11 28h1v1h-1zM13 28h1v1h-1zM15 28h1v1h-1zM16 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM21 28h1v1h-1zM22 28h1v1h-1zM24 28h1v1h-1zM27 28h1v1h-1zM28 28h1v1h-1zM29 28h1v1h-1zM30 28h1v1h-1zM31 28h1v1h-1zM32 28h1v1h-1zM35 28h1v1h-1zM36 28h1v1h-1zM12 29h1v1h-1zM13 29h1v1h-1zM14 29h1v1h-1zM15 29h1v1h-1zM17 29h1v1h-1zM18 29h1v1h-1zM19 29h1v1h-1zM20 29h1v1h-1zM21 29h1v1h-1zM23 29h1v1h-1zM24 29h1v1h-1zM26 29h1v1h-1zM28 29h1v1h-1zM32 29h1v1h-1zM33 29h1v1h-1zM4 30h1v1h-1zM5 30h1v1h-1zM6 30h1v1h-1zM7 30h1v1h-1zM8 30h1v1h-1zM9 30h1v1h-1zM10 30h1v1h-1zM12 30h1v1h-1zM13 30h1v1h-1zM17 30h1v1h-1zM23 30h1v1h-1zM24 30h1v1h-1zM26 30h1v1h-1zM27 30h1v1h-1zM28 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM35 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM12 31h1v1h-1zM18 31h1v1h-1zM20 31h1v1h-1zM25 31h1v1h-1zM26 31h1v1h-1zM27 31h1v1h-1zM28 31h1v1h-1zM32 31h1v1h-1zM33 31h1v1h-1zM34 31h1v1h-1zM36 31h1v1h-1zM4 32h1v1h-1zM6 32h1v1h-1zM7 32h1v1h-1zM8 32h1v1h-1zM10 32h1v1h-1zM14 32h1v1h-1zM16 32h1v1h-1zM18 32h1v1h-1zM21 32h1v1h-1zM23 32h1v1h-1zM24 32h1v1h-1zM27 32h1v1h-1zM28 32h1v1h-1zM29 32h1v1h-1zM30 32h1v1h-1zM31 32h1v1h-1zM32 32h1v1h-1zM34 32h1v1h-1zM36 32h1v1h-1zM4 33h1v1h-1zM6 33h1v1h-1zM7 33h1v1h-1zM8 33h1v1h-1zM10 33h1v1h-1zM12 33h1v1h-1zM13 33h1v1h-1zM14 33h1v1h-1zM15 33h1v1h-1zM16 33h1v1h-1zM17 33h1v1h-1zM18 33h1v1h-1zM21 33h1v1h-1zM22 33h1v1h-1zM23 33h1v1h-1zM24 33h1v1h-1zM27 33h1v1h-1zM28 33h1v1h-1zM31 33h1v1h-1zM33 33h1v1h-1zM35 33h1v1h-1zM36 33h1v1h-1zM4 34h1v1h-1zM6 34h1v1h-1zM7 34h1v1h-1zM8 34h1v1h-1zM10 34h1v1h-1zM12 34h1v1h-1zM14 34h1v1h-1zM16 34h1v1h-1zM17 34h1v1h-1zM21 34h1v1h-1zM23 34h1v1h-1zM28 34h1v1h-1zM29 34h1v1h-1zM30 34h1v1h-1zM31 34h1v1h-1zM4 35h1v1h-1zM10 35h1v1h-1zM15 35h1v1h-1zM18 35h1v1h-1zM19 35h1v1h-1zM20 35h1v1h-1zM21 35h1v1h-1zM23 35h1v1h-1zM27 35h1v1h-1zM28 35h1v1h-1zM29 35h1v1h-1zM31 35h1v1h-1zM32 35h1v1h-1zM36 35h1v1h-1zM4 36h1v1h-1zM5 36h1v1h-1zM6 36h1v1h-1zM7 36h1v1h-1zM8 36h1v1h-1zM9 36h1v1h-1zM10 36h1v1h-1zM12 36h1v1h-1zM14 36h1v1h-1zM15 36h1v1h-1zM16 36h1v1h-1zM17 36h1v1h-1zM19 36h1v1h-1zM20 36h1v1h-1zM21 36h1v1h-1zM22 36h1v1h-1zM24 36h1v1h-1zM25 36h1v1h-1zM26 36h1v1h-1zM27 36h1v1h-1zM32 36h1v1h-1zM34 36h1v1h-1z" fill="#1d3b27"/></svg></div><p class="sn-note" style="text-align:center">https://tsurughi2999-alt.github.io/field-note/<br>読み取るとアプリが開きます。IDとパスワードは別にお伝えください。</p>';if(q("qr-b"))q("qr-b").onclick=()=>window.fnQrPopup();
   if(q("am-off"))q("am-off").onclick=()=>{sv("fn_admin",0);location.reload()};
   if(q("am-f"))q("am-f").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let o=null;try{o=JSON.parse(r.result)}catch(x){}if(!o||o.app!=="fieldnote-admin"||!o.ls||!o.ls.fn_admin||!o.ls.fn_admh){m("管理者データのファイルではありません。");return}sv("fn_admin",1);m("管理者モードに戻します…");setTimeout(()=>location.reload(),700)};r.readAsText(f)};
   if(q("am-on"))q("am-on").onclick=async()=>{const v=q("am-p").value;if(!v)return;const h=await window.fnAdmHash(v),ex=remote().adm||ld("fn_admh",null);if(!ex){m("管理者パスワードがまだ配信されていません。");return}if(h===ex){sv("fn_admin",1);location.reload()}else m("管理者パスワードが違います。")};
@@ -1750,7 +1758,7 @@ function initMembers(root){
     const accts=[{uid,wk:mk}];let miss=[];
     mem.forEach(m=>{if(!ok(m))return;if(m.uid&&keys[m.uid]){if(m.uid!==uid)accts.push({uid:m.uid,wk:keys[m.uid].wk})}else miss.push(m.n)});
     const rules=ld("fn_rules",null)||{text:window.FN_RULES_DEF,v:1};
-    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,gkey:ld("fn_gkey",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
+    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,gkey:ld("fn_gkey",null)||undefined,qa:ld("fn_qa",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
     window.__pubWarn=miss.length?"ID未発行のため、ログインできないメンバー："+miss.join("、"):"";
     const stm=ld("fn_st",{}),ks=Object.keys(stm),st={};ks.slice(-300).forEach(k=>st[k]=stm[k]);
     return window.fnPub3(payload,accts,{st,rules:rules.text});
@@ -1776,7 +1784,7 @@ function initMembers(root){
     const arr=mems(),iss=ld("fn_issued",[]);let pagesCh=false;
     r.st=ok?"ok":"ng";r.at=Date.now();
     if(r.t==="join"){setSt(r.rid,ok?"ok":"ng");
-      if(ok){const m={id:Date.now()+Math.floor(Math.random()*1000),n:r.n,nn:r.nn||"",role:[],rank:"初級（初心者）",joined:todayS(),bio:r.bio||"",memo:"",ph:r.ph||"",bg:"",pg:DEFPG.slice(),st:"ok",lead:[],pub:{ph:1,bio:1,memo:1,joined:1},rid:r.rid};
+      if(ok){const m={id:Date.now()+Math.floor(Math.random()*1000),n:r.n,nn:r.nn||"",role:[],rank:"初級（初心者）",joined:todayS(),bio:r.bio||"",memo:"",ph:r.ph||"",bg:"",pg:(ld("fn_invpg",null)||DEFPG).slice(),st:"ok",lead:[],pub:{ph:1,bio:1,memo:1,joined:1},rid:r.rid};
         const c=await window.fnIssue(m);arr.push(m);sv("fn_members",arr);iss.push({n:m.n,uid:c.uid,pw:c.pw});sv("fn_issued",iss)}
     }else if(ok){
       const m=arr.find(x=>x.uid===r.uid);
@@ -1817,7 +1825,7 @@ function initMembers(root){
     if(a==="cpi"){const o=d.querySelector("#rq-iss");o.select();try{navigator.clipboard.writeText(o.value)}catch(x){document.execCommand("copy")}b.textContent="コピーしました";return}
     if(a==="cli"){sv("fn_issued",[]);draw();return}
     if(a==="bulk"){const arr=ld("fn_members",[]),iss=ld("fn_issued",[]);let n=0;
-      for(const m of arr){if((m.st||"ok")==="ok"&&!m.uid){const c=await window.fnIssue(m);if(!m.pg||!m.pg.length)m.pg=DEFPG.slice();iss.push({n:m.n,uid:c.uid,pw:c.pw});n++}}
+      for(const m of arr){if((m.st||"ok")==="ok"&&!m.uid){const c=await window.fnIssue(m);if(!m.pg||!m.pg.length)m.pg=(ld("fn_invpg",null)||DEFPG).slice();iss.push({n:m.n,uid:c.uid,pw:c.pw});n++}}
       sv("fn_members",arr);sv("fn_issued",iss);if(window.fnTouch)fnTouch();if(window.fnMemRedraw)fnMemRedraw();msg=n+"人に発行しました。";draw();return}
   });
   draw();A.req=d;
@@ -1856,6 +1864,7 @@ function initAdmin(root){
   const A=window.fnAdm||{};
   const GR=[
     ["いつもの作業",[
+      ["inv","✉️","#4f8446","招待","メンバー招待","QRコードを表示して招待します。最初から見せるページも選べます。（メンバーを募るとき）",1,0],
       ["req","📥","#4f8446","申請","参加・閲覧の申請","新しい人の参加申請を許可・却下します。許可するとIDとパスワードが自動で発行されます。（メンバーが申請したとき）",1,1],
       ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1]]],
     ["ログイン・メンバー",[
@@ -1870,7 +1879,7 @@ function initAdmin(root){
   ];
   const all=[];GR.forEach(g=>g[1].forEach(it=>{if(A[it[0]])all.push(it)}));
   root.innerHTML='<div class="ad-hero"><h3>管理者ページ</h3><p class="sn-note" style="margin:0">管理者だけが使うものを、用途ごとにまとめました。メンバーには表示されません。下のボタンで、使いたい項目へ移動できます。</p><div class="ad-flow"><div class="ad-st"><b>① 変更する</b>申請を許可<br>名簿・ルールを変更</div><span class="ad-ar">▶</span><div class="ad-st"><b>② 書き出す</b>「取り込みと配信」で<br>shared.json を保存</div><span class="ad-ar">▶</span><div class="ad-st"><b>③ 上げる</b>GitHubに<br>Upload files</div></div><p class="sn-note" style="margin:8px 0 0">メンバーに反映されるのは、③のあとです。</p></div>'
-    +'<div class="ad-grid">'+all.map(it=>'<button class="ad-tile" data-go="'+it[0]+'"><span>'+it[1]+'</span>'+it[3]+'</button>').join("")+'</div>';
+    +'<div class="ad-grid">'+all.map(it=>'<button class="ad-tile" data-ad="'+it[0]+'"><span>'+it[1]+'</span>'+it[3]+'</button>').join("")+'</div>';
   GR.forEach(g=>{
     const its=g[1].filter(it=>A[it[0]]);if(!its.length)return;
     const gl=document.createElement("div");gl.className="ad-grp";gl.textContent=g[0];root.appendChild(gl);
@@ -1889,8 +1898,104 @@ function initAdmin(root){
   bd();
   root.addEventListener("click",e=>{
     const t=e.target.closest(".ad-tile");
-    if(t){const c=root.querySelector("#adc-"+t.dataset.go);if(c){c.open=true;c.scrollIntoView({behavior:"smooth",block:"start"})}return}
+    if(t){const c=root.querySelector("#adc-"+t.dataset.ad);if(c){c.open=true;c.scrollIntoView({behavior:"smooth",block:"start"})}return}
     setTimeout(bd,80);
+  });
+}
+
+/* ---- メンバー招待・QRポップアップ ---- */
+window.fnQrPopup=()=>{
+  const old=document.getElementById("qrmod");if(old)old.remove();
+  const ids=ld("fn_invpg",null)||DEFPG,nm=ids.map(id=>{const p=pages().find(x=>x.id===id);return p?p.icon+" "+p.name:null}).filter(Boolean);
+  const m=document.createElement("div");m.id="qrmod";
+  m.style.cssText="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:16px;--ink:#2b3526;--line:#ddd3b8;--sub:#667058;--bg:#fff";
+  m.innerHTML='<div style="background:#fffdf6;color:#2b3526;border-radius:14px;padding:16px;width:min(92vw,340px);max-height:90vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.4);text-align:center"><h3 style="margin:0 0 4px">メンバー招待のQRコード</h3>'+window.fnQrHtml+'<p class="sn-note" style="text-align:center">最初から見られるページ：'+(nm.length?esc(nm.join("、")):"なし")+'</p><button class="sn-btn" id="qrx" style="margin-top:8px">閉じる</button></div>';
+  m.addEventListener("click",e=>{if(e.target===m||e.target.id==="qrx")m.remove()});
+  document.body.appendChild(m);
+};
+(function(){
+  const A=window.fnAdm=window.fnAdm||{},d=document.createElement("div");d.className="pp";
+  let msg="";
+  const tg=()=>pages().filter(p=>p.id!=="admin"&&!FIXED.includes(p.id));
+  const draw=()=>{
+    const sel=new Set(ld("fn_invpg",null)||DEFPG);
+    d.innerHTML='<h3>メンバーを招待する</h3><p class="sn-note">① 最初から見せるページを選ぶ　② QRコードを見せる　③ 届いた参加の申請を許可する、の順です。許可した新しいメンバーに、①のページが最初から設定されます。（あとから名簿で変えられます）</p><div class="nl">① 最初から見せるページ</div><div class="inv-pgs">'+tg().map(p=>'<label class="inv-pg"><input type="checkbox" class="inv-ck" value="'+esc(p.id)+'"'+(sel.has(p.id)?" checked":"")+'> '+esc(p.icon)+' '+esc(p.name)+'</label>').join("")+'</div><p class="sn-note">情報・みんな・メンバー・参考資料・地域マップ・使い方・メモは、全員が見られます。</p><button class="sn-btn sn-ghost" id="inv-s">選択を保存</button><p class="sn-note" id="inv-m">'+esc(msg)+'</p><div class="nl">② QRコード</div><p class="sn-note">QRコードを読み取って開いた人には、ログイン画面の「はじめての方：参加を申請する」を押してもらってください。</p><button class="sn-btn" id="inv-q">QRコードを表示</button>';
+  };
+  d.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    if(b.id==="inv-s"){const ids=[...d.querySelectorAll(".inv-ck:checked")].map(x=>x.value);sv("fn_invpg",ids);if(window.fnTouch)fnTouch();msg="保存しました（"+ids.length+"ページ）。これから許可する新しいメンバーに設定されます。";draw()}
+    else if(b.id==="inv-q"){window.fnQrPopup()}
+  });
+  draw();A.inv=d;
+})();
+/* ---- 使い方・Q＆A集 ---- */
+const HOWTO_QA=[
+["ページのめくり方は？","左右にスワイプするとページがめくれます。「もくじ」で見たいページの名前をタップしても開けます。画面の下の点で、いまの位置が分かります。"],
+["もくじの並べ方を変えたい","もくじの上にある「並べ方」で、1列・2列・3列を選べます。選んだ列数は、この端末に残ります。"],
+["付箋はどう使うの？","各ページの右上にある「🔖 付箋」で、メモの付箋を貼れます。指でドラッグして動かし、タップすると、文字・大きさ・色を変えたり、削除したりできます。「別のページへ」で、コピーや移動もできます。付箋は、この端末だけに保存されます。ほかの人には見えません。"],
+["グループのカレンダーはどこで見られますか？","表紙の次の「カレンダー」ページにあります。管理者が決めたGoogleカレンダーです。その下の「近日の予定」で、これからの予定を5件まで見られます。"],
+["予定の通知はどんなときに出ますか？","アプリを開いたときと、開いている間に、黄色い付箋でお知らせします。新しい予定や予定の変更があったとき、予定の24時間前と1時間前です。「端末の通知を許可する」を押すと、端末の通知でも届きます。アプリを閉じている間は届きません。"],
+["カレンダーに予定を入れるには？","グループのGoogleカレンダーに予定を入れます。入れられるのは、管理者と、編集の権限をもらった人です。入れたいときは、管理者にGoogleアカウントを伝えてください。"],
+["パトロールの予定を登録したい","「パトロール」タブで、日付・時間・場所を入れて「予定を追加」を押します。登録した予定には「📅 Googleカレンダーに追加」「編集」「削除」が付きます。ここに書いた予定は、この端末だけに保存されます。みんなに知らせたいときは、「📅 Googleカレンダーに追加」から、グループのカレンダーに入れてください。"],
+["ログインできない・IDやパスワードが分からない","管理者にご連絡ください。"],
+["新しいメンバーを招待するには？（管理者向け）","管理者ページの「メンバー招待」で、最初から見せるページを選んで保存し、「QRコードを表示」を押します。読み取った人に、ログイン画面の「はじめての方：参加を申請する」を押してもらい、届いた申請を許可すると、IDとパスワードが発行されます。"],
+["データのバックアップは？","もくじの下にある「データのバックアップ」で、記録・付箋・ページ設定をまとめて保存・復元できます。機種変更やアプリの入れ直しの前に使ってください。"],
+["アプリが古いままで更新されない","アプリを完全に閉じてから、開き直してください。それでも変わらないときは、少し時間をおいて、もう一度開いてください。"],
+["ホーム画面に置くには？","ブラウザのメニューから「ホーム画面に追加」（または「アプリをインストール」）を選びます。"]
+];
+function initHowto(root){
+  const isA=!!ld("fn_admin",0);let q="",ask=-1,msg="";
+  const ex=()=>{const l=isA?ld("fn_qa",null):remote().qa;return Array.isArray(l)?l:[]};
+  const list=()=>{
+    const f=q.trim().toLowerCase(),L=HOWTO_QA.map(x=>({q:x[0],a:x[1],b:1})).concat(ex().map((x,i)=>({q:String(x.q||""),a:String(x.a||""),i})));
+    const sh=L.filter(x=>!f||(x.q+x.a).toLowerCase().includes(f));
+    root.querySelector("#qa-l").innerHTML=sh.length?sh.map(x=>'<details class="qa"><summary>'+esc(x.q)+'</summary><p>'+esc(x.a)+'</p>'+(isA&&!x.b?'<button class="sn-btn sn-ghost" data-qd="'+x.i+'">'+(ask===x.i?"本当に削除":"削除")+'</button>':"")+'</details>').join(""):'<p class="sn-note">見つかりませんでした。</p>';
+  };
+  root.innerHTML='<input class="sn-in" id="qa-s" placeholder="キーワードで探す" maxlength="30"><div id="qa-l"></div>'+(isA?'<div class="pp"><h3>Q＆Aを追加（管理者）</h3><input class="sn-in" id="qa-q" maxlength="100" placeholder="質問"><textarea class="sn-in" id="qa-a" rows="4" maxlength="1000" placeholder="答え"></textarea><button class="sn-btn" id="qa-add">追加する</button><p class="sn-note" id="qa-m"></p></div>':"");
+  list();
+  root.addEventListener("input",e=>{if(e.target.id==="qa-s"){q=e.target.value;list()}});
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    if(b.dataset.qd!==undefined){const i=+b.dataset.qd;if(ask===i){const l=ex().slice();l.splice(i,1);sv("fn_qa",l);if(window.fnTouch)fnTouch();ask=-1}else ask=i;list()}
+    else if(b.id==="qa-add"){
+      const qq=root.querySelector("#qa-q").value.trim().slice(0,100),aa=root.querySelector("#qa-a").value.trim().slice(0,1000),m=root.querySelector("#qa-m");
+      if(!qq||!aa){m.textContent="質問と答えを入れてください。";return}
+      const l=ex().slice();l.push({q:qq,a:aa});sv("fn_qa",l);if(window.fnTouch)fnTouch();
+      root.querySelector("#qa-q").value="";root.querySelector("#qa-a").value="";
+      m.textContent="追加しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。";list();
+    }
+  });
+}
+/* ---- メモ ---- */
+function initMemoPg(root){
+  const K="fn_memopg";let ed=null,q="",ask=null,msg="";
+  const L=()=>{const l=ld(K,[]);return Array.isArray(l)?l:[]};
+  const dt=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+  const copy=t=>{const fb=()=>{const a=document.createElement("textarea");a.value=t;a.style.cssText="position:fixed;opacity:0";document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(x){}a.remove()};try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).catch(fb);else fb()}catch(x){fb()}};
+  const form=()=>{
+    const m=ed!==null?L().find(x=>x.id===ed):null;
+    root.querySelector("#mp-f").innerHTML='<div class="pp"><h3>'+(m?"メモを直す":"メモを書く")+'</h3><input class="sn-in" id="mp-t" maxlength="40" placeholder="タイトル（なくてもOK）" value="'+esc(m?m.t:"")+'"><textarea class="sn-in" id="mp-x" rows="5" maxlength="2000" placeholder="メモ">'+esc(m?m.x:"")+'</textarea><button class="sn-btn" id="mp-add">'+(m?"更新する":"メモを保存")+'</button>'+(m?'<button class="sn-btn sn-ghost" id="mp-c">編集をやめる</button>':"")+'<p class="sn-note">'+esc(msg)+'</p></div>';
+  };
+  const list=()=>{
+    const f=q.trim().toLowerCase(),a=L().filter(x=>!f||((x.t||"")+(x.x||"")).toLowerCase().includes(f)).sort((p,r)=>r.id-p.id);
+    root.querySelector("#mp-l").innerHTML=a.length?a.map(x=>'<div class="sn-row"><small>'+esc(x.d||"")+'</small>'+(x.t?'<div class="mp-t">'+esc(x.t)+'</div>':"")+'<div class="mp-x">'+esc(x.x||"")+'</div><button class="sn-chip" data-mc="'+x.id+'">コピー</button> <button class="sn-chip" data-me="'+x.id+'">編集</button> <button class="sn-chip" data-md="'+x.id+'">'+(ask===x.id?"本当に削除":"削除")+'</button></div>').join(""):'<p class="sn-note">'+(f?"見つかりませんでした。":"まだメモがありません。")+'</p>';
+  };
+  root.innerHTML='<p class="sn-note">自分用のメモです。この端末だけに保存され、ほかの人には見えません。</p><div id="mp-f"></div><input class="sn-in" id="mp-s" placeholder="メモを探す" maxlength="30"><div id="mp-l"></div>';
+  form();list();
+  root.addEventListener("input",e=>{if(e.target.id==="mp-s"){q=e.target.value;list()}});
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    if(b.id==="mp-add"){
+      const t=root.querySelector("#mp-t").value.trim().slice(0,40),x=root.querySelector("#mp-x").value.trim().slice(0,2000);
+      if(!x&&!t){msg="メモを書いてください。";form();return}
+      const l=L();
+      if(ed!==null){const m=l.find(y=>y.id===ed);if(m){m.t=t;m.x=x}}else l.push({id:Date.now(),d:dt(),t,x});
+      sv(K,l);ed=null;msg="保存しました。";form();list();
+    }
+    else if(b.id==="mp-c"){ed=null;msg="";form()}
+    else if(b.dataset.mc!==undefined){const m=L().find(y=>y.id===+b.dataset.mc);if(m){copy((m.t?m.t+"\n":"")+(m.x||""));b.textContent="コピーしました";setTimeout(()=>{b.textContent="コピー"},1500)}}
+    else if(b.dataset.me!==undefined){ed=+b.dataset.me;msg="";form();list();const f=root.querySelector("#mp-f");if(f)f.scrollIntoView({block:"center",behavior:"smooth"})}
+    else if(b.dataset.md!==undefined){const i=+b.dataset.md;if(ask===i){sv(K,L().filter(y=>y.id!==i));ask=null;if(ed===i){ed=null;form()}}else ask=i;list()}
   });
 }
 drawCover();renderPages();__sig=sigNow();checkAgree();
