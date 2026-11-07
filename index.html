@@ -1530,10 +1530,14 @@ function initSwim(root,pg){
 
 /* 割り勘：費用を入れると、誰が誰にいくら払えば済むかを計算する */
 function initWarikan(root,pg){
-  const K="fn_wk_"+pg.id,E=v=>esc(String(v==null?"":v)),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  try{initWarikanCore(root,pg)}catch(e){root.innerHTML='<p class="sn-note" style="color:#b3412f">割り勘ページでエラーが出ました（ver 11-08b）：'+esc(String(e&&e.message||e))+'</p>'}
+}
+function initWarikanCore(root,pg){
+  const put=h=>{root.innerHTML='<p class="sn-note" style="margin:0 0 6px;text-align:right">割り勘 ver 11-08b</p>'+h};
+  const K="fn_wk_data",E=v=>esc(String(v==null?"":v)),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   const yen=n=>"¥"+Math.abs(n).toLocaleString("ja-JP");
-  let D=ld(K,null);if(!D||!Array.isArray(D.sets))D={sets:[],cur:null};
-  const save=()=>sv(K,D);
+  let D;const load=()=>{D=ld(K,null);if(!D||!Array.isArray(D.sets))D={sets:[],cur:null}};load();
+  const save=()=>{sv(K,D);window.dispatchEvent(new Event("fnwk"))};
   let ask=null,mg={k:"",t:""},mk=false,dr={s:"",m:"",t:"",a:"",p:"",w:{}};
   const cur=()=>D.sets.find(s=>s.id===D.cur)||null;
   const nm=(s,id)=>{const m=s.m.find(x=>x.id===id);return m?m.n:"（削除済み）"};
@@ -1569,12 +1573,12 @@ function initWarikan(root,pg){
   };
   const newForm=()=>`<div class="ic"><h4>新しい精算をつくる</h4><input class="sn-in" id="w-s" maxlength="24" placeholder="例：11月3日 きのこ採り" value="${E(dr.s)}"><button class="sn-btn" data-ns="1">精算をつくる</button>${note("n")}</div>`;
   const render=()=>{
-    const s=cur();
-    if(!D.sets.length){root.innerHTML='<p class="sn-note">山行やドライブなど、出かけるたびに「精算」をつくって、かかった費用を入れていきます。</p>'+newForm();return}
+    load();const s=cur();
+    if(!D.sets.length){put('<p class="sn-note">山行やドライブなど、出かけるたびに「精算」をつくって、かかった費用を入れていきます。</p>'+newForm());return}
     const chips=D.sets.map(x=>`<button class="sn-chip${x.id===D.cur?" on":""}" data-s="${x.id}">${E(x.n)}</button>`).join("")+`<button class="sn-chip" data-nw="1">＋新しい精算</button>`;
     let h=`<div class="sn-tabs" style="gap:6px">${chips}</div>`;
     if(mk)h+=newForm();
-    if(!s){root.innerHTML=h;return}
+    if(!s){put(h);return}
     const c=calc(s),st=settle(s,c);let tot=0;
     const first=s.m[0]?s.m[0].id:"";if(!dr.p||!has(s,dr.p))dr.p=first;
     h+=`<div class="ic"><h4>メンバー</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${s.m.map(m=>`<span class="sn-chip">${E(m.n)} <button class="sn-del" data-md="${m.id}" aria-label="${E(m.n)}を削除" style="margin:0 0 0 4px;padding:0 8px">×</button></span>`).join("")||'<span class="sn-note">参加した人を追加してください。</span>'}</div><input class="sn-in" id="w-m" maxlength="12" placeholder="名前" value="${E(dr.m)}"><div class="ir"><button class="sn-btn" data-ma="1">メンバーを追加</button><button class="sn-btn" data-imp="1" style="background:none;color:var(--acc);border:1px solid var(--acc)">名簿から取り込む</button></div>${note("m")}</div>`;
@@ -1583,13 +1587,13 @@ function initWarikan(root,pg){
     if(s.e.length)h+=`<div class="sn-row" style="text-align:right"><b>合計 ${yen(tot)}</b></div>`;
     h+=`<div class="nl">メンバーごとの収支</div>`+(s.m.map(m=>{const v=c.paid[m.id]-c.owed[m.id];return `<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(m.n)}<br><small class="sn-note">立て替え ${yen(c.paid[m.id])}／負担 ${yen(c.owed[m.id])}</small></span><b style="color:${v>0?"var(--acc)":v<0?"#b3412f":"inherit"}">${v>0?"＋":v<0?"－":""}${yen(v)}</b></div>`}).join("")||'<p class="sn-note">メンバーを追加すると表示されます。</p>');
     h+=`<div class="nl">精算方法</div><div class="ic">`+(st.length?st.map(x=>`<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(nm(s,x.f))} → ${E(nm(s,x.t))}</span><b>${yen(x.v)}</b></div>`).join(""):`<p class="sn-note" style="margin:0">${s.e.length?"精算は不要です。":"費用を入れると、精算方法が出ます。"}</p>`)+`</div><div class="ir"><button class="sn-btn" data-cp="1">結果をコピー</button><button class="sn-btn" data-ds="1" style="background:${ask==="s"?"#b3412f":"none"};color:${ask==="s"?"#fff":"var(--sub)"};border:1px solid var(--line)">${ask==="s"?"本当に削除":"この精算を削除"}</button></div>${note("c")}`;
-    root.innerHTML=h;
+    put(h);
   };
   const fail=(k,t)=>{mg={k,t};render()};
   root.addEventListener("input",e=>{const t=e.target,i=t.id;if(i==="w-s")dr.s=t.value;else if(i==="w-m")dr.m=t.value;else if(i==="w-t")dr.t=t.value;else if(i==="w-a")dr.a=t.value;else if(i==="w-p")dr.p=t.value;else if(t.dataset&&t.dataset.w)dr.w[t.dataset.w]=t.checked});
   root.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="w-m"){e.preventDefault();root.querySelector("[data-ma]").click()}});
   root.addEventListener("click",e=>{
-    const b=e.target.closest("button");if(!b)return;const d=b.dataset,s=cur();
+    const b=e.target.closest("button");if(!b)return;load();const d=b.dataset,s=cur();
     if(d.s){D.cur=d.s;save();ask=null;mg={k:"",t:""};mk=false;dr.w={};render();return}
     if(d.nw){mk=!mk;render();return}
     if(d.ns){const n=dr.s.trim()||(new Date().getMonth()+1)+"月"+new Date().getDate()+"日の精算";const x={id:nid(),n,m:[],e:[]};D.sets.push(x);D.cur=x.id;save();dr.s="";dr.w={};mk=false;mg={k:"",t:""};render();return}
@@ -1605,6 +1609,7 @@ function initWarikan(root,pg){
     if(d.cp){const t=text(s),ok=()=>fail("c","コピーしました。LINEなどに貼り付けられます。"),fb=()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){fail("c","コピーできませんでした。")}document.body.removeChild(ta)};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(x){fb()}return}
   });
   if(D.sets.length&&!cur())D.cur=D.sets[0].id;
+  window.addEventListener("fnwk",()=>{if(root.isConnected)render()});
   render();
 }
 
@@ -2003,7 +2008,8 @@ function initAdmin(root){
     ["いつもの作業",[
       ["inv","✉️","#4f8446","招待","メンバー招待","QRコードを表示して招待します。最初から見せるページも選べます。（メンバーを募るとき）",1,0],
       ["req","📥","#4f8446","申請","参加・閲覧の申請","新しい人の参加申請を許可・却下します。許可するとIDとパスワードが自動で発行されます。（メンバーが申請したとき）",1,1],
-      ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1]]],
+      ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1],
+      ["wk","🧮","#2f8f6f","割り勘","割り勘（立て替えの精算）","出かけた費用をメンバーで割り勘にして、誰が誰にいくら払うかを計算します。「割り勘」ページと同じ内容です。この端末だけに保存されます。（精算するとき）",0,1]]],
     ["ログイン・メンバー",[
       ["acct","🔑","#8a5a7a","パスワード","管理者パスワード・QRコード","管理者パスワードの設定、管理者モードの解除、新しいメンバー用のQRコードの表示ができます。（管理者の設定を変えるとき・メンバーを募るとき）",0,0]]],
     ["データ",[
@@ -2222,6 +2228,7 @@ function initMemoPg(root){
     else if(b.dataset.md!==undefined){const i=+b.dataset.md;if(ask===i){sv(K,L().filter(y=>y.id!==i));ask=null;if(ed===i){ed=null;form()}}else ask=i;list()}
   });
 }
+(function(){const A=window.fnAdm=window.fnAdm||{},d=document.createElement("div");d.className="pp";initWarikan(d,null);A.wk=d})();
 drawCover();renderPages();__sig=sigNow();checkAgree();
 </script>
 <script>
