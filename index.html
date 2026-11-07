@@ -307,6 +307,7 @@ body:not(.adm) .adm-only{display:none!important}
 .qa summary{cursor:pointer;font-weight:700;line-height:1.5}
 .qa p{margin:8px 0 6px;line-height:1.8;white-space:pre-wrap;color:var(--ink)}
 .mp-t{font-weight:700}.mp-x{white-space:pre-wrap;line-height:1.7;margin:4px 0 8px}
+.am-th{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.am-ti{position:relative;display:inline-block}.am-ti img,.am-im{width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line,#ddd3b8);cursor:zoom-in;display:block}.am-rm{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:#b9473a;color:#fff;font-size:15px;line-height:24px;padding:0;cursor:pointer}
 </style>
 <style>
 .ad-hero{background:linear-gradient(135deg,rgba(79,132,70,.18),rgba(59,124,163,.14));border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px}
@@ -1836,7 +1837,7 @@ function initMembers(root){
   rlDraw();A.rules=rl;
   /* ---- バックアップ ---- */
   const bk=document.createElement("div");bk.className="pp";
-  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_gkey","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued"];
+  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_gkey","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued","fn_admmemo"];
   const bkDraw=()=>{const b=ld("fn_bk",{at:0,dirty:0}),need=!b.at||Date.now()-b.at>30*864e5||(b.dirty||0)>=10;
     bk.innerHTML=`<h3>管理者データのバックアップ</h3>${need?'<p class="sn-note" style="color:#b9473a"><b>バックアップをおすすめします。</b>名簿・ID・許可の情報は、この端末にしかありません。端末をなくすと、メンバーのログインができなくなります。</p>':'<p class="sn-note">名簿・ID・許可の情報は、この端末にしかありません。変更したら、バックアップを取ってください。</p>'}<p class="sn-note">前回：${b.at?new Date(b.at).toLocaleDateString("ja-JP"):"まだありません"}　（それ以降の変更：${b.dirty||0}回）</p><button class="sn-btn" data-b="out">管理者データをファイルで保存</button><p class="sn-note">ファイルには、メンバーのログイン情報が含まれます。ほかの人に渡さないでください。</p><div class="nl">復元する</div><input type="file" id="bk-f" accept=".json,application/json"><p class="sn-note" id="bk-m"></p>`};
   bk.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.dataset.b!=="out")return;
@@ -1872,7 +1873,8 @@ function initAdmin(root){
     ["データ",[
       ["bk","💾","#b8622a","バックアップ","管理者データのバックアップ","名簿・ID・許可の情報をファイルに保存します。端末をなくしたときの備えです。（変更したら、こまめに）",0,1],
       ["mem","👥","#7a5aa3","名簿取込","山菜手帳の名簿を取り込む","山菜手帳のバックアップから、メンバー名簿を取り込みます。（山菜手帳の名簿を移すとき）",0,1],
-      ["imp","🌿","#5a9e52","図鑑コピー","山菜手帳の図鑑をコピー","山菜手帳の図鑑を、このアプリにコピーして、みんなに配ります。（図鑑を移すとき）",0,0]]],
+      ["imp","🌿","#5a9e52","図鑑コピー","山菜手帳の図鑑をコピー","山菜手帳の図鑑を、このアプリにコピーして、みんなに配ります。（図鑑を移すとき）",0,0],
+      ["am","🗒️","#8a6a2a","メモ","管理者メモ（写真つき）","管理者だけが見られる自分用のメモです。写真も貼れます。この端末だけに保存されます。（自由に）",0,1]]],
     ["グループの設定",[
       ["cal","📅","#2f6f8f","カレンダー","グループのカレンダー","グループ共通のGoogleカレンダーを設定します。（カレンダーを決める・変えるとき）",0,1],
       ["rules","📜","#8a8a6a","ルール","利用ルール","メンバーが同意する利用ルールの文章を編集します。保存すると、全員があらためて同意します。（ルールを変えるとき）",0,1]]]
@@ -1966,6 +1968,92 @@ function initHowto(root){
     }
   });
 }
+/* ---- 管理者メモ（写真つき・この端末だけ） ---- */
+(function(){
+  const A=window.fnAdm=window.fnAdm||{},K="fn_admmemo",MAXI=5;
+  const root=document.createElement("div");root.className="pp";
+  let ed=null,pend=[],ask=null,msg="",busy=false,dr={t:"",x:""};
+  const L=()=>{const l=ld(K,[]);return Array.isArray(l)?l:[]};
+  const okI=s=>typeof s==="string"&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
+  const save=l=>{try{localStorage.setItem(K,JSON.stringify(l));return true}catch(e){return false}};
+  const tot=()=>{let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||"").length}}catch(e){}return n};
+  const shrink=f=>new Promise((res,rej)=>{
+    const u=URL.createObjectURL(f),im=new Image();
+    im.onload=()=>{try{
+      const M=800,W=im.naturalWidth,H=im.naturalHeight,r=Math.min(1,M/Math.max(W,H)),w=Math.max(1,Math.round(W*r)),h=Math.max(1,Math.round(H*r));
+      const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,w,h);g.drawImage(im,0,0,w,h);
+      let q=.72,d=c.toDataURL("image/jpeg",q);
+      while(d.length>150000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}
+      URL.revokeObjectURL(u);res(d)}catch(e){URL.revokeObjectURL(u);rej(e)}};
+    im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("img"))};
+    im.src=u});
+  const grab=()=>{const t=root.querySelector("#am-t"),x=root.querySelector("#am-x");if(t)dr.t=t.value;if(x)dr.x=x.value};
+  const form=()=>{
+    root.querySelector("#am-f").innerHTML='<h3>'+(ed!==null?"メモを直す":"メモを書く")+'</h3>'
+      +'<input class="sn-in" id="am-t" maxlength="40" placeholder="タイトル（なくてもOK）" value="'+esc(dr.t)+'">'
+      +'<textarea class="sn-in" id="am-x" rows="5" maxlength="3000" placeholder="メモ">'+esc(dr.x)+'</textarea>'
+      +(pend.length?'<div class="am-th">'+pend.map((s,i)=>'<span class="am-ti"><img src="'+s+'" alt=""><button type="button" class="am-rm" data-r="'+i+'" aria-label="この写真を外す">×</button></span>').join("")+'</div>':"")
+      +'<input type="file" id="am-f1" accept="image/*" multiple hidden>'
+      +'<div class="sn-g"><button class="sn-btn sn-ghost" data-a="pick">📷 写真を貼る（'+pend.length+'/'+MAXI+'）</button><button class="sn-btn" data-a="save">'+(ed!==null?"更新する":"メモを保存")+'</button></div>'
+      +(ed!==null?'<button class="sn-btn sn-ghost" data-a="cancel">編集をやめる</button>':"")
+      +'<p class="sn-note">'+esc(msg)+'</p>';
+  };
+  const list=()=>{
+    const a=L().slice().sort((p,r)=>r.id-p.id),u=tot();
+    root.querySelector("#am-l").innerHTML=(a.length?a.map(x=>{const im=(x.im||[]).filter(okI);
+      return '<div class="sn-row"><small>'+esc(x.d||"")+'</small>'+(x.t?'<div class="mp-t">'+esc(x.t)+'</div>':"")+(x.x?'<div class="mp-x">'+esc(x.x)+'</div>':"")
+        +(im.length?'<div class="am-th">'+im.map(s=>'<img class="am-im" src="'+s+'" alt="">').join("")+'</div>':"")
+        +'<button class="sn-chip" data-me="'+x.id+'">編集</button> <button class="sn-chip" data-md="'+x.id+'">'+(ask===x.id?"本当に削除":"削除")+'</button></div>'}).join(""):'<p class="sn-note">まだメモがありません。</p>')
+      +'<p class="sn-note">アプリ全体の保存量：約'+(u/1e6).toFixed(1)+' / 5 MB（端末により上限は前後します）'+(u>4e6?'　<b style="color:#b9473a">容量がいっぱいに近づいています。古い写真を削除してください。</b>':'')+'</p>';
+  };
+  const addFiles=async fs=>{
+    const a=[...fs].filter(f=>/^image\//.test(f.type));if(!a.length||busy)return;
+    busy=true;let over=0,bad=0;
+    for(const f of a){if(pend.length>=MAXI){over++;continue}try{pend.push(await shrink(f))}catch(e){bad++}}
+    busy=false;msg=(over?"1つのメモに貼れる写真は"+MAXI+"枚までです。":"")+(bad?"読み込めない写真がありました。":"");
+    form();
+  };
+  const zoom=s=>{const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85);display:grid;place-items:center;padding:12px";o.innerHTML='<img alt="" style="max-width:100%;max-height:100%;border-radius:8px">';o.querySelector("img").src=s;o.addEventListener("click",()=>o.remove());document.body.appendChild(o)};
+  root.innerHTML='<p class="sn-note">管理者だけが見られる自分用のメモです。写真も貼れます。この端末だけに保存され、メンバーには配信されません。写真は自動で小さくして保存します。</p><div id="am-f"></div><div id="am-l"></div>';
+  form();list();
+  root.addEventListener("paste",e=>{
+    const it=[...((e.clipboardData&&e.clipboardData.items)||[])].filter(x=>x.kind==="file"&&/^image\//.test(x.type)).map(x=>x.getAsFile()).filter(Boolean);
+    if(it.length){e.preventDefault();grab();addFiles(it)}
+  });
+  root.addEventListener("change",e=>{
+    if(e.target.id!=="am-f1")return;
+    const fs=[...e.target.files];e.target.value="";grab();addFiles(fs);
+  });
+  root.addEventListener("click",e=>{
+    const im=e.target.closest(".am-im");if(im){zoom(im.src);return}
+    const b=e.target.closest("button");if(!b)return;
+    const a=b.dataset.a;
+    if(b.dataset.r!==undefined){grab();pend.splice(+b.dataset.r,1);msg="";form()}
+    else if(a==="pick"){grab();root.querySelector("#am-f1").click()}
+    else if(a==="cancel"){ed=null;dr={t:"",x:""};pend=[];msg="";form()}
+    else if(a==="save"){
+      grab();const t=dr.t.trim().slice(0,40),x=dr.x.trim().slice(0,3000);
+      if(busy){msg="写真を処理中です。少し待ってから保存してください。";form();return}
+      if(!t&&!x&&!pend.length){msg="メモか写真を入れてください。";form();return}
+      const l=L();
+      if(ed!==null){const m=l.find(y=>y.id===ed);if(m){m.t=t;m.x=x;m.im=pend.slice()}}else l.push({id:Date.now(),d:today(),t,x,im:pend.slice()});
+      if(!save(l)){msg="保存できませんでした。端末の保存容量がいっぱいです。古い写真つきのメモを削除するか、写真を減らしてください。";form();return}
+      ed=null;dr={t:"",x:""};pend=[];msg="保存しました。";form();list();
+    }
+    else if(b.dataset.me!==undefined){
+      const m=L().find(y=>y.id===+b.dataset.me);if(!m)return;
+      ed=m.id;dr={t:m.t||"",x:m.x||""};pend=(m.im||[]).filter(okI);msg="";form();list();
+      root.querySelector("#am-f").scrollIntoView({block:"center",behavior:"smooth"});
+    }
+    else if(b.dataset.md!==undefined){
+      const i=+b.dataset.md;
+      if(ask===i){if(!save(L().filter(y=>y.id!==i)))msg="削除できませんでした。";ask=null;if(ed===i){ed=null;dr={t:"",x:""};pend=[];form()}}else ask=i;
+      list();
+    }
+  });
+  A.am=root;
+})();
+
 /* ---- メモ ---- */
 function initMemoPg(root){
   const K="fn_memopg";let ed=null,q="",ask=null,msg="";
