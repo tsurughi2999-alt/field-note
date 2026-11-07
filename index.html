@@ -888,7 +888,7 @@ function drawNm(){
   $("nfs").value=Math.round(nfz(draft.d));$("nfv").textContent=draft.d.f>0?draft.d.f+"px":"自動（"+Math.round(nfz(draft.d))+"px）";
   $("nd").textContent=ndel?"本当に削除":"削除";
 }
-function nTargets(){const a=[["cal","カレンダー"],["toc","目次"]];try{pages().forEach(p=>{if(canView(p))a.push([p.id,p.name])})}catch(x){}return a}
+function nTargets(){const a=[["cal","カレンダー"]];if(ld("fn_admin",0))a.push([ADMIN.id,ADMIN.name]);a.push(["toc","目次"]);try{pages().forEach(p=>{if(canView(p))a.push([p.id,p.name])})}catch(x){}return a}
 function openEdit(n,w,id){draft={n,w,id,d:{t:n.t,w:n.w,h:n.h||Math.round(n.w*.95),c:n.c,f:n.f||0}};ndel=false;$("nt").value=n.t;drawNm();$("nto").innerHTML=nTargets().map(([i,t])=>'<option value="'+esc(i)+'"'+(i===id?" selected":"")+'>'+esc(t)+(i===id?"（このページ）":"")+'</option>').join("");nmod.hidden=false}
 nmod.addEventListener("input",e=>{const t=e.target;if(t.id==="nw"){draft.d.w=+t.value;drawNm()}else if(t.id==="nh"){draft.d.h=+t.value;drawNm()}else if(t.id==="nfs"){draft.d.f=+t.value;drawNm()}});
 nmod.addEventListener("click",e=>{
