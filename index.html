@@ -308,6 +308,16 @@ body:not(.adm) .adm-only{display:none!important}
 .qa p{margin:8px 0 6px;line-height:1.8;white-space:pre-wrap;color:var(--ink)}
 .mp-t{font-weight:700}.mp-x{white-space:pre-wrap;line-height:1.7;margin:4px 0 8px}
 .am-th{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.am-ti{position:relative;display:inline-block}.am-ti img,.am-im{width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line,#ddd3b8);cursor:zoom-in;display:block}.am-rm{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:#b9473a;color:#fff;font-size:15px;line-height:24px;padding:0;cursor:pointer}
+.cv-next{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 8px;padding:8px 12px;border:1.5px solid #d9c35a;border-radius:10px;background:#fff3a8;color:#3a3220;text-align:left;font:inherit;font-size:14px;line-height:1.4;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.cv-next[hidden]{display:none}
+.cv-next .cn-t{flex:1;min-width:0}.cv-next .cn-t small{display:block;font-size:11px;color:#7a6a3a;letter-spacing:.08em}.cv-next .cn-t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-next .cn-d{flex:none;font-weight:700;color:#8a2f1f;font-size:15px}
+.ev-new{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:99px;background:#d6452f;color:#fff;font-size:11px;font-style:normal;font-weight:700;letter-spacing:.06em;vertical-align:1px}
+@keyframes fnFlash{0%,100%{box-shadow:0 0 0 0 rgba(255,190,0,0),0 2px 8px rgba(0,0,0,.25);filter:brightness(1)}50%{box-shadow:0 0 0 7px rgba(255,190,0,.6),0 2px 8px rgba(0,0,0,.25);filter:brightness(1.08)}}
+@keyframes fnPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.15)}}
+.cv-next.ev-flash{animation:fnFlash 1.3s ease-in-out infinite}
+.ev-new.ev-flash{animation:fnPulse 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.cv-next.ev-flash,.ev-new.ev-flash{animation:none}.cv-next.ev-flash{outline:3px solid #e0a800}}
 </style>
 <style>
 .ad-hero{background:linear-gradient(135deg,rgba(79,132,70,.18),rgba(59,124,163,.14));border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px}
@@ -492,6 +502,7 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
     <div class="under">
       <div class="cl">表紙のデザイン</div><div class="dg-row" id="dpick"></div><div class="cl">表紙の色</div>
       <div class="sw-row" id="picker"></div><div class="cl">濃淡</div><input type="range" id="cvg" class="cvg" min="0" max="100" value="50" aria-label="表紙の濃淡">
+      <button type="button" class="cv-next" id="cv-next" hidden></button>
       <button class="open" id="open">ノートを開く</button>
     </div>
   </section>
@@ -1614,17 +1625,37 @@ function initRegion(root){
     });
     sv(REM,rem);
   }
+  const VW="fn_evvw",WK=7*864e5,cvn=document.getElementById("cv-next");
+  const bdg=e=>{const vw=ld(VW,{}),o=vw[e.id],cr=Date.parse(e.created||"")||0,upd=Date.parse(e.updated||"")||0,n=Date.now();
+    if(o===undefined)return cr&&n-cr<WK?"NEW":"";
+    return o!==(e.updated||"")&&upd&&n-upd<WK?"更新":""};
+  const upl=()=>{const now=Date.now();return list.filter(e=>en(e)>now).slice(0,5)};
+  const dayDiff=e=>{const a=new Date();a.setHours(0,0,0,0);const b=st(e);return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-a)/864e5)};
+  const lbl=n=>n<0?"開催中":n===0?"今日":n===1?"明日":"あと"+n+"日";
+  const mark=()=>{const vw=ld(VW,{}),up=upl();let ch=false;
+    up.forEach(e=>{if(vw[e.id]!==(e.updated||"")){vw[e.id]=e.updated||"";ch=true}});
+    if(ch){const ids=new Set(list.map(e=>e.id));Object.keys(vw).forEach(k=>{if(!ids.has(k))delete vw[k]});sv(VW,vw);draw()}};
+  const paintNext=()=>{if(!cvn)return;const up=upl();
+    if(off||!up.length){cvn.hidden=true;cvn.classList.remove("ev-flash");return}
+    const e=up[0],n=dayDiff(e),nw=up.filter(x=>bdg(x)).length;
+    cvn.hidden=false;
+    cvn.innerHTML='<span aria-hidden="true" style="font-size:22px">📅</span><span class="cn-t"><small>次の予定</small><b>'+esc2(fm(e))+'　'+esc2(e.summary||"予定")+'</b></span>'+(nw?'<i class="ev-new">NEW'+(nw>1?" "+nw:"")+'</i>':"")+'<span class="cn-d">'+lbl(n)+'</span>';
+    cvn.classList.toggle("ev-flash",nw>0||n<=1)};
   function draw(){
-    if(off){ev.innerHTML="";return}
-    const now=Date.now(),up=list.filter(e=>en(e)>now).slice(0,5);
+    if(off){ev.innerHTML="";paintNext();return}
+    const up=upl();
     let nb="";
     if("Notification" in window){
       if(Notification.permission==="default")nb='<button class="sn-btn sn-ghost" id="gc-nb">🔔 端末の通知を許可する</button><p class="sn-note">アプリを開いている間、予定の前に端末の通知でもお知らせします。</p>';
       else if(Notification.permission==="granted")nb='<p class="sn-note">端末の通知：オン（アプリを開いている間だけ届きます）</p>';
     }
-    ev.innerHTML='<h3>近日の予定</h3>'+(up.length?up.map(e=>'<div class="sn-row"><b>'+esc2(fm(e))+'</b>　'+esc2(e.summary||"予定")+(e.location?'<br><small>'+esc2(e.location)+'</small>':'')+'</div>').join(""):'<p class="sn-note">'+(err?"予定を読み込めませんでした（"+esc2(err)+"）。":"これからの予定はありません。")+'</p>')+nb;
+    ev.innerHTML='<h3>近日の予定</h3>'+(up.length?up.map(e=>{const bg=bdg(e);return '<div class="sn-row">'+(bg?'<i class="ev-new ev-flash">'+bg+'</i>':"")+'<b>'+esc2(fm(e))+'</b>　'+esc2(e.summary||"予定")+(e.location?'<br><small>'+esc2(e.location)+'</small>':'')+'</div>'}).join(""):'<p class="sn-note">'+(err?"予定を読み込めませんでした（"+esc2(err)+"）。":"これからの予定はありません。")+'</p>')+nb;
     const b=ev.querySelector("#gc-nb");if(b)b.onclick=()=>{try{Notification.requestPermission().then(draw)}catch(x){}};
+    paintNext();
   }
+  ev.addEventListener("click",e=>{if(e.target.closest(".sn-row"))mark()});
+  if(cvn)cvn.addEventListener("click",()=>{const i=[...book.children].filter(n=>n.classList&&n.classList.contains("pg")).indexOf(tp);if(i>=0)go(i)});
+  if("IntersectionObserver" in window){let tm=0;new IntersectionObserver(es=>{es.forEach(x=>{clearTimeout(tm);if(x.isIntersecting)tm=setTimeout(mark,3000)})},{threshold:.6}).observe(tp)}
   let busy=false;
   async function run(){if(busy)return;busy=true;try{const ok=await load();if(ok)check();draw()}finally{busy=false}}
   window.fnEvRefresh=run;
