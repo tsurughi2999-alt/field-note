@@ -566,7 +566,7 @@ function gateOn(){return !isAdm()&&!!remote().gate}
 function meRec(){const u=ld("fn_uid",null);return u?(remote().members||[]).find(m=>m.uid===u)||null:null}
 function canView(p){if(!gateOn()||FIXED.includes(p.id)||p.id==="admin")return true;const m=meRec();return !!(m&&(m.st||"ok")==="ok"&&(m.pg||[]).includes(p.id))}
 const POOL_RE=/プール|水泳|スイム/;
-const PGART=[[POOL_RE,"🏊","#3b7ca3",'<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 34.5q4-4 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.6"/><path d="M4 40.5q4-3.5 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.2" opacity=".6"/><path d="M4 45.5q4-3 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2" opacity=".32"/><path d="M28 27.5C21 28 14 28 8.5 27.8" stroke="#fff" stroke-width="4.6"/><path d="M24.5 26.5C24.5 16 17 12.5 10.5 16.5" stroke="#fff" stroke-width="3.8"/></g><circle cx="32" cy="21" r="5.4" fill="#fff"/><path d="M26.6 21a5.4 5.4 0 0 1 10.8 0z" fill="#ffd166"/><rect x="32.6" y="20.1" width="4.6" height="2.6" rx="1.3" fill="#1f4560"/><g fill="#fff"><circle cx="6.5" cy="23" r="1.7"/><circle cx="10.5" cy="20" r="1.2" opacity=".85"/><circle cx="4.5" cy="18.5" r="1" opacity=".7"/></g>'],
+const PGART=[[/割り勘|精算/,"🧮","#2f8f6f",'<circle cx="24" cy="24" r="17" fill="#fff"/><circle cx="24" cy="24" r="13" fill="none" stroke="#2f8f6f" stroke-width="2"/><path d="M17.5 15.5l6.500 9 6.500-9M24 24.500V35M18.500 27h11M18.500 31h11" fill="none" stroke="#2f8f6f" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>'],[POOL_RE,"🏊","#3b7ca3",'<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 34.5q4-4 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.6"/><path d="M4 40.5q4-3.5 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2.2" opacity=".6"/><path d="M4 45.5q4-3 8 0t8 0 8 0 8 0 8 0" stroke="#fff" stroke-width="2" opacity=".32"/><path d="M28 27.5C21 28 14 28 8.5 27.8" stroke="#fff" stroke-width="4.6"/><path d="M24.5 26.5C24.5 16 17 12.5 10.5 16.5" stroke="#fff" stroke-width="3.8"/></g><circle cx="32" cy="21" r="5.4" fill="#fff"/><path d="M26.6 21a5.4 5.4 0 0 1 10.8 0z" fill="#ffd166"/><rect x="32.6" y="20.1" width="4.6" height="2.6" rx="1.3" fill="#1f4560"/><g fill="#fff"><circle cx="6.5" cy="23" r="1.7"/><circle cx="10.5" cy="20" r="1.2" opacity=".85"/><circle cx="4.5" cy="18.5" r="1" opacity=".7"/></g>'],
  [/登山/,"⛰️","#56789e",'<circle cx="37" cy="11" r="4.2" fill="#ffd166"/><path d="M22 40L35 21l11 19z" fill="#fff" opacity=".55"/><path d="M3 40L21 13l18 27z" fill="#fff"/><path d="M21 13l18 27H29.5L21 25.5z" fill="#cfdcec"/><path d="M16.2 20.2l4.8-7.2 4.2 6.3-3 -1.6-2.4 2.6-1.8-2z" fill="#fff"/><path d="M21 13V6" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M21 6l6.5 2.2L21 10.5z" fill="#ff7a59"/><path d="M3 41.5h42" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>'],
  [/温泉|入湯/,"♨️","#c1553f",'<g fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M15 21c-3-3 3-5 0-9s3-5 0-8" opacity=".95"/><path d="M24 22c-3-3 3-5 0-9s3-5 0-8"/><path d="M33 21c-3-3 3-5 0-9s3-5 0-8" opacity=".95"/></g><path d="M6 28h36c0 9-7 14.5-18 14.5S6 37 6 28z" fill="#fff"/><path d="M9.5 31.5q3.5-2.4 7 0t7 0 7 0 7 0" fill="none" stroke="#6cb7d4" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="6" cy="29" rx="3.6" ry="3" fill="#fff" opacity=".75"/><ellipse cx="42" cy="29" rx="3.6" ry="3" fill="#fff" opacity=".75"/><circle cx="30.5" cy="26.2" r="3.2" fill="#ffd166"/><path d="M33 25.2l3.6.6-3 1.5z" fill="#ff9f43"/>'],
  [/ドライブ|ドライヴ/,"🚗","#d08a2f",'<circle cx="38" cy="11" r="4.2" fill="#ffe08a"/><g stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".65"><path d="M2.5 26h5"/><path d="M4 31h5"/></g><path d="M9 36v-6c0-1.4.6-2.6 1.6-3.6l2.4-4.6c.8-1.6 2.3-2.6 4-2.6h12c1.7 0 3.2.8 4.2 2.2L37 27c3.4.4 5.5 1.6 5.5 4.4V36z" fill="#fff"/><path d="M14.6 26.4l1.8-3.2c.4-.7 1-1.1 1.8-1.1H23v5.1zM25.8 22.1h4.6c.8 0 1.4.3 1.9 1l2 3.3h-8.5z" fill="#d08a2f"/><circle cx="17" cy="36" r="4.4" fill="#4a3a2a"/><circle cx="17" cy="36" r="1.8" fill="#fff"/><circle cx="35" cy="36" r="4.4" fill="#4a3a2a"/><circle cx="35" cy="36" r="1.8" fill="#fff"/><path d="M3 43h42" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="6 5"/>'],
@@ -580,7 +580,7 @@ let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_b
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"}].map(skinPg);
+const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
 const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
 const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+2;
@@ -616,10 +616,10 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
   fnPgMem();
@@ -1525,6 +1525,86 @@ function initSwim(root,pg){
       L.unshift({id:idg(),d:$("sw-d").value||td(),m,s,t,p,x:$("sw-x").value.trim()});sv(pre+"sw",L);msg="追加しました。";render()}
     else if(b.id==="sg-save"){["w","m","y"].forEach(k=>{const v=Math.max(0,Math.round((+$("sg-"+k).value||0)*10)/10);if(v)G[k]=v;else delete G[k]});sv(pre+"swg",G);render()}
   });
+  render();
+}
+
+/* 割り勘：費用を入れると、誰が誰にいくら払えば済むかを計算する */
+function initWarikan(root,pg){
+  const K="fn_wk_"+pg.id,E=v=>esc(String(v==null?"":v)),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  const yen=n=>"¥"+Math.abs(n).toLocaleString("ja-JP");
+  let D=ld(K,null);if(!D||!Array.isArray(D.sets))D={sets:[],cur:null};
+  const save=()=>sv(K,D);
+  let ask=null,mg={k:"",t:""},mk=false,dr={s:"",m:"",t:"",a:"",p:"",w:{}};
+  const cur=()=>D.sets.find(s=>s.id===D.cur)||null;
+  const nm=(s,id)=>{const m=s.m.find(x=>x.id===id);return m?m.n:"（削除済み）"};
+  const has=(s,id)=>s.m.some(x=>x.id===id);
+  const note=k=>mg.k===k&&mg.t?`<p class="sn-note" style="color:#b3412f" role="alert">${E(mg.t)}</p>`:"";
+  /* 端数の1円は費用ごとに配る順番をずらし、特定の人に偏らないようにする */
+  const calc=s=>{
+    const paid={},owed={};s.m.forEach(m=>{paid[m.id]=0;owed[m.id]=0});
+    s.e.forEach((e,i)=>{
+      if(paid[e.p]!=null)paid[e.p]+=e.a;
+      const p=e.w.filter(id=>has(s,id)),n=p.length;if(!n)return;
+      const b=Math.floor(e.a/n),r=e.a-b*n;
+      p.forEach((id,k)=>{owed[id]+=b+(((k+i)%n)<r?1:0)});
+    });
+    return {paid,owed};
+  };
+  /* 精算：多く立て替えた人と足りない人を順に突き合わせ、送金の回数を少なくする */
+  const settle=(s,c)=>{
+    const cr=[],db=[];
+    s.m.forEach(m=>{const v=c.paid[m.id]-c.owed[m.id];if(v>0)cr.push({id:m.id,v});else if(v<0)db.push({id:m.id,v:-v})});
+    cr.sort((a,b)=>b.v-a.v);db.sort((a,b)=>b.v-a.v);
+    const out=[];let i=0,j=0;
+    while(i<cr.length&&j<db.length){const t=Math.min(cr[i].v,db[j].v);out.push({f:db[j].id,t:cr[i].id,v:t});cr[i].v-=t;db[j].v-=t;if(!cr[i].v)i++;if(!db[j].v)j++}
+    return out;
+  };
+  const text=s=>{
+    const c=calc(s),st=settle(s,c);let tot=0;
+    const L=["【割り勘の精算】"+s.n];
+    s.e.forEach(e=>{tot+=e.a;L.push(e.t+" "+yen(e.a)+"（"+nm(s,e.p)+"）")});
+    L.push("合計 "+yen(tot),"");
+    if(st.length)st.forEach(x=>L.push(nm(s,x.f)+" → "+nm(s,x.t)+" "+yen(x.v)));else L.push("精算は不要です");
+    return L.join("\n");
+  };
+  const newForm=()=>`<div class="ic"><h4>新しい精算をつくる</h4><input class="sn-in" id="w-s" maxlength="24" placeholder="例：11月3日 きのこ採り" value="${E(dr.s)}"><button class="sn-btn" data-ns="1">精算をつくる</button>${note("n")}</div>`;
+  const render=()=>{
+    const s=cur();
+    if(!D.sets.length){root.innerHTML='<p class="sn-note">山行やドライブなど、出かけるたびに「精算」をつくって、かかった費用を入れていきます。</p>'+newForm();return}
+    const chips=D.sets.map(x=>`<button class="sn-chip${x.id===D.cur?" on":""}" data-s="${x.id}">${E(x.n)}</button>`).join("")+`<button class="sn-chip" data-nw="1">＋新しい精算</button>`;
+    let h=`<div class="sn-tabs" style="gap:6px">${chips}</div>`;
+    if(mk)h+=newForm();
+    if(!s){root.innerHTML=h;return}
+    const c=calc(s),st=settle(s,c);let tot=0;
+    const first=s.m[0]?s.m[0].id:"";if(!dr.p||!has(s,dr.p))dr.p=first;
+    h+=`<div class="ic"><h4>メンバー</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${s.m.map(m=>`<span class="sn-chip">${E(m.n)} <button class="sn-del" data-md="${m.id}" aria-label="${E(m.n)}を削除" style="margin:0 0 0 4px;padding:0 8px">×</button></span>`).join("")||'<span class="sn-note">参加した人を追加してください。</span>'}</div><input class="sn-in" id="w-m" maxlength="12" placeholder="名前" value="${E(dr.m)}"><div class="ir"><button class="sn-btn" data-ma="1">メンバーを追加</button><button class="sn-btn" data-imp="1" style="background:none;color:var(--acc);border:1px solid var(--acc)">名簿から取り込む</button></div>${note("m")}</div>`;
+    h+=`<div class="ic"><h4>費用を追加</h4><input class="sn-in" id="w-t" maxlength="30" placeholder="内容（ガソリン代・高速代・昼食など）" value="${E(dr.t)}"><input class="sn-in" id="w-a" type="number" inputmode="numeric" min="1" step="1" placeholder="金額（円）" value="${E(dr.a)}"><div class="nl">立て替えた人</div><select class="sn-in" id="w-p">${s.m.map(m=>`<option value="${m.id}"${m.id===dr.p?" selected":""}>${E(m.n)}</option>`).join("")}</select><div class="nl">負担する人（外した人は、その費用の割り勘に入りません）</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${s.m.map(m=>`<label class="sn-chip" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-w="${m.id}"${dr.w[m.id]===false?"":" checked"} style="width:18px;height:18px;margin:0">${E(m.n)}</label>`).join("")}</div><button class="sn-btn" data-ea="1">費用を追加</button>${note("e")}</div>`;
+    h+=`<div class="nl">費用の一覧</div>`+(s.e.map((e,i)=>{tot+=e.a;const p=e.w.filter(id=>has(s,id));return `<div class="sn-row"><b>${E(e.t)}</b>　${yen(e.a)}<br><small class="sn-note">${E(nm(s,e.p))}が立て替え／${p.length===s.m.length?"全員":p.map(id=>E(nm(s,id))).join("・")}で割る</small><br><button class="sn-del${ask==="e"+i?" ask":""}" data-ed="${i}">${ask==="e"+i?"本当に削除":"削除"}</button></div>`}).join("")||'<p class="sn-note">まだ費用がありません。</p>');
+    if(s.e.length)h+=`<div class="sn-row" style="text-align:right"><b>合計 ${yen(tot)}</b></div>`;
+    h+=`<div class="nl">メンバーごとの収支</div>`+(s.m.map(m=>{const v=c.paid[m.id]-c.owed[m.id];return `<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(m.n)}<br><small class="sn-note">立て替え ${yen(c.paid[m.id])}／負担 ${yen(c.owed[m.id])}</small></span><b style="color:${v>0?"var(--acc)":v<0?"#b3412f":"inherit"}">${v>0?"＋":v<0?"－":""}${yen(v)}</b></div>`}).join("")||'<p class="sn-note">メンバーを追加すると表示されます。</p>');
+    h+=`<div class="nl">精算方法</div><div class="ic">`+(st.length?st.map(x=>`<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(nm(s,x.f))} → ${E(nm(s,x.t))}</span><b>${yen(x.v)}</b></div>`).join(""):`<p class="sn-note" style="margin:0">${s.e.length?"精算は不要です。":"費用を入れると、精算方法が出ます。"}</p>`)+`</div><div class="ir"><button class="sn-btn" data-cp="1">結果をコピー</button><button class="sn-btn" data-ds="1" style="background:${ask==="s"?"#b3412f":"none"};color:${ask==="s"?"#fff":"var(--sub)"};border:1px solid var(--line)">${ask==="s"?"本当に削除":"この精算を削除"}</button></div>${note("c")}`;
+    root.innerHTML=h;
+  };
+  const fail=(k,t)=>{mg={k,t};render()};
+  root.addEventListener("input",e=>{const t=e.target,i=t.id;if(i==="w-s")dr.s=t.value;else if(i==="w-m")dr.m=t.value;else if(i==="w-t")dr.t=t.value;else if(i==="w-a")dr.a=t.value;else if(i==="w-p")dr.p=t.value;else if(t.dataset&&t.dataset.w)dr.w[t.dataset.w]=t.checked});
+  root.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="w-m"){e.preventDefault();root.querySelector("[data-ma]").click()}});
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;const d=b.dataset,s=cur();
+    if(d.s){D.cur=d.s;save();ask=null;mg={k:"",t:""};mk=false;dr.w={};render();return}
+    if(d.nw){mk=!mk;render();return}
+    if(d.ns){const n=dr.s.trim()||(new Date().getMonth()+1)+"月"+new Date().getDate()+"日の精算";const x={id:nid(),n,m:[],e:[]};D.sets.push(x);D.cur=x.id;save();dr.s="";dr.w={};mk=false;mg={k:"",t:""};render();return}
+    if(!s)return;
+    if(d.ma){const n=dr.m.trim();if(!n)return fail("m","名前を入力してください。");if(s.m.some(m=>m.n===n))return fail("m","同じ名前の人がいます。区別できる名前にしてください。");s.m.push({id:nid(),n});save();dr.m="";mg={k:"",t:""};render();return}
+    if(d.imp){let a=[];try{a=memVisible()}catch(x){}let k=0;a.forEach(m=>{const n=String(m.n||"").trim();if(n&&!s.m.some(x=>x.n===n)){s.m.push({id:nid(),n});k++}});save();return fail("m",k?k+"人を取り込みました。":"取り込める名簿の名前がありません。")}
+    if(d.md){if(s.e.some(x=>x.p===d.md||x.w.includes(d.md)))return fail("m","費用に使われている人は削除できません。先にその費用を消してください。");s.m=s.m.filter(m=>m.id!==d.md);save();mg={k:"",t:""};render();return}
+    if(d.ea){const t=dr.t.trim(),a=Math.round(Number(dr.a)),w=s.m.filter(m=>dr.w[m.id]!==false).map(m=>m.id);
+      if(s.m.length<2)return fail("e","メンバーを2人以上追加してください。");if(!t)return fail("e","内容を入力してください。");if(!(a>0))return fail("e","金額は1円以上の数字で入力してください。");if(!w.length)return fail("e","負担する人を1人以上選んでください。");
+      s.e.push({id:nid(),t,a,p:dr.p||s.m[0].id,w});save();dr.t="";dr.a="";mg={k:"",t:""};render();return}
+    if(d.ed!==undefined){const k="e"+d.ed;if(ask===k){s.e.splice(+d.ed,1);save();ask=null}else{ask=k;setTimeout(()=>{if(ask===k){ask=null;render()}},3000)}render();return}
+    if(d.ds){if(ask==="s"){D.sets=D.sets.filter(x=>x.id!==s.id);D.cur=D.sets.length?D.sets[0].id:null;save();ask=null}else{ask="s";setTimeout(()=>{if(ask==="s"){ask=null;render()}},3000)}render();return}
+    if(d.cp){const t=text(s),ok=()=>fail("c","コピーしました。LINEなどに貼り付けられます。"),fb=()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){fail("c","コピーできませんでした。")}document.body.removeChild(ta)};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(x){fb()}return}
+  });
+  if(D.sets.length&&!cur())D.cur=D.sets[0].id;
   render();
 }
 
