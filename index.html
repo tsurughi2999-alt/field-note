@@ -580,7 +580,7 @@ let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_b
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
+const EXTRA=[{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"旅費精算書・割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
 const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
 const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+2;
@@ -616,7 +616,7 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘"||p.name==="旅費精算書・割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
     if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
@@ -1542,23 +1542,28 @@ function initSwim(root,pg){
 
 /* 割り勘：費用を入れると、誰が誰にいくら払えば済むかを計算する */
 function initWarikan(root,pg){
-  try{initWarikanCore(root,pg)}catch(e){root.innerHTML='<p class="sn-note" style="color:#b3412f">割り勘ページでエラーが出ました（ver 11-08b）：'+esc(String(e&&e.message||e))+'</p>'}
+  try{initWarikanCore(root,pg)}catch(e){root.innerHTML='<p class="sn-note" style="color:#b3412f">旅費精算書・割り勘でエラーが出ました（ver 11-08c）：'+esc(String(e&&e.message||e))+'</p>'}
 }
+/* 旅費精算書・割り勘：予算の見積もり、車ごとのガソリン・高速代、実費の割り勘、過去の旅費の保存 */
 function initWarikanCore(root,pg){
-  const put=h=>{root.innerHTML='<p class="sn-note" style="margin:0 0 6px;text-align:right">割り勘 ver 11-08b</p>'+h};
+  const VER="旅費精算書・割り勘 ver 11-08c";
+  const put=h=>{root.innerHTML='<p class="sn-note" style="margin:0 0 6px;text-align:right">'+VER+'</p>'+h};
   const K="fn_wk_data",E=v=>esc(String(v==null?"":v)),nid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   const yen=n=>"¥"+Math.abs(n).toLocaleString("ja-JP");
+  const tdy=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
   let D;const load=()=>{D=ld(K,null);if(!D||!Array.isArray(D.sets))D={sets:[],cur:null}};load();
   const save=()=>{sv(K,D);window.dispatchEvent(new Event("fnwk"))};
-  let ask=null,mg={k:"",t:""},mk=false,dr={s:"",m:"",t:"",a:"",p:"",w:{}};
-  const cur=()=>D.sets.find(s=>s.id===D.cur)||null;
+  let ask=null,mg={k:"",t:""},view="work",tab="plan",mk=false,edm=false,cs="";
+  let dr={s:{},em:{},car:{rt:true,w:{}},m:"",t:"",a:"",p:"",w:{},pt:"",pa:"",pw:{}};
+  const cur=()=>{const s=D.sets.find(x=>x.id===D.cur)||null;if(s){s.cars=s.cars||[];s.pl=s.pl||[];s.e=s.e||[];s.m=s.m||[]}return s};
   const nm=(s,id)=>{const m=s.m.find(x=>x.id===id);return m?m.n:"（削除済み）"};
   const has=(s,id)=>s.m.some(x=>x.id===id);
   const note=k=>mg.k===k&&mg.t?`<p class="sn-note" style="color:#b3412f" role="alert">${E(mg.t)}</p>`:"";
-  /* 端数の1円は費用ごとに配る順番をずらし、特定の人に偏らないようにする */
-  const calc=s=>{
+  const PRE=[["軽自動車",18],["コンパクトカー",18],["ハイブリッド車",22],["セダン",13],["SUV",12],["ミニバン",11],["軽トラック",14]];
+  const GBTN='style="background:none;color:var(--acc);border:1px solid var(--acc)"';
+  const calc=(s,list)=>{
     const paid={},owed={};s.m.forEach(m=>{paid[m.id]=0;owed[m.id]=0});
-    s.e.forEach((e,i)=>{
+    list.forEach((e,i)=>{
       if(paid[e.p]!=null)paid[e.p]+=e.a;
       const p=e.w.filter(id=>has(s,id)),n=p.length;if(!n)return;
       const b=Math.floor(e.a/n),r=e.a-b*n;
@@ -1566,7 +1571,6 @@ function initWarikanCore(root,pg){
     });
     return {paid,owed};
   };
-  /* 精算：多く立て替えた人と足りない人を順に突き合わせ、送金の回数を少なくする */
   const settle=(s,c)=>{
     const cr=[],db=[];
     s.m.forEach(m=>{const v=c.paid[m.id]-c.owed[m.id];if(v>0)cr.push({id:m.id,v});else if(v<0)db.push({id:m.id,v:-v})});
@@ -1575,53 +1579,153 @@ function initWarikanCore(root,pg){
     while(i<cr.length&&j<db.length){const t=Math.min(cr[i].v,db[j].v);out.push({f:db[j].id,t:cr[i].id,v:t});cr[i].v-=t;db[j].v-=t;if(!cr[i].v)i++;if(!db[j].v)j++}
     return out;
   };
-  const text=s=>{
-    const c=calc(s),st=settle(s,c);let tot=0;
-    const L=["【割り勘の精算】"+s.n];
-    s.e.forEach(e=>{tot+=e.a;L.push(e.t+" "+yen(e.a)+"（"+nm(s,e.p)+"）")});
-    L.push("合計 "+yen(tot),"");
+  /* 車：往復なら距離・高速料金を2倍にして、ガソリン代＝距離÷燃費×単価 */
+  const carCalc=c=>{const k=+c.km||0,mp=+c.mp||0,pr=+c.g||0,rt=c.rt?2:1;return {km:k*rt,gas:mp>0?Math.round(k*rt/mp*pr):0,toll:Math.round((+c.toll||0)*rt)}};
+  const ridersOf=(s,c)=>{const w=(c.w||[]).filter(id=>has(s,id));return w.length?w:s.m.map(m=>m.id)};
+  const planList=s=>{
+    const l=[];
+    s.cars.forEach(c=>{const v=carCalc(c),w=ridersOf(s,c);if(v.gas)l.push({t:"ガソリン代（"+c.cn+"）",a:v.gas,p:c.dv,w});if(v.toll)l.push({t:"高速代（"+c.cn+"）",a:v.toll,p:c.dv,w})});
+    s.pl.forEach(x=>l.push({t:x.t,a:x.a,p:s.m[0]?s.m[0].id:"",w:x.w}));
+    return l;
+  };
+  const sum=l=>l.reduce((t,e)=>t+e.a,0);
+  const title=s=>(s.dt?s.dt+"　":"")+(s.pu||s.n);
+  const head=s=>["日付："+(s.dt||"未入力"),"目的："+(s.pu||s.n),"目的地："+(s.ds||"未入力"),"参加者："+(s.m.map(m=>m.n).join("・")||"未登録")+"（"+s.m.length+"人）"];
+  const stText=s=>{
+    const c=calc(s,s.e),st=settle(s,c),L=["【旅費精算書】"].concat(head(s),["","【実費】"]);
+    s.e.forEach(e=>L.push(e.t+" "+yen(e.a)+"（立替："+nm(s,e.p)+"）"));
+    L.push("合計 "+yen(sum(s.e)),"","【精算】");
     if(st.length)st.forEach(x=>L.push(nm(s,x.f)+" → "+nm(s,x.t)+" "+yen(x.v)));else L.push("精算は不要です");
     return L.join("\n");
   };
-  const newForm=()=>`<div class="ic"><h4>新しい精算をつくる</h4><input class="sn-in" id="w-s" maxlength="24" placeholder="例：11月3日 きのこ採り" value="${E(dr.s)}"><button class="sn-btn" data-ns="1">精算をつくる</button>${note("n")}</div>`;
-  const render=()=>{
-    load();const s=cur();
-    if(!D.sets.length){put('<p class="sn-note">山行やドライブなど、出かけるたびに「精算」をつくって、かかった費用を入れていきます。</p>'+newForm());return}
-    const chips=D.sets.map(x=>`<button class="sn-chip${x.id===D.cur?" on":""}" data-s="${x.id}">${E(x.n)}</button>`).join("")+`<button class="sn-chip" data-nw="1">＋新しい精算</button>`;
-    let h=`<div class="sn-tabs" style="gap:6px">${chips}</div>`;
-    if(mk)h+=newForm();
-    if(!s){put(h);return}
-    const c=calc(s),st=settle(s,c);let tot=0;
-    const first=s.m[0]?s.m[0].id:"";if(!dr.p||!has(s,dr.p))dr.p=first;
-    h+=`<div class="ic"><h4>メンバー</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${s.m.map(m=>`<span class="sn-chip">${E(m.n)} <button class="sn-del" data-md="${m.id}" aria-label="${E(m.n)}を削除" style="margin:0 0 0 4px;padding:0 8px">×</button></span>`).join("")||'<span class="sn-note">参加した人を追加してください。</span>'}</div><input class="sn-in" id="w-m" maxlength="12" placeholder="名前" value="${E(dr.m)}"><div class="ir"><button class="sn-btn" data-ma="1">メンバーを追加</button><button class="sn-btn" data-imp="1" style="background:none;color:var(--acc);border:1px solid var(--acc)">名簿から取り込む</button></div>${note("m")}</div>`;
-    h+=`<div class="ic"><h4>費用を追加</h4><input class="sn-in" id="w-t" maxlength="30" placeholder="内容（ガソリン代・高速代・昼食など）" value="${E(dr.t)}"><input class="sn-in" id="w-a" type="number" inputmode="numeric" min="1" step="1" placeholder="金額（円）" value="${E(dr.a)}"><div class="nl">立て替えた人</div><select class="sn-in" id="w-p">${s.m.map(m=>`<option value="${m.id}"${m.id===dr.p?" selected":""}>${E(m.n)}</option>`).join("")}</select><div class="nl">負担する人（外した人は、その費用の割り勘に入りません）</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${s.m.map(m=>`<label class="sn-chip" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-w="${m.id}"${dr.w[m.id]===false?"":" checked"} style="width:18px;height:18px;margin:0">${E(m.n)}</label>`).join("")}</div><button class="sn-btn" data-ea="1">費用を追加</button>${note("e")}</div>`;
-    h+=`<div class="nl">費用の一覧</div>`+(s.e.map((e,i)=>{tot+=e.a;const p=e.w.filter(id=>has(s,id));return `<div class="sn-row"><b>${E(e.t)}</b>　${yen(e.a)}<br><small class="sn-note">${E(nm(s,e.p))}が立て替え／${p.length===s.m.length?"全員":p.map(id=>E(nm(s,id))).join("・")}で割る</small><br><button class="sn-del${ask==="e"+i?" ask":""}" data-ed="${i}">${ask==="e"+i?"本当に削除":"削除"}</button></div>`}).join("")||'<p class="sn-note">まだ費用がありません。</p>');
+  const plText=s=>{
+    const pl=planList(s),c=calc(s,pl),L=["【旅費の事前のお知らせ】"].concat(head(s),["","【予算（見積もり）】"]);
+    s.cars.forEach(c2=>{const v=carCalc(c2);L.push("車："+c2.cn+"（運転："+nm(s,c2.dv)+"）"+(c2.rt?"往復":"片道")+" "+(Math.round(v.km*10)/10)+"km　ガソリン "+yen(v.gas)+(v.toll?"／高速 "+yen(v.toll):""))});
+    s.pl.forEach(x=>L.push(x.t+" "+yen(x.a)));
+    L.push("予算合計 "+yen(sum(pl)),"","【一人あたりの目安】");
+    s.m.forEach(m=>L.push(m.n+" "+yen(c.owed[m.id])));
+    L.push("","※見積もりです。実際にかかった費用で、あとで精算します。");
+    return L.join("\n");
+  };
+  const lineLink=tx=>`<a class="sn-btn sn-ghost" style="text-decoration:none;text-align:center" href="https://line.me/R/share?text=${encodeURIComponent(tx)}">LINEで送る</a>`;
+  const prevTxt=()=>{const c=dr.car,v=carCalc(c);if(!(v.km>0))return "距離・燃費・ガソリン価格を入れると、ここに金額が出ます。";return (c.rt?"往復 ":"片道 ")+(Math.round(v.km*10)/10)+"km → ガソリン "+yen(v.gas)+(v.toll?"、高速 "+yen(v.toll):"")+"、合計 "+yen(v.gas+v.toll)};
+  const newForm=()=>`<div class="ic"><h4>新しい旅費をつくる</h4><div class="nl">日付</div><input class="sn-in" type="date" data-d="s.dt" value="${E(dr.s.dt==null?tdy():dr.s.dt)}"><input class="sn-in" data-d="s.pu" maxlength="30" placeholder="目的（例：きのこ採り、パトロール）" value="${E(dr.s.pu)}"><input class="sn-in" data-d="s.ds" maxlength="40" placeholder="目的地（例：長野県〇〇村）" value="${E(dr.s.ds)}"><button class="sn-btn" data-ns="1">旅費をつくる</button>${note("n")}</div>`;
+  const membersBlk=s=>`<div class="ic"><h4>メンバー</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${s.m.map(m=>`<span class="sn-chip">${E(m.n)} <button class="sn-del" data-md="${m.id}" aria-label="${E(m.n)}を削除" style="margin:0 0 0 4px;padding:0 8px">×</button></span>`).join("")||'<span class="sn-note">参加した人を追加してください。</span>'}</div><input class="sn-in" id="w-m" maxlength="12" placeholder="名前" value="${E(dr.m)}"><div class="ir"><button class="sn-btn" data-ma="1">メンバーを追加</button><button class="sn-btn" data-imp="1" ${GBTN}>名簿から取り込む</button></div>${note("m")}</div>`;
+  const chipsOf=(s,attr,o)=>s.m.map(m=>`<label class="sn-chip" style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" ${attr}="${m.id}"${o[m.id]===false?"":" checked"} style="width:18px;height:18px;margin:0">${E(m.n)}</label>`).join("");
+  const selOf=(s,id,val)=>`<select class="sn-in" id="${id}">${s.m.map(m=>`<option value="${m.id}"${m.id===val?" selected":""}>${E(m.n)}</option>`).join("")}</select>`;
+  const carForm=s=>{
+    const c=dr.car;if(c.g==null||c.g==="")c.g=D.gp||"";if(c.t==null)c.t=s.ds||"";if(!c.dv||!has(s,c.dv))c.dv=s.m[0]?s.m[0].id:"";
+    const f=(k,ph,ty,extra)=>`<input class="sn-in" data-d="car.${k}" type="${ty||"text"}" ${extra||""} placeholder="${ph}" value="${E(c[k])}">`;
+    return `<div class="ic"><h4>車の費用（ガソリン・高速）</h4>
+<select class="sn-in" id="w-cps"><option value="">車の種類から燃費を入れる（任意）</option>${PRE.map(p=>`<option value="${p[1]}">${p[0]}（約${p[1]}km/L）</option>`).join("")}</select>
+${f("cn","車種（例：プリウス）","text",'maxlength="20"')}
+<div class="nl">運転する人（立て替える人）</div><select class="sn-in" data-d="car.dv">${s.m.map(m=>`<option value="${m.id}"${m.id===c.dv?" selected":""}>${E(m.n)}</option>`).join("")}</select>
+${f("f","出発地（例：松本駅）","text",'maxlength="40"')}${f("t","目的地","text",'maxlength="40"')}
+${f("km","片道の距離（km）","number",'inputmode="decimal" step="0.1" min="0"')}
+<div class="ir"><button class="sn-btn" data-cd="1">距離を自動で調べる</button><button class="sn-btn" data-gm="1" ${GBTN}>Googleマップで確認</button></div>
+<p class="sn-note">${E(cs)||"出発地と目的地を入れて「自動で調べる」を押すと、道路の距離が出ます。うまく出ないときは、Googleマップで調べた距離を入れてください。"}</p>
+<label class="sn-chip" style="display:inline-flex;gap:6px;align-items:center;margin:6px 0"><input type="checkbox" data-d="car.rt"${c.rt?" checked":""} style="width:18px;height:18px;margin:0">往復で計算する</label>
+${f("mp","燃費（km/L）","number",'inputmode="decimal" step="0.1" min="0"')}${f("g","ガソリン価格（円/L）","number",'inputmode="decimal" step="1" min="0"')}
+<div class="nl">高速道路（使うとき）</div>${f("ic","入口IC（例：松本IC）","text",'maxlength="20"')}${f("oc","出口IC（例：長野IC）","text",'maxlength="20"')}${f("toll","高速料金（片道・円）","number",'inputmode="numeric" step="10" min="0"')}
+<div class="ir"><button class="sn-btn" data-tl="1" ${GBTN}>高速料金を調べる</button></div>
+<p class="sn-note">高速料金は、自動では出せません。ドラぷらやGoogleマップの経路で調べた料金を入れてください（入口・出口は記録用です）。</p>
+<div class="nl">この車に乗る人</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${chipsOf(s,"data-cw",c.w)}</div>
+<p class="sn-note" id="w-cp" style="font-weight:700">${E(prevTxt())}</p>
+<button class="sn-btn" data-car="1">この車を追加</button>${note("c")}</div>`;
+  };
+  const carList=s=>s.cars.map(c=>{const v=carCalc(c),r=ridersOf(s,c);return `<div class="sn-row"><b>${E(c.cn)}</b>　運転：${E(nm(s,c.dv))}<br><small class="sn-note">${E(c.f||"出発地未入力")} → ${E(c.t||"目的地未入力")}／${c.rt?"往復":"片道"} ${Math.round(v.km*10)/10}km／燃費${E(c.mp)}km/L・${E(c.g)}円/L${c.ic||c.oc?"<br>高速："+E(c.ic||"?")+" → "+E(c.oc||"?"):""}<br>乗る人：${r.map(id=>E(nm(s,id))).join("・")}</small><br><b>ガソリン ${yen(v.gas)}${v.toll?"　高速 "+yen(v.toll):""}</b><br><button class="sn-btn sn-ghost" data-ctoa="${c.id}"${c.ad?" disabled":""}>${c.ad?"実費に追加済み":"実費に追加（"+nm(s,c.dv)+"が立て替え）"}</button><button class="sn-del${ask==="c"+c.id?" ask":""}" data-cdel="${c.id}">${ask==="c"+c.id?"本当に削除":"削除"}</button></div>`}).join("");
+  const planBlk=s=>{
+    const pl=planList(s),c=calc(s,pl),tot=sum(pl),act=sum(s.e),tx=plText(s);
+    let h=carForm(s)+(s.cars.length?`<div class="nl">登録した車</div>`+carList(s):"");
+    h+=`<div class="ic"><h4>そのほかの予算（宿泊・食事・入場料など）</h4><input class="sn-in" id="w-pt" maxlength="30" placeholder="内容" value="${E(dr.pt)}"><input class="sn-in" id="w-pa" type="number" inputmode="numeric" min="1" step="1" placeholder="見積もりの金額（円）" value="${E(dr.pa)}"><div class="nl">負担する人</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${chipsOf(s,"data-pw",dr.pw)}</div><button class="sn-btn" data-pa="1">予算に追加</button>${note("p")}</div>`;
+    h+=s.pl.map((x,i)=>`<div class="sn-row"><b>${E(x.t)}</b>　${yen(x.a)}<br><small class="sn-note">${x.w.filter(id=>has(s,id)).length===s.m.length?"全員":x.w.filter(id=>has(s,id)).map(id=>E(nm(s,id))).join("・")}で割る</small><br><button class="sn-del${ask==="p"+i?" ask":""}" data-pdel="${i}">${ask==="p"+i?"本当に削除":"削除"}</button></div>`).join("");
+    h+=`<div class="nl">予算の合計と、一人あたりの目安</div><div class="ic">`+(pl.length?`<div class="sn-row" style="display:flex;justify-content:space-between"><b>予算合計</b><b>${yen(tot)}</b></div>`+s.m.map(m=>`<div class="sn-row" style="display:flex;justify-content:space-between"><span>${E(m.n)}</span><b>${yen(c.owed[m.id])}</b></div>`).join("")+(act?`<p class="sn-note">実費の合計 ${yen(act)}（予算との差 ${act-tot>0?"＋":act-tot<0?"－":""}${yen(act-tot)}）</p>`:""):'<p class="sn-note" style="margin:0">車か予算を入れると、一人あたりの目安が出ます。</p>')+`</div>`;
+    if(pl.length)h+=`<div class="nl">事前のお知らせ</div><textarea class="sn-in" rows="9" readonly>${E(tx)}</textarea><div class="ir"><button class="sn-btn" data-cpn="1">お知らせをコピー</button>${lineLink(tx)}</div>${note("n2")}`;
+    return h;
+  };
+  const actBlk=s=>{
+    const c=calc(s,s.e),st=settle(s,c),tot=sum(s.e),first=s.m[0]?s.m[0].id:"";
+    if(!dr.p||!has(s,dr.p))dr.p=first;
+    let h=`<div class="ic"><h4>実費を追加</h4><input class="sn-in" id="w-t" maxlength="30" placeholder="内容（ガソリン代・高速代・昼食など）" value="${E(dr.t)}"><input class="sn-in" id="w-a" type="number" inputmode="numeric" min="1" step="1" placeholder="金額（円）" value="${E(dr.a)}"><div class="nl">立て替えた人</div>${selOf(s,"w-p",dr.p)}<div class="nl">負担する人（外した人は、その費用の割り勘に入りません）</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${chipsOf(s,"data-w",dr.w)}</div><button class="sn-btn" data-ea="1">実費を追加</button>${note("e")}</div>`;
+    h+=`<div class="nl">実費の一覧</div>`+(s.e.map((e,i)=>{const p=e.w.filter(id=>has(s,id));return `<div class="sn-row"><b>${E(e.t)}</b>　${yen(e.a)}<br><small class="sn-note">${E(nm(s,e.p))}が立て替え／${p.length===s.m.length?"全員":p.map(id=>E(nm(s,id))).join("・")}で割る</small><br><button class="sn-del${ask==="e"+i?" ask":""}" data-ed="${i}">${ask==="e"+i?"本当に削除":"削除"}</button></div>`}).join("")||'<p class="sn-note">まだ実費がありません。</p>');
     if(s.e.length)h+=`<div class="sn-row" style="text-align:right"><b>合計 ${yen(tot)}</b></div>`;
     h+=`<div class="nl">メンバーごとの収支</div>`+(s.m.map(m=>{const v=c.paid[m.id]-c.owed[m.id];return `<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(m.n)}<br><small class="sn-note">立て替え ${yen(c.paid[m.id])}／負担 ${yen(c.owed[m.id])}</small></span><b style="color:${v>0?"var(--acc)":v<0?"#b3412f":"inherit"}">${v>0?"＋":v<0?"－":""}${yen(v)}</b></div>`}).join("")||'<p class="sn-note">メンバーを追加すると表示されます。</p>');
-    h+=`<div class="nl">精算方法</div><div class="ic">`+(st.length?st.map(x=>`<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(nm(s,x.f))} → ${E(nm(s,x.t))}</span><b>${yen(x.v)}</b></div>`).join(""):`<p class="sn-note" style="margin:0">${s.e.length?"精算は不要です。":"費用を入れると、精算方法が出ます。"}</p>`)+`</div><div class="ir"><button class="sn-btn" data-cp="1">結果をコピー</button><button class="sn-btn" data-ds="1" style="background:${ask==="s"?"#b3412f":"none"};color:${ask==="s"?"#fff":"var(--sub)"};border:1px solid var(--line)">${ask==="s"?"本当に削除":"この精算を削除"}</button></div>${note("c")}`;
+    const tx=stText(s);
+    h+=`<div class="nl">精算方法</div><div class="ic">`+(st.length?st.map(x=>`<div class="sn-row" style="display:flex;justify-content:space-between;gap:8px"><span>${E(nm(s,x.f))} → ${E(nm(s,x.t))}</span><b>${yen(x.v)}</b></div>`).join(""):`<p class="sn-note" style="margin:0">${s.e.length?"精算は不要です。":"実費を入れると、精算方法が出ます。"}</p>`)+`</div><div class="ir"><button class="sn-btn" data-cp="1">旅費精算書をコピー</button>${lineLink(tx)}</div>${note("c2")}`;
+    return h;
+  };
+  const histBlk=()=>{
+    const L=D.sets.slice().sort((a,b)=>String(b.dt||"").localeCompare(String(a.dt||"")));
+    return `<input class="sn-in" id="w-hq" placeholder="日付・目的・目的地で探す"><p class="sn-note">つくった旅費は、すべて自動で保存されます（${D.sets.length}件）。</p>`+(L.map(x=>{const tot=sum(x.e||[]),pl=sum(planList(Object.assign({cars:[],pl:[],e:[],m:[]},x)));return `<div class="sn-row" data-hq="${E([x.dt,x.pu,x.ds,x.n].join(" "))}"><b>${E(x.dt||"日付なし")}　${E(x.pu||x.n)}</b><br><small class="sn-note">目的地：${E(x.ds||"未入力")}／${(x.m||[]).length}人／${tot?"実費 "+yen(tot):"予算 "+yen(pl)}</small><br><button class="sn-btn" data-open="${x.id}">開く</button><button class="sn-del${ask==="h"+x.id?" ask":""}" data-hd="${x.id}">${ask==="h"+x.id?"本当に削除":"削除"}</button></div>`}).join("")||'<p class="sn-note">保存された旅費はまだありません。</p>');
+  };
+  const render=()=>{
+    load();const s=cur();
+    let h=`<div class="sn-tabs" style="gap:6px"><button class="sn-chip${view==="work"?" on":""}" data-v="work">作成・計算</button><button class="sn-chip${view==="hist"?" on":""}" data-v="hist">過去の旅費（${D.sets.length}）</button></div>`;
+    if(view==="hist"){put(h+histBlk());return}
+    if(!s||mk){h+=(s?"":'<p class="sn-note">出かけるたびに旅費をつくり、予算の見積もりと実費の割り勘を入れていきます。</p>')+newForm()+(s?'<button class="sn-btn sn-ghost" data-nw="1">やめる</button>':"");if(!s){put(h);return}put(h);return}
+    h+=`<div class="ic"><h4>${E(title(s))}</h4><small class="sn-note">目的地：${E(s.ds||"未入力")}</small><div class="ir"><button class="sn-btn sn-ghost" data-em="1">日付・目的・目的地を直す</button><button class="sn-btn sn-ghost" data-nw="1">＋新しい旅費</button></div>`;
+    if(edm)h+=`<div class="nl">日付</div><input class="sn-in" type="date" data-d="em.dt" value="${E(dr.em.dt)}"><input class="sn-in" data-d="em.pu" maxlength="30" placeholder="目的" value="${E(dr.em.pu)}"><input class="sn-in" data-d="em.ds" maxlength="40" placeholder="目的地" value="${E(dr.em.ds)}"><button class="sn-btn" data-es="1">保存</button>`;
+    h+=`</div>`+membersBlk(s);
+    h+=`<div class="sn-tabs" style="gap:6px;margin-top:10px"><button class="sn-chip${tab==="plan"?" on":""}" data-tb="plan">予算・お知らせ</button><button class="sn-chip${tab==="act"?" on":""}" data-tb="act">実費・精算</button></div>`;
+    h+=tab==="plan"?planBlk(s):actBlk(s);
     put(h);
   };
   const fail=(k,t)=>{mg={k,t};render()};
-  root.addEventListener("input",e=>{const t=e.target,i=t.id;if(i==="w-s")dr.s=t.value;else if(i==="w-m")dr.m=t.value;else if(i==="w-t")dr.t=t.value;else if(i==="w-a")dr.a=t.value;else if(i==="w-p")dr.p=t.value;else if(t.dataset&&t.dataset.w)dr.w[t.dataset.w]=t.checked});
-  root.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="w-m"){e.preventDefault();root.querySelector("[data-ma]").click()}});
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const geo=async q=>{const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&accept-language=ja&q="+encodeURIComponent(q));const j=await r.json();if(!j||!j[0])throw new Error("nf:"+q);return j[0].lon+","+j[0].lat};
+  const autoKm=async()=>{
+    const c=dr.car;if(!c.f||!c.t){cs="出発地と目的地を入れてください。";render();return}
+    cs="調べています…（数秒かかります）";render();
+    try{const a=await geo(c.f);await sleep(1100);const b=await geo(c.t);const r=await fetch("https://router.project-osrm.org/route/v1/driving/"+a+";"+b+"?overview=false"),j=await r.json();if(!j.routes||!j.routes[0])throw new Error("route");c.km=(j.routes[0].distance/1000).toFixed(1);cs="片道 約"+c.km+"km（道路の距離です。Googleマップと少し違うことがあります）"}
+    catch(e){const m=String(e&&e.message||"");cs=m.indexOf("nf:")===0?"「"+m.slice(3)+"」の場所が見つかりませんでした。市町村名などを足してみてください。":"距離を自動で調べられませんでした。圏外か、サービスが混み合っています。Googleマップで確認して入力してください。"}
+    render();
+  };
+  const upPrev=()=>{const e=root.querySelector("#w-cp");if(e)e.textContent=prevTxt()};
+  root.addEventListener("input",e=>{
+    const t=e.target,i=t.id,q=t.dataset&&t.dataset.d;
+    if(q){const k=q.split(".");dr[k[0]][k[1]]=t.type==="checkbox"?t.checked:t.value;upPrev();return}
+    if(i==="w-m")dr.m=t.value;else if(i==="w-t")dr.t=t.value;else if(i==="w-a")dr.a=t.value;else if(i==="w-p")dr.p=t.value;else if(i==="w-pt")dr.pt=t.value;else if(i==="w-pa")dr.pa=t.value;
+    else if(i==="w-cps"){if(t.value){dr.car.mp=t.value;const f=root.querySelector('[data-d="car.mp"]');if(f)f.value=t.value;upPrev()}}
+    else if(i==="w-hq"){const v=t.value.trim();root.querySelectorAll("[data-hq]").forEach(r=>{r.style.display=!v||r.dataset.hq.indexOf(v)>=0?"":"none"})}
+    else if(t.dataset){if(t.dataset.w)dr.w[t.dataset.w]=t.checked;else if(t.dataset.pw)dr.pw[t.dataset.pw]=t.checked;else if(t.dataset.cw)dr.car.w[t.dataset.cw]=t.checked}
+  });
+  root.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="w-m"){e.preventDefault();const b=root.querySelector("[data-ma]");if(b)b.click()}});
+  const copy=(tx,k)=>{const ok=()=>fail(k,"コピーしました。LINEなどに貼り付けられます。"),fb=()=>{const ta=document.createElement("textarea");ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){fail(k,"コピーできませんでした。")}document.body.removeChild(ta)};try{navigator.clipboard.writeText(tx).then(ok,fb)}catch(x){fb()}};
+  const arm=k=>{ask=k;setTimeout(()=>{if(ask===k){ask=null;render()}},3000);render()};
   root.addEventListener("click",e=>{
     const b=e.target.closest("button");if(!b)return;load();const d=b.dataset,s=cur();
-    if(d.s){D.cur=d.s;save();ask=null;mg={k:"",t:""};mk=false;dr.w={};render();return}
+    if(d.v){view=d.v;ask=null;mg={k:"",t:""};render();return}
+    if(d.open){D.cur=d.open;save();view="work";mk=false;edm=false;render();return}
+    if(d.hd){if(ask==="h"+d.hd){D.sets=D.sets.filter(x=>x.id!==d.hd);if(D.cur===d.hd)D.cur=D.sets.length?D.sets[0].id:null;save();ask=null;render()}else arm("h"+d.hd);return}
     if(d.nw){mk=!mk;render();return}
-    if(d.ns){const n=dr.s.trim()||(new Date().getMonth()+1)+"月"+new Date().getDate()+"日の精算";const x={id:nid(),n,m:[],e:[]};D.sets.push(x);D.cur=x.id;save();dr.s="";dr.w={};mk=false;mg={k:"",t:""};render();return}
+    if(d.ns){const o=dr.s,x={id:nid(),dt:o.dt==null?tdy():o.dt,pu:(o.pu||"").trim(),ds:(o.ds||"").trim(),n:"",m:[],e:[],cars:[],pl:[]};x.n=x.pu||x.ds||"旅費";D.sets.push(x);D.cur=x.id;save();dr.s={};dr.car={rt:true,w:{}};mk=false;view="work";mg={k:"",t:""};render();return}
     if(!s)return;
+    if(d.tb){tab=d.tb;render();return}
+    if(d.em){edm=!edm;dr.em={dt:s.dt||"",pu:s.pu||"",ds:s.ds||""};render();return}
+    if(d.es){const o=dr.em;s.dt=o.dt||"";s.pu=(o.pu||"").trim();s.ds=(o.ds||"").trim();s.n=s.pu||s.ds||s.n;save();edm=false;render();return}
     if(d.ma){const n=dr.m.trim();if(!n)return fail("m","名前を入力してください。");if(s.m.some(m=>m.n===n))return fail("m","同じ名前の人がいます。区別できる名前にしてください。");s.m.push({id:nid(),n});save();dr.m="";mg={k:"",t:""};render();return}
     if(d.imp){let a=[];try{a=memVisible()}catch(x){}let k=0;a.forEach(m=>{const n=String(m.n||"").trim();if(n&&!s.m.some(x=>x.n===n)){s.m.push({id:nid(),n});k++}});save();return fail("m",k?k+"人を取り込みました。":"取り込める名簿の名前がありません。")}
-    if(d.md){if(s.e.some(x=>x.p===d.md||x.w.includes(d.md)))return fail("m","費用に使われている人は削除できません。先にその費用を消してください。");s.m=s.m.filter(m=>m.id!==d.md);save();mg={k:"",t:""};render();return}
+    if(d.md){const id=d.md;if(s.e.some(x=>x.p===id||x.w.includes(id))||s.cars.some(c=>c.dv===id||(c.w||[]).includes(id))||s.pl.some(x=>x.w.includes(id)))return fail("m","費用や車に使われている人は削除できません。先にそれらを消してください。");s.m=s.m.filter(m=>m.id!==id);save();mg={k:"",t:""};render();return}
+    if(d.cd){autoKm();return}
+    if(d.gm){const c=dr.car;if(!c.f||!c.t){cs="出発地と目的地を入れてください。";render();return}window.open("https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+encodeURIComponent(c.f)+"&destination="+encodeURIComponent(c.t),"_blank");return}
+    if(d.tl){window.open("https://www.driveplaza.com/","_blank");return}
+    if(d.car){const c=dr.car,v=carCalc(c);
+      if(s.m.length<1)return fail("c","先にメンバーを追加してください。");if(!(c.cn||"").trim())return fail("c","車種を入れてください。");if(!(+c.km>0))return fail("c","距離を入れてください。");if(!(+c.mp>0))return fail("c","燃費を入れてください。");if(!(+c.g>0))return fail("c","ガソリン価格を入れてください。");
+      s.cars.push({id:nid(),cn:c.cn.trim(),dv:c.dv||s.m[0].id,f:(c.f||"").trim(),t:(c.t||"").trim(),km:+c.km,rt:!!c.rt,mp:+c.mp,g:+c.g,ic:(c.ic||"").trim(),oc:(c.oc||"").trim(),toll:+c.toll||0,w:s.m.filter(m=>c.w[m.id]!==false).map(m=>m.id)});
+      D.gp=+c.g;save();dr.car={rt:true,w:{}};cs="";mg={k:"",t:""};render();return}
+    if(d.cdel){if(ask==="c"+d.cdel){s.cars=s.cars.filter(c=>c.id!==d.cdel);save();ask=null;render()}else arm("c"+d.cdel);return}
+    if(d.ctoa){const c=s.cars.find(x=>x.id===d.ctoa);if(!c||c.ad)return;const v=carCalc(c),w=ridersOf(s,c);if(v.gas)s.e.push({id:nid(),t:"ガソリン代（"+c.cn+"）",a:v.gas,p:c.dv,w});if(v.toll)s.e.push({id:nid(),t:"高速代（"+c.cn+"）",a:v.toll,p:c.dv,w});c.ad=true;save();tab="act";render();return}
+    if(d.pa){const t=dr.pt.trim(),a=Math.round(Number(dr.pa)),w=s.m.filter(m=>dr.pw[m.id]!==false).map(m=>m.id);if(s.m.length<1)return fail("p","先にメンバーを追加してください。");if(!t)return fail("p","内容を入力してください。");if(!(a>0))return fail("p","金額は1円以上の数字で入力してください。");if(!w.length)return fail("p","負担する人を1人以上選んでください。");s.pl.push({id:nid(),t,a,w});save();dr.pt="";dr.pa="";mg={k:"",t:""};render();return}
+    if(d.pdel!==undefined){const k="p"+d.pdel;if(ask===k){s.pl.splice(+d.pdel,1);save();ask=null;render()}else arm(k);return}
     if(d.ea){const t=dr.t.trim(),a=Math.round(Number(dr.a)),w=s.m.filter(m=>dr.w[m.id]!==false).map(m=>m.id);
       if(s.m.length<2)return fail("e","メンバーを2人以上追加してください。");if(!t)return fail("e","内容を入力してください。");if(!(a>0))return fail("e","金額は1円以上の数字で入力してください。");if(!w.length)return fail("e","負担する人を1人以上選んでください。");
       s.e.push({id:nid(),t,a,p:dr.p||s.m[0].id,w});save();dr.t="";dr.a="";mg={k:"",t:""};render();return}
-    if(d.ed!==undefined){const k="e"+d.ed;if(ask===k){s.e.splice(+d.ed,1);save();ask=null}else{ask=k;setTimeout(()=>{if(ask===k){ask=null;render()}},3000)}render();return}
-    if(d.ds){if(ask==="s"){D.sets=D.sets.filter(x=>x.id!==s.id);D.cur=D.sets.length?D.sets[0].id:null;save();ask=null}else{ask="s";setTimeout(()=>{if(ask==="s"){ask=null;render()}},3000)}render();return}
-    if(d.cp){const t=text(s),ok=()=>fail("c","コピーしました。LINEなどに貼り付けられます。"),fb=()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){fail("c","コピーできませんでした。")}document.body.removeChild(ta)};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(x){fb()}return}
+    if(d.ed!==undefined){const k="e"+d.ed;if(ask===k){s.e.splice(+d.ed,1);save();ask=null;render()}else arm(k);return}
+    if(d.cp){copy(stText(s),"c2");return}
+    if(d.cpn){copy(plText(s),"n2");return}
   });
-  if(D.sets.length&&!cur())D.cur=D.sets[0].id;
   window.addEventListener("fnwk",()=>{if(root.isConnected)render()});
+  if(D.sets.length&&!cur())D.cur=D.sets[0].id;
   render();
 }
 
@@ -2057,7 +2161,7 @@ function initAdmin(root){
       ["inv","✉️","#4f8446","招待","メンバー招待","QRコードを表示して招待します。最初から見せるページも選べます。（メンバーを募るとき）",1,0],
       ["req","📥","#4f8446","申請","参加・閲覧の申請","新しい人の参加申請を許可・却下します。許可するとIDとパスワードが自動で発行されます。（メンバーが申請したとき）",1,1],
       ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1],
-      ["wk","🧮","#2f8f6f","割り勘","割り勘（立て替えの精算）","出かけた費用をメンバーで割り勘にして、誰が誰にいくら払うかを計算します。「割り勘」ページと同じ内容です。この端末だけに保存されます。（精算するとき）",0,1]]],
+      ["wk","🧮","#2f8f6f","旅費","旅費精算書・割り勘","予算の見積もり、車のガソリン・高速代、実費の割り勘、過去の旅費の保存ができます。「旅費精算書・割り勘」ページと同じ内容です。この端末だけに保存されます。（旅の前と、精算するとき）",0,1]]],
     ["ログイン・メンバー",[
       ["acct","🔑","#8a5a7a","パスワード","管理者パスワード・QRコード","管理者パスワードの設定、管理者モードの解除、新しいメンバー用のQRコードの表示ができます。（管理者の設定を変えるとき・メンバーを募るとき）",0,0]]],
     ["データ",[
