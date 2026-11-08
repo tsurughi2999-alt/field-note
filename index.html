@@ -1824,7 +1824,7 @@ function initMembers(root){
   const myuid=()=>ld("fn_uid",null);
   const selfRec=()=>{if(adm())return null;const m=meRec();return m};
   const pgList=()=>pages().filter(p=>FIXED.indexOf(p.id)<0);
-  let open=null,edit=null,ask=null,msg="",tok="",cred="",credv=null,inv=false,flt=null;
+  let open=null,edit=null,ask=null,msg="",tok="",cred="",credv=null,inv=false,flt=null,bc=false,bt=null,bcText="【フィールドノート】\n";
   const grab=()=>{const v=id=>root.querySelector("#"+id);if(!edit||!v("mf-n"))return;
     Object.assign(edit,{n:v("mf-n").value.trim(),nn:v("mf-nn").value.trim(),bio:v("mf-b").value.trim(),memo:v("mf-m").value.trim(),tel:v("mf-tel").value.trim(),mail:v("mf-ml").value.trim(),line:v("mf-ln").value.trim()});
     if(edit.self){edit.pub={};root.querySelectorAll(".mf-pb").forEach(c=>{edit.pub[c.value]=c.checked?1:0})}
@@ -1846,6 +1846,16 @@ function initMembers(root){
   const fbar=a=>{const n={};a.forEach(m=>vpg(m).forEach(id=>{n[id]=(n[id]||0)+1}));const ch=pgList().filter(p=>n[p.id]).map(p=>`<button class="sn-chip mc-f${flt===p.id?" on":""}" data-f="${E(p.id)}">${p.icon} ${E(p.name)}（${n[p.id]}）</button>`).join("");return ch?`<div class="sn-chips" style="margin:6px 0"><button class="sn-chip mc-f${flt?"":" on"}" data-f="">全員（${a.length}）</button>${ch}</div>`:""};
   if(!document.getElementById("mc-css")){const st=document.createElement("style");st.id="mc-css";st.textContent=".mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}@media(min-width:600px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}.mc{border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.35);cursor:pointer;min-width:0}.mc-open{grid-column:1/-1;background:rgba(255,255,255,.55)}.mc-top{display:flex;gap:8px;align-items:center}.mc-nm{min-width:0;display:flex;flex-direction:column;line-height:1.3}.mc-nm b{font-size:14px;overflow-wrap:anywhere}.mc-nm small{font-size:11px;opacity:.7;overflow-wrap:anywhere}.mc-pgs{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}.mc-pg{font-size:11px;line-height:1.5;padding:0 7px;border:1px solid var(--line);border-radius:10px;white-space:nowrap}.mc-pg i{font-style:normal;margin-right:2px}.mc-none{font-size:11px;opacity:.55}.mc-cts{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}.mc-ct{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none;color:inherit;min-width:52px}.mc-ct span{width:46px;height:46px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center}.mc-sv{display:inline-block;margin:2px 0 8px;font-size:13px;color:inherit}.mc-f{font:inherit;cursor:pointer}";document.head.appendChild(st)}
   
+  const bcTo=()=>{const me=myuid(),mr=meRec();return memVisible().filter(m=>(m.st||"ok")==="ok"&&!(m.uid&&(m.uid===me||(mr&&m.uid===mr.uid)))&&(!bt||vpg(m).includes(bt)))};
+  const bcNums=to=>to.map(m=>ctVal(m,"tel").replace(/[^0-9+]/g,"")).filter(Boolean);
+  const bcMails=to=>to.map(m=>ctVal(m,"mail")).filter(Boolean);
+  const bcUrl=(k,to,t)=>{const q=encodeURIComponent(t);if(k==="line")return "https://line.me/R/share?text="+q;if(k==="sms"){const l=bcNums(to);return l.length?"sms:"+l.join(",")+"?&body="+q:""}if(k==="mail"){const l=bcMails(to);return l.length?"mailto:?bcc="+l.map(encodeURIComponent).join(",")+"&subject="+encodeURIComponent("フィールドノートからのお知らせ")+"&body="+q:""}return ""};
+  window.fnBcUrl=bcUrl;
+  const bcPanel=()=>{const a=memVisible(),n={};a.forEach(m=>vpg(m).forEach(id=>{n[id]=(n[id]||0)+1}));
+    const chips=`<button class="sn-chip mc-f${bt?"":" on"}" data-bt="">全員</button>`+pgList().filter(p=>n[p.id]).map(p=>`<button class="sn-chip mc-f${bt===p.id?" on":""}" data-bt="${E(p.id)}">${p.icon} ${E(p.name)}</button>`).join("");
+    const to=bcTo(),tl=bcNums(to),ml=bcMails(to),none=to.filter(m=>!ctVal(m,"tel")&&!ctVal(m,"mail")).map(m=>m.n);
+    return `<div class="sn-row"><div class="nl">連絡する相手</div><div class="sn-chips" style="margin:6px 0">${chips}</div><p class="sn-note">${to.length}人（電話あり${tl.length}人／メールあり${ml.length}人）</p>${none.length?`<p class="sn-note">電話・メールが見られない人：${none.map(E).join("、")}（LINEで届けてください）</p>`:""}<div class="nl">メッセージ</div><textarea class="sn-in" id="bc-t" rows="5">${E(bcText)}</textarea><div class="sn-g"><button class="sn-btn" data-bc="line">LINEで送る</button><button class="sn-btn sn-ghost" data-bc="sms"${tl.length?"":" disabled"}>SMSで送る</button><button class="sn-btn sn-ghost" data-bc="mail"${ml.length?"":" disabled"}>メールで送る</button><button class="sn-btn sn-ghost" data-bc="copy">コピー</button></div><p class="sn-note" id="bc-m"></p><p class="sn-note">LINEは、送る相手やグループをLINEの画面で選びます。SMSは全員が同じグループメッセージになり、返信やお互いの番号が見えます。メールは、アドレスが相手同士に見えない形（BCC）で入ります。</p></div>`};
+  
   const form=()=>{const f=edit,pb=f.pub||{};
     const top=`<input class="sn-in" id="mf-n" placeholder="名前" maxlength="20" value="${E(f.n)}"><input class="sn-in" id="mf-nn" placeholder="ニックネーム" maxlength="20" value="${E(f.nn)}">`;
     const mid=`<textarea class="sn-in" id="mf-b" rows="3" placeholder="紹介文（プロフィール）">${E(f.bio)}</textarea><textarea class="sn-in" id="mf-m" rows="2" placeholder="メモ（得意な山菜など）">${E(f.memo)}</textarea>`;
@@ -1859,6 +1869,7 @@ function initMembers(root){
     let h="";
     if(ad){h+='<div class="sn-g"><button class="sn-btn" data-a="add">＋ メンバーを追加</button><button class="sn-btn sn-ghost" data-a="inv">新しい人に案内を送る</button></div>';if(inv)h+=`<div class="sn-row"><div class="nl">新しい人への案内（まだメンバーでない人向け）</div><p class="sn-note">送る相手をLINEなどの画面で選んで、アプリの案内を送れます。返事が来たら「メンバーを追加」で登録し、IDとパスワードを発行して送ってください。</p>${sendLinks(INV(),null)}<p class="sn-note">対面で案内するときは、「メモ」タブのQRコードも使えます。</p></div>`}
     else if(me){h+=`<div class="sn-row"><b>あなた：${E(me.n)}</b>　<small class="sn-note">${(me.st||"ok")==="ok"?"利用中":"停止中"}</small>${(me.pg||[]).length?`<p class="sn-note">閲覧できるページ：${pgNames(me.pg)}</p>`:""}<button class="sn-btn sn-ghost" data-a="selfedit">自分のプロフィールを編集</button>${tok?`<textarea class="sn-in" id="sf-tok" rows="3" readonly>${E(tok)}</textarea><button class="sn-btn sn-ghost" data-a="cptok">コピー</button><p class="sn-note">この文字を、LINEなどで管理者に送ってください。管理者が反映すると、みんなに届きます。</p>`:""}</div>`}
+    h+='<button class="sn-btn sn-ghost" data-a="bc">📣 メンバーに連絡する</button>';if(bc)h+=bcPanel();
     if(msg)h+=`<p class="sn-note">${E(msg)}</p>`;
     h+=a.length?'<p class="sn-note">グループのメンバーです（'+a.length+'人）。カードをタップすると、くわしく見られます。</p>'+fbar(a)+'<div class="mc-grid">'+a.map((m,i)=>{if(flt&&!vpg(m).includes(flt))return "";
       const sh=k=>memPub(m,k);
@@ -1871,6 +1882,11 @@ function initMembers(root){
   const blank=(i,self)=>{const m=self?(meRec()||{}):(i>=0?memVisible()[i]:{})||{};return{i,self:!!self,id:m.id,uid:m.uid,n:m.n||"",nn:m.nn||"",role:(m.role||[]).slice(),pg:(m.pg||[]).slice(),lead:(m.lead||[]).slice(),st:m.st||"ok",rank:m.rank||"",joined:m.joined||"",bio:m.bio||"",memo:m.memo||"",ph:m.ph||"",bg:m.bg||"",tel:m.tel||(self&&ld("fn_myc",{}).tel)||"",mail:m.mail||(self&&ld("fn_myc",{}).mail)||"",line:m.line||(self&&ld("fn_myc",{}).line)||"",pub:Object.assign({},m.pub||{})}};
   root.addEventListener("click",async e=>{
     const b=e.target.closest("button"),row=e.target.closest("[data-mi]"),i=row?+row.dataset.mi:-1;
+    if(b&&b.dataset.bt!==undefined){const o=root.querySelector("#bc-t");if(o)bcText=o.value;bt=b.dataset.bt||null;render();return}
+    if(b&&b.dataset.bc){const k=b.dataset.bc,o=root.querySelector("#bc-t"),tx=o?o.value:bcText,m=root.querySelector("#bc-m");bcText=tx;
+      if(k==="copy"){const ok=()=>{if(m)m.textContent="コピーしました。"},fb=()=>{const ta=document.createElement("textarea");ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){if(m)m.textContent="コピーできませんでした。"}document.body.removeChild(ta)};try{navigator.clipboard.writeText(tx).then(ok,fb)}catch(x){fb()}}
+      else{const u=bcUrl(k,bcTo(),tx);if(u)location.href=u}
+      return}
     if(b&&b.dataset.f!==undefined){flt=b.dataset.f||null;open=null;ask=null;render();return}
     if(b&&b.dataset.a){const a=b.dataset.a;
       if(a==="add"){edit=blank(-1);msg="";cred=""}
@@ -1878,6 +1894,7 @@ function initMembers(root){
       else if(a==="selfedit"){edit=blank(-1,true);msg=""}
       else if(a==="del"){if(ask===i){const arr=cur();arr.splice(i,1);sv("fn_members",arr);if(window.fnTouch)fnTouch();ask=null;open=null;msg="削除しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直してください。"}else{ask=i;render();return}}
       else if(a==="inv"){inv=!inv}
+      else if(a==="bc"){bc=!bc}
       else if(a==="cancel"){edit=null;msg="";cred=""}
       else if(a==="nophoto"){grab();edit.ph="";edit.bg=""}
       else if(a==="issue"){grab();const arr=cur(),m=arr[edit.i];if(!m){render();return}const c=await window.fnIssue(m);edit.uid=m.uid;sv("fn_members",arr);if(window.fnTouch)fnTouch();cred=window.fnIssueText(m.n,c.uid,c.pw);credv={n:m.n,uid:c.uid,pw:c.pw};msg=""}
