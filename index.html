@@ -126,7 +126,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .save{margin-top:14px;width:100%;border:0;border-radius:10px;padding:12px;background:var(--acc);color:#fff;font-size:16px}
 /* content pages */
 .hd{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.back{border:0;background:none;color:var(--sub);font-size:14px;padding:0 0 10px}
+.back{border:2px solid var(--line);background:var(--paper);color:var(--ink);font-size:20px;font-weight:700;line-height:1.2;min-height:46px;padding:8px 20px;margin:0 0 12px;border-radius:999px;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.back:active{filter:brightness(.93)}
+.back.back-end{display:block;width:100%;margin:26px 0 8px;font-size:19px;text-align:center}
 .ph{border:1.5px dashed var(--line);border-radius:12px;padding:16px;margin-bottom:12px;color:var(--sub);font-size:15px}
 .ph b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
 /* dots */
@@ -623,6 +625,7 @@ function renderPages(){
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
     if(kd)({A:initAll,I:initInfo,S:initSansai,F:initSansai,K:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    s.insertAdjacentHTML("beforeend",`<button class="back back-end" data-go="${TI()}">‹ 目次に戻る</button>`);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
   fnPgMem();
