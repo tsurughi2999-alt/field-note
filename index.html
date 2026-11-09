@@ -2066,6 +2066,7 @@ function initRegion(root){
   let busy=false;
   async function run(){if(busy)return;busy=true;try{const ok=await load();if(ok)check();draw()}finally{busy=false}}
   window.fnEvRefresh=run;
+  window.fnEvChanges=()=>off?[]:upl().map(e=>({b:bdg(e),t:fm(e)+"　"+(e.summary||"予定")})).filter(x=>x.b);
   run();setTimeout(run,4000);
   setInterval(()=>{if(!document.hidden)run()},120000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)run()});
@@ -2141,7 +2142,7 @@ function initMembers(root){
   const vpg=m=>{const ids=(m.pg||[]).filter(id=>pgList().some(p=>p.id===id));if(adm()||!remote().gate)return ids;const mp=(meRec()||{}).pg||[];return ids.filter(id=>mp.includes(id))};
   const pgChips=m=>vpg(m).map(id=>{const q=pages().find(p=>p.id===id);return q?`<span class="mc-pg" style="border-color:${E(q.color||"var(--line)")}"><i>${q.icon}</i>${E(q.name)}</span>`:""}).join("")||'<span class="mc-none">ページ未登録</span>';
   const fbar=a=>{const n={};a.forEach(m=>vpg(m).forEach(id=>{n[id]=(n[id]||0)+1}));const ch=pgList().filter(p=>n[p.id]).map(p=>`<button class="sn-chip mc-f${flt===p.id?" on":""}" data-f="${E(p.id)}">${p.icon} ${E(p.name)}（${n[p.id]}）</button>`).join("");return ch?`<div class="sn-chips" style="margin:6px 0"><button class="sn-chip mc-f${flt?"":" on"}" data-f="">全員（${a.length}）</button>${ch}</div>`:""};
-  if(!document.getElementById("mc-css")){const st=document.createElement("style");st.id="mc-css";st.textContent=".mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}@media(min-width:600px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}.mc{border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.35);cursor:pointer;min-width:0}.mc-open{grid-column:1/-1;background:rgba(255,255,255,.55)}.mc-top{display:flex;gap:8px;align-items:center}.mc-nm{min-width:0;display:flex;flex-direction:column;line-height:1.3}.mc-nm b{font-size:14px;overflow-wrap:anywhere}.mc-nm small{font-size:11px;opacity:.7;overflow-wrap:anywhere}.mc-pgs{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}.mc-pg{font-size:11px;line-height:1.5;padding:0 7px;border:1px solid var(--line);border-radius:10px;white-space:nowrap}.mc-pg i{font-style:normal;margin-right:2px}.mc-none{font-size:11px;opacity:.55}.mc-cts{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}.mc-ct{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none;color:inherit;min-width:52px}.mc-ct span{width:46px;height:46px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center}.mc-sv{display:inline-block;margin:2px 0 8px;font-size:13px;color:inherit}.mc-f{font:inherit;cursor:pointer}.mc-car{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin:6px 0;background:rgba(255,255,255,.5)}.mc-cd{width:16px;height:16px;border-radius:50%;border:1px solid #777;flex:none;margin-top:3px}.mc-car .mc-cb{display:flex;gap:6px;margin-top:6px}.mc-car .mc-cb button{width:auto;padding:5px 12px;font-size:13px}";document.head.appendChild(st)}
+  if(!document.getElementById("mc-css")){const st=document.createElement("style");st.id="mc-css";st.textContent=".mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}@media(min-width:600px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}.mc{border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.35);cursor:pointer;min-width:0}.mc-open{grid-column:1/-1;background:rgba(255,255,255,.55)}.mc-top{display:flex;gap:8px;align-items:center}.mc-nm{min-width:0;display:flex;flex-direction:column;line-height:1.3}.mc-nm b{font-size:14px;overflow-wrap:anywhere}.mc-nm small{font-size:11px;opacity:.7;overflow-wrap:anywhere}.mc-pgs{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}.mc-pg{font-size:11px;line-height:1.5;padding:0 7px;border:1px solid var(--line);border-radius:10px;white-space:nowrap}.mc-pg i{font-style:normal;margin-right:2px}.mc-none{font-size:11px;opacity:.55}.mc-cts{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}.mc-ct{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none;color:inherit;min-width:52px}.mc-ct span{width:46px;height:46px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center}.mc-sv{display:inline-block;margin:2px 0 8px;font-size:13px;color:inherit}.mc-f{font:inherit;cursor:pointer}.mc-car{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin:6px 0;background:rgba(255,255,255,.5)}.mc-cd{width:16px;height:16px;border-radius:50%;border:1px solid #777;flex:none;margin-top:3px}.mc-car .mc-cb{display:flex;gap:6px;margin-top:6px}.mc-car .mc-cb button{width:auto;padding:5px 12px;font-size:13px}.mc-ntf{display:flex;gap:10px;align-items:center;width:100%;box-sizing:border-box;text-align:left;font:inherit;color:#2b3526;border:2px solid #e0a000;border-radius:12px;padding:10px 12px;margin:8px 0;background:#fff3c4;cursor:pointer;animation:mcBlink 1.1s ease-in-out infinite}.mc-ntf.hot{border-color:#c0392b}.mc-ntf .mc-nd{width:12px;height:12px;border-radius:50%;background:#d9302c;flex:none;animation:mcDot 1.1s ease-in-out infinite}.mc-ntf .mc-nt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.4}.mc-ntf .mc-nt b{font-size:15px}.mc-ntf .mc-nt small{font-size:12px;opacity:.75;overflow-wrap:anywhere}.mc-ntf .mc-ng{font-size:13px;white-space:nowrap}@keyframes mcBlink{0%,100%{background:#fff3c4;box-shadow:0 0 0 0 rgba(224,160,0,0)}50%{background:#ffd54a;box-shadow:0 0 0 6px rgba(224,160,0,.45)}}@keyframes mcDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.2;transform:scale(.7)}}@media(prefers-reduced-motion:reduce){.mc-ntf,.mc-ntf .mc-nd{animation:none}}";document.head.appendChild(st)}
   
   const bcTo=()=>{const me=myuid(),mr=meRec();return memVisible().filter(m=>(m.st||"ok")==="ok"&&!(m.uid&&(m.uid===me||(mr&&m.uid===mr.uid)))&&(!bt||vpg(m).includes(bt)))};
   const bcNums=to=>to.map(m=>ctVal(m,"tel").replace(/[^0-9+]/g,"")).filter(Boolean);
@@ -2173,11 +2174,24 @@ function initMembers(root){
     else if(ad)h+=`<button class="sn-btn sn-ghost" data-ca="add">＋ 車を追加</button>`;
     return h+"</div>";
   };
+  let ntLast="";
+  const jump=pid=>{if(pid==="admin"){go(TI()-1);return}if(pid==="cal"){go(1);return}const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+TI()+1)};
+  const ntfList=()=>{
+    const o=[];
+    if(adm()){const n=ld("fn_reqs",[]).filter(r=>r.st==="wait").length;if(n)o.push({ic:"📩",t:"承認待ちの申請が "+n+"件あります",s:"参加・プロフィール更新などの申請です",go:"admin",lb:"申請を見る ▶",hot:1})}
+    let evc=[];try{evc=window.fnEvChanges?window.fnEvChanges():[]}catch(x){}
+    if(evc.length){const c=evc.filter(x=>x.b==="更新").length,n=evc.length-c;
+      o.push({ic:"📅",t:c&&n?"予定の変更 "+c+"件・新しい予定 "+n+"件があります":c?"予定が変更されました（"+c+"件）":"新しい予定が入りました（"+n+"件）",s:evc[0].t,go:"cal",lb:"予定を見る ▶",hot:c?1:0})}
+    const seen=ld("fn_seen",[]),u=allSh().filter(x=>x.k==="nt"&&!seen.includes(x.id)).sort((a,b)=>String(b.d).localeCompare(String(a.d))),mu=u.filter(x=>x.must).length;
+    if(u.length)o.push({ic:"📢",t:"未読のお知らせが "+u.length+"件あります"+(mu?"（必読 "+mu+"件）":""),s:String(u[0].t||""),go:"all",lb:"お知らせを見る ▶",hot:mu?1:0});
+    return o;
+  };
+  const ntfHtml=()=>ntfList().map(x=>`<button class="mc-ntf${x.hot?" hot":""}" data-nt="${x.go}"><span class="mc-nd"></span><span style="font-size:24px">${x.ic}</span><span class="mc-nt"><b>${E(x.t)}</b><small>${E(x.s)}</small></span><span class="mc-ng">${x.lb}</span></button>`).join("");
   const pgNames=ids=>(ids||[]).map(id=>{const q=pages().find(p=>p.id===id);return q?E(q.icon+" "+q.name):""}).filter(Boolean).join("、");
   const render=()=>{
     if(edit){root.innerHTML=form();return}
     const a=memVisible(),ad=adm(),me=selfRec(),mu=myuid();
-    let h="";
+    let h='<div id="mc-nt">'+(ntLast=ntfHtml())+'</div>';
     if(ad){h+='<div class="sn-g"><button class="sn-btn" data-a="add">＋ メンバーを追加</button><button class="sn-btn sn-ghost" data-a="inv">新しい人に案内を送る</button></div>';if(inv)h+=`<div class="sn-row"><div class="nl">新しい人への案内（まだメンバーでない人向け）</div><p class="sn-note">送る相手をLINEなどの画面で選んで、アプリの案内を送れます。返事が来たら「メンバーを追加」で登録し、IDとパスワードを発行して送ってください。</p>${sendLinks(INV(),null)}<p class="sn-note">対面で案内するときは、「メモ」タブのQRコードも使えます。</p></div>`}
     else if(me){h+=`<div class="sn-row"><b>あなた：${E(me.n)}</b>　<small class="sn-note">${(me.st||"ok")==="ok"?"利用中":"停止中"}</small>${(me.pg||[]).length?`<p class="sn-note">閲覧できるページ：${pgNames(me.pg)}</p>`:""}<button class="sn-btn sn-ghost" data-a="selfedit">自分のプロフィールを編集</button>${tok?`<textarea class="sn-in" id="sf-tok" rows="3" readonly>${E(tok)}</textarea><button class="sn-btn sn-ghost" data-a="cptok">コピー</button><p class="sn-note">この文字を、LINEなどで管理者に送ってください。管理者が反映すると、みんなに届きます。</p>`:""}</div>`}
     h+='<button class="sn-btn sn-ghost" data-a="bc">📣 メンバーに連絡する</button>';if(bc)h+=bcPanel();
@@ -2193,6 +2207,7 @@ function initMembers(root){
   const blank=(i,self)=>{const m=self?(meRec()||{}):(i>=0?memVisible()[i]:{})||{};return{i,self:!!self,id:m.id,uid:m.uid,n:m.n||"",nn:m.nn||"",role:(m.role||[]).slice(),pg:(m.pg||[]).slice(),lead:(m.lead||[]).slice(),st:m.st||"ok",rank:m.rank||"",joined:m.joined||"",bio:m.bio||"",memo:m.memo||"",ph:m.ph||"",bg:m.bg||"",tel:m.tel||(self&&ld("fn_myc",{}).tel)||"",mail:m.mail||(self&&ld("fn_myc",{}).mail)||"",line:m.line||(self&&ld("fn_myc",{}).line)||"",pub:Object.assign({},m.pub||{})}};
   root.addEventListener("click",async e=>{
     const b=e.target.closest("button"),row=e.target.closest("[data-mi]"),i=row?+row.dataset.mi:-1;
+    if(b&&b.dataset.nt){jump(b.dataset.nt);return}
     if(b&&b.dataset.bt!==undefined){const o=root.querySelector("#bc-t");if(o)bcText=o.value;bt=b.dataset.bt||null;render();return}
     if(b&&b.dataset.bc){const k=b.dataset.bc,o=root.querySelector("#bc-t"),tx=o?o.value:bcText,m=root.querySelector("#bc-m");bcText=tx;
       if(k==="copy"){const ok=()=>{if(m)m.textContent="コピーしました。"},fb=()=>{const ta=document.createElement("textarea");ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){if(m)m.textContent="コピーできませんでした。"}document.body.removeChild(ta)};try{navigator.clipboard.writeText(tx).then(ok,fb)}catch(x){fb()}}
@@ -2234,6 +2249,7 @@ function initMembers(root){
     ask=null;ce=null;open=open===i?null:i;render()});
   root.addEventListener("change",e=>{if(e.target.id!=="mf-f")return;const fl=e.target.files[0];if(!fl||!window.fnShrink)return;const r=new FileReader();r.onload=async()=>{grab();edit.ph=await fnShrink(r.result,128,true,.7);edit.bg=await fnShrink(r.result,400,false,.6);render()};r.readAsDataURL(fl)});
   window.fnMemRedraw=()=>{edit=null;render()};render();
+  setInterval(()=>{const c=root.querySelector("#mc-nt");if(!c||edit||document.hidden)return;const h=ntfHtml();if(h!==ntLast){ntLast=h;c.innerHTML=h}},4000);
 }
 (function(){
   const E=v=>esc(String(v==null?"":v)),A=window.fnAdm=window.fnAdm||{};
