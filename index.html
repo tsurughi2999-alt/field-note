@@ -762,18 +762,18 @@ function initSansai(root,cfg){
     if(mapC==="me"&&mapMe)c=mapMe;
     else{const src=fl.length?fl:all;if(src.length){const l=src.slice().sort((a,b)=>String(b.h.d).localeCompare(String(a.h.d)))[0];c=[l.h.la,l.h.lo]}}
     if(!c)return `<div class="ic"><h4>収穫マップ</h4>${chips}<p class="sn-note">${mapMsg?esc(mapMsg)+"　":""}「収穫」で「現在地も記録する」にチェックを入れて記録すると、ここに📌で表示されます。（山菜採り・果実と樹の実・きのこの記録をまとめて表示します）</p></div>`;
-    const r=mapR,zf=Math.log2(156543.03392*Math.cos(c[0]*R2)*320/(2*r)),z=Math.min(18,Math.max(5,Math.round(zf))),V=2*r*Math.pow(2,z)/(156543.03392*Math.cos(c[0]*R2)),n=256*Math.pow(2,z);
+    MP_LC=c;const r=mapR,zf=Math.log2(156543.03392*Math.cos(c[0]*R2)*320/(2*r)),z=Math.min(18,Math.max(5,Math.round(zf))),V=2*r*Math.pow(2,z)/(156543.03392*Math.cos(c[0]*R2)),n=256*Math.pow(2,z);
     const W=(la,lo)=>[(lo+180)/360*n,(1-Math.log(Math.tan(la*R2)+1/Math.cos(la*R2))/Math.PI)/2*n];
     const K=mapRot?1.4143:1,V2=V*K,[cx,cy]=W(c[0],c[1]),x0=cx-V2/2,y0=cy-V2/2,ext=mapB==="photo"?["seamlessphoto","jpg"]:["std","png"];
     let tiles="";
-    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+V2)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+V2)/256);ty++){if(tx<0||ty<0||tx>=Math.pow(2,z)||ty>=Math.pow(2,z))continue;tiles+=`<img alt="" src="https://cyberjapandata.gsi.go.jp/xyz/${ext[0]}/${z}/${tx}/${ty}.${ext[1]}" style="left:${((tx*256-x0)/V2*100).toFixed(3)}%;top:${((ty*256-y0)/V2*100).toFixed(3)}%;width:${(256/V2*100).toFixed(3)}%;height:${(256/V2*100).toFixed(3)}%" onerror="this.style.display='none'">`}
+    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+V2)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+V2)/256);ty++){if(tx<0||ty<0||tx>=Math.pow(2,z)||ty>=Math.pow(2,z))continue;tiles+=`<img alt="" data-tu="https://cyberjapandata.gsi.go.jp/xyz/${ext[0]}/${z}/${tx}/${ty}.${ext[1]}" style="left:${((tx*256-x0)/V2*100).toFixed(3)}%;top:${((ty*256-y0)/V2*100).toFixed(3)}%;width:${(256/V2*100).toFixed(3)}%;height:${(256/V2*100).toFixed(3)}%" onerror="this.style.display='none'">`}
     const items=fl.map(x=>({x,d:dist2(c,[x.h.la,x.h.lo])})).filter(o=>o.d<=r*1.42).sort((a,b)=>String(b.x.h.d).localeCompare(String(a.x.h.d))),inR=items.filter(o=>o.d<=r).length;
     const fmt=d=>d<1000?Math.round(d)+"m":(d/1000).toFixed(1)+"km";
     const one=(o,full)=>{const h=o.x.h;return `<b>${esc(h.d)}</b>　<span class="mp-dot" style="background:${MPC[o.x.k][1]}"></span>${esc(MPC[o.x.k][0])}・<b>${esc(o.x.n)}</b>${h.a?"　"+esc(String(h.a))+esc(h.u||""):""}${full&&h.s?"<br>📍 "+esc(h.s):""}${full&&h.m?"<br>"+esc(h.m):""}`};
     const pins=items.map((o,i)=>{const [wx,wy]=W(o.x.h.la,o.x.h.lo),Lf=((wx-x0)/V2*100).toFixed(2),T=((wy-y0)/V2*100).toFixed(2);return `<button class="mp-pin${mapSel===i?" on":""}" data-mp="${i}" style="left:${Lf}%;top:${T}%;background:${MPC[o.x.k][1]}" aria-label="${esc(o.x.n)}">📌</button><span class="mp-lb" style="left:${Lf}%;top:${T}%">${esc(o.x.n.replace(/（.*/,"").slice(0,5))}</span>`}).join("");
     const sel=mapSel!==null&&items[mapSel]?items[mapSel]:null;
     const det=sel?`<div class="sn-row" style="border-left:4px solid ${MPC[sel.x.k][1]};padding-left:8px">${one(sel,1)}<br><small class="sn-note">中心から約${fmt(sel.d)}</small>　<a class="sn-note" href="https://www.google.com/maps?q=${sel.x.h.la},${sel.x.h.lo}" target="_blank" rel="noopener">Googleマップで開く</a></div>`:'<p class="sn-note">📌をタップすると、何が採れたかが出ます。</p>';
-    return `<div class="ic"><h4>収穫マップ（${r/1000}km範囲に${inR}か所／全${fl.length}か所）</h4>${chips}<div class="mp-box"${mapRot?` data-rot="1" style="--h:${(CMP.t||0).toFixed(1)}deg"`:""}><div class="mp-rot" style="left:${(-(K-1)/2*100).toFixed(3)}%;top:${(-(K-1)/2*100).toFixed(3)}%;width:${(K*100).toFixed(3)}%;height:${(K*100).toFixed(3)}%">${tiles}${pins}</div><div class="mp-ring"></div>${mapC==="me"&&mapMe?'<i class="mp-ctr"></i>':""}${mapRot?'<div class="mp-n">N</div>':""}</div>${mapRot?`<p class="sn-note" id="mp-cm">${CMP.t==null?esc(CMP.msg||"向きを取得中です…"):"向き "+DIR8(CMP.t)+" "+Math.round(CMP.t)+"°（真北基準）"}</p>`:""}<div class="sn-note">点線の円が中心から${r/1000}kmです。上が北です。背景は国土地理院の地図で、圏外では出ません（📌は出ます）。</div>${mapMsg?`<p class="sn-note">${esc(mapMsg)}</p>`:""}${det}</div>`+items.map((o,i)=>`<div class="sn-row">${one(o,0)}<br><small class="sn-note">約${fmt(o.d)}</small>　<button class="sn-chip" data-mp="${i}">📌 地図で見る</button></div>`).join("");
+    return `<div class="ic"><h4>収穫マップ（${r/1000}km範囲に${inR}か所／全${fl.length}か所）</h4>${chips}<div class="mp-box"${mapRot?` data-rot="1" style="--h:${(CMP.t||0).toFixed(1)}deg"`:""}><div class="mp-rot" style="left:${(-(K-1)/2*100).toFixed(3)}%;top:${(-(K-1)/2*100).toFixed(3)}%;width:${(K*100).toFixed(3)}%;height:${(K*100).toFixed(3)}%">${tiles}${pins}</div><div class="mp-ring"></div>${mapC==="me"&&mapMe?'<i class="mp-ctr"></i>':""}${mapRot?'<div class="mp-n">N</div>':""}</div>${mapRot?`<p class="sn-note" id="mp-cm">${CMP.t==null?esc(CMP.msg||"向きを取得中です…"):"向き "+DIR8(CMP.t)+" "+Math.round(CMP.t)+"°（真北基準）"}</p>`:""}<div class="sn-note">点線の円が中心から${r/1000}kmです。上が北です。背景は国土地理院の地図で、圏外では出ません（📌は出ます）。</div>${mapMsg?`<p class="sn-note">${esc(mapMsg)}</p>`:""}${det}</div><div class="ic"><h4>オフラインで使う</h4><p class="sn-note">通信できる場所で「この場所の地図を端末に保存」を押すと、いまの中心の周り（1km・3km・5km）の地図を保存します。見た地図も自動で保存されます。📌は、通信がなくても出ます。保存は、ブラウザの「サイトデータの削除」で消えます。</p><button class="sn-btn" data-mdl="1">この場所の地図を端末に保存</button> <button class="sn-del" data-mdc="1">保存した地図を消す</button><p class="sn-note" id="mp-dl">${(()=>{const o=ld("fn_mp_off",null);return o&&o.n?"保存済み："+o.n+"枚（"+(new Date(o.t).getMonth()+1)+"/"+new Date(o.t).getDate()+" に保存）":"まだ保存していません。"})()}</p></div>`+items.map((o,i)=>`<div class="sn-row">${one(o,0)}<br><small class="sn-note">約${fmt(o.d)}</small>　<button class="sn-chip" data-mp="${i}">📌 地図で見る</button></div>`).join("");
   };
   const sumV=()=>{
     const ys=[...new Set(harv.map(h=>(h.d||"").slice(0,4)).concat(String(xyr)))].filter(Boolean).sort().reverse(),H=harv.filter(h=>(h.d||"").startsWith(String(xyr)));
@@ -798,10 +798,10 @@ function initSansai(root,cfg){
       map=`<svg viewBox="0 0 300 240" style="width:100%;background:rgba(0,0,0,.04);border-radius:10px">${cs.map(c=>`<circle cx="${X(c).toFixed(1)}" cy="${Y(c).toFixed(1)}" r="${r.toFixed(1)}" fill="#4f8446" opacity=".35"/><text x="${X(c).toFixed(1)}" y="${(Y(c)+4).toFixed(1)}" font-size="12" text-anchor="middle" fill="#2b3526">${c.l.length}</text>`).join("")}</svg><div class="sn-note">約10km四方にぼかした位置です。上が北です。</div>`+cs.map(c=>`<div class="sn-row"><b>北緯${c.la.toFixed(1)}° 東経${c.lo.toFixed(1)}° 付近</b><br>${[...new Set(c.l.map(x=>esc(String(x.p))+"（"+(+x.mo||"?")+"月）"))].join("、")}</div>`).join("")}
     return `<button class="sn-btn sn-ghost" data-rf2="1">最新を受け取る</button><p class="sn-note" id="sh-m"></p><div class="ic"><h4>みんなの採取エリア</h4>${map}</div><div class="ic"><h4>みんなのブログ</h4>${B.map(x=>`<div class="sn-row"><b>${esc(String(x.t))}</b>　<small>${esc(String(x.d))}</small>${x.x?"<br>"+esc(String(x.x)):""}<br><small class="sn-note">投稿：${esc(String(x.from||"?"))}</small></div>`).join("")||'<p class="sn-note">まだありません。</p>'}</div>`;
   };
-  const TABS=["図鑑","旬の暦","スポット","収穫","収穫マップ","まとめ","持ち物","レシピ","ブログ","パトロール","メモ","みんな"];
+  const TABS=["図鑑","旬の暦","スポット","収穫","収穫マップ","まとめ","持ち物","レシピ","ブログ","パトロール","メモ","リンク","みんな"];
   const render=()=>{
-    root.innerHTML=`<div class="sn-tabs">${TABS.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV,mapV,sumV,ckV,rcV,blV,ptV,mmV,shV][tab]();
-    const bar=root.querySelector(".sn-tabs"),on=bar.querySelector(".on");if(on)bar.scrollLeft=on.offsetLeft-bar.clientWidth/2+on.clientWidth/2;live();
+    root.innerHTML=`<div class="sn-tabs">${TABS.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV,mapV,sumV,ckV,rcV,blV,ptV,mmV,()=>relBox(({S:"sansai",F:"fruit",K:"kinoko",B:"saibai"})[CF.pre==="fn_sn_"?"S":CF.pre==="fn_fr_"?"F":CF.pre==="fn_kn_"?"K":"B"]),shV][tab]();
+    const bar=root.querySelector(".sn-tabs"),on=bar.querySelector(".on");if(on)bar.scrollLeft=on.offsetLeft-bar.clientWidth/2+on.clientWidth/2;live();tileLoadAll(root);
   };
   root.addEventListener("click",e=>{
     const b=e.target.closest("button,img[data-xim]");if(!b)return;const d=b.dataset,g=id=>$(id).value.trim();
@@ -842,6 +842,8 @@ function initSansai(root,cfg){
     if(d.mr!==undefined){mapR=+d.mr;mapSel=null;mapMsg="";render();return}
     if(d.mf!==undefined){mapF[d.mf]=mapF[d.mf]?0:1;mapSel=null;render();return}
     if(d.mb!==undefined){mapB=d.mb;render();return}
+    if(d.mdl!==undefined){if(MP_LC){const say=t=>{const el=root.querySelector("#mp-dl");if(el)el.textContent=t};mpSave(MP_LC,mapB,say)}return}
+    if(d.mdc!==undefined){if(window.caches)caches.delete(MP_TC);sv("fn_mp_off",{n:0,t:0});const el=root.querySelector("#mp-dl");if(el)el.textContent="保存した地図を消しました。";return}
     if(d.mrot!==undefined){mapRot=!mapRot;if(mapRot){cmpStart().then(()=>render())}else delete CMP.fns.map;render();return}
     if(d.mp!==undefined){mapSel=+d.mp;render();return}
     if(d.mc!==undefined){mapSel=null;mapMsg="";if(d.mc==="me"){if(!navigator.geolocation){mapMsg="この端末では現在地を取得できません。";render();return}mapMsg="現在地を取得中です…";render();navigator.geolocation.getCurrentPosition(q=>{mapMe=[q.coords.latitude,q.coords.longitude];mapC="me";mapMsg="";render()},()=>{mapMsg="現在地を取得できませんでした。位置情報の許可を確認してください。";render()},{enableHighAccuracy:true,timeout:12000})}else{mapC="last";render()}return}
@@ -1273,7 +1275,7 @@ function initTozan(root){
   const packV=()=>`<div class="sn-chips">${chips(Object.keys(PL),pl,"pl")}</div>`+PL[pl].map(it=>`<label class="sn-row" style="display:flex;gap:10px;align-items:center"><input type="checkbox" data-pk="${esc(it)}"${(pk[pl]||{})[it]?" checked":""} style="width:20px;height:20px">${esc(it)}</label>`).join("")+`<button class="sn-btn sn-ghost" data-pkr="1" style="margin-top:12px">チェックをすべて外す</button><p class="sn-note">基本の目安です。コースや季節に合わせて、足りないものを加えてください。</p>`;
   const fm=v=>{if(!v)return "未定";const d=new Date(v);return isNaN(d)?v:(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
   const planV=()=>{const P=k=>esc(plan[k]||"");return `<p class="sn-note">入山前に、家族や友人へ予定を伝える連絡文を作れます。</p><input class="sn-in" data-pf="n" list="tz-dl2" placeholder="山名" value="${P("n")}"><datalist id="tz-dl2">${MT.map(m=>`<option value="${esc(m.n)}">`).join("")}</datalist><input class="sn-in" data-pf="c" placeholder="コース・登山口" value="${P("c")}"><div class="nl">入山予定</div><input class="sn-in" type="datetime-local" data-pf="a" value="${P("a")}"><div class="nl">下山予定</div><input class="sn-in" type="datetime-local" data-pf="b" value="${P("b")}"><input class="sn-in" data-pf="p" placeholder="同行者" value="${P("p")}"><input class="sn-in" data-pf="t" placeholder="緊急連絡先（家族など）" value="${P("t")}"><input class="sn-in" data-pf="m" placeholder="メモ（装備・ビバーク予定など）" value="${P("m")}"><div class="sn-g"><button class="sn-btn" id="tz-gen">入山連絡の文を作る</button><button class="sn-btn sn-ghost" id="tz-out">下山連絡の文を作る</button></div>`+(txt?`<textarea class="sn-in" id="tz-tx" rows="8" style="margin-top:10px">${esc(txt)}</textarea><div class="sn-g"><button class="sn-btn sn-ghost" id="tz-cp">コピー</button><button class="sn-btn" id="tz-sh">送る</button></div>`:"")+`<p class="sn-note">登山計画書は、登山口の提出箱か電子提出で必ず出してください。<a href="https://www.mt-compass.com/" target="_blank" rel="noopener">登山計画書の電子提出（コンパス）</a><br>緊急時は110番または119番に連絡してください。</p>`};
-  const render=()=>{root.innerHTML=`<div class="sn-tabs">${["百名山","山行記録","持ち物","入山連絡","みんな"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[listV,logV,packV,planV,()=>sharedV(["tz"])][tab]()};
+  const render=()=>{root.innerHTML=`<div class="sn-tabs">${["百名山","山行記録","持ち物","入山連絡","リンク","みんな"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[listV,logV,packV,planV,()=>relBox("tozan"),()=>sharedV(["tz"])][tab]()};
   root.addEventListener("click",e=>{
     const b=e.target.closest("button,.sn-card");if(!b)return;const d=b.dataset;
     if(d.t!==undefined){tab=+d.t;ask=null;render();return}
@@ -1307,7 +1309,7 @@ function initOnsen(root){
   const logV=()=>{const names=new Set(logs.map(l=>l.n));return `<p class="sn-note">記録 <b>${logs.length}</b>件　入った温泉 <b>${names.size}</b>湯</p><input class="sn-in" type="date" id="os-d" value="${td()}"><input class="sn-in" id="os-n" placeholder="温泉名" maxlength="30" value="${esc(pre.n)}"><input class="sn-in" id="os-a" placeholder="地域" maxlength="20" value="${esc(pre.a)}"><div class="sn-g"><select class="sn-in" id="os-s"><option>泉質は不明</option>${SPR.map(p=>`<option>${p[0]}</option>`).join("")}</select><select class="sn-in" id="os-r">${[5,4,3,2,1].map(n=>`<option value="${n}">${stars(n)}</option>`).join("")}</select></div><input class="sn-in" id="os-y" type="number" inputmode="numeric" placeholder="料金（円）"><input class="sn-in" id="os-m" placeholder="メモ（どの山の帰りなど）" maxlength="100"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="os-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="os-add">記録を追加</button>`+logs.map((l,i)=>({l,i})).sort((a,b)=>b.l.d.localeCompare(a.l.d)).map(({l,i})=>`<div class="sn-row"><b>${esc(l.d)}</b>　${esc(l.n)}　<span style="color:#d99a2b">${stars(l.r)}</span><br><small>${esc(l.a||"")}${l.s&&l.s!=="泉質は不明"?"・"+esc(l.s):""}${l.y?"・"+l.y+"円":""}</small>${l.m?"<br>"+esc(l.m):""}<br><button class="sn-del" data-shl="${i}">${l.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="l"+i?" ask":""}" data-dl="${i}">${ask==="l"+i?"本当に削除":"削除"}</button></div>`).join("")};
   const wantV=()=>`<input class="sn-in" id="ow-n" placeholder="行きたい温泉の名前" maxlength="30"><input class="sn-in" id="ow-a" placeholder="地域" maxlength="20"><input class="sn-in" id="ow-m" placeholder="メモ" maxlength="80"><button class="sn-btn" id="ow-add">リストに追加</button>`+(want.map((w,i)=>`<div class="sn-row"><b>${esc(w.n)}</b> <small>${esc(w.a||"")}</small>${w.m?"<br>"+esc(w.m):""}<br><button class="sn-del" data-go2="${i}">入った！記録へ</button> <button class="sn-del${ask==="w"+i?" ask":""}" data-dw="${i}">${ask==="w"+i?"本当に削除":"削除"}</button></div>`).join("")||'<p class="sn-note">まだありません。</p>');
   const infoV=()=>`<input class="sn-in" id="oi-n" placeholder="温泉名" maxlength="30"><input class="sn-in" id="oi-a" placeholder="地域" maxlength="20"><input class="sn-in" id="oi-h" placeholder="営業時間（例：10:00〜21:00）" maxlength="30"><input class="sn-in" id="oi-c" placeholder="定休日" maxlength="20"><input class="sn-in" id="oi-y" type="number" inputmode="numeric" placeholder="入浴料（円）"><div class="sn-g"><select class="sn-in" id="oi-p"><option>駐車場：不明</option><option>駐車場：あり</option><option>駐車場：なし</option></select><select class="sn-in" id="oi-r"><option>貸切：不明</option><option>貸切：あり</option><option>貸切：なし</option></select></div><select class="sn-in" id="oi-t"><option>タトゥー：不明</option><option>タトゥー：可</option><option>タトゥー：不可</option><option>タトゥー：要確認</option></select><input class="sn-in" id="oi-m" placeholder="メモ" maxlength="80"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="oi-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="oi-add">日帰り情報を追加</button><p class="sn-note">営業時間や料金は変わることがあります。出かける前に、最新の情報を確認してください。</p>`+(info.map((x,i)=>`<div class="sn-row"><b>${esc(x.n)}</b> <small>${esc(x.a||"")}</small><br>${x.h?"🕒 "+esc(x.h)+"　":""}${x.c?"休：" +esc(x.c)+"　":""}${x.y?x.y+"円":""}<br><small>${esc(x.p)}／${esc(x.r)}／${esc(x.t)}</small>${x.m?"<br>"+esc(x.m):""}<br><a class="sn-note" href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent(x.n)}" target="_blank" rel="noopener">地図で見る</a> <button class="sn-del" data-shi="${i}">${x.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="i"+i?" ask":""}" data-di="${i}">${ask==="i"+i?"本当に削除":"削除"}</button></div>`).join("")||'<p class="sn-note">まだありません。</p>');
-  const lkV=()=>`<div class="sn-row"><a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent("温泉")}" target="_blank" rel="noopener noreferrer"><b>🗺️ Googleマップで「温泉」を探す</b></a></div>`+olk.map((x,i)=>`<div class="sn-row"><a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><b>🔗 ${esc(x.t)}</b></a><br><small class="sn-note">${esc(x.u)}</small><br><button class="sn-del" data-shk="${i}">${x.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="k"+i?" ask":""}" data-dk="${i}">${ask==="k"+i?"本当に削除":"削除"}</button></div>`).join("")+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="ok-t" placeholder="名前（例：○○温泉の公式サイト）" maxlength="30"><input class="sn-in" id="ok-u" placeholder="https://..." maxlength="200"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="ok-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="ok-add">リンクを追加</button><p class="sn-note" id="ok-m">追加したリンクは、この端末に保存されます。「共有する」にしたリンクは、「みんな」タブの「共有」の手順（提出用の文字→管理者が取り込み・配信）で、メンバーにも届きます。</p></div>`;
+  const lkV=()=>`<div class="sn-row"><a href="https://www.google.com/maps/search/?api=1&amp;query=${encodeURIComponent("温泉")}" target="_blank" rel="noopener noreferrer"><b>🗺️ Googleマップで「温泉」を探す</b></a></div>`+olk.map((x,i)=>`<div class="sn-row"><a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer"><b>🔗 ${esc(x.t)}</b></a><br><small class="sn-note">${esc(x.u)}</small><br><button class="sn-del" data-shk="${i}">${x.sh?"共有中（やめる）":"共有する"}</button> <button class="sn-del${ask==="k"+i?" ask":""}" data-dk="${i}">${ask==="k"+i?"本当に削除":"削除"}</button></div>`).join("")+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="ok-t" placeholder="名前（例：○○温泉の公式サイト）" maxlength="30"><input class="sn-in" id="ok-u" placeholder="https://..." maxlength="200"><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="ok-sh" style="width:20px;height:20px">みんなに共有する</label><button class="sn-btn" id="ok-add">リンクを追加</button><p class="sn-note" id="ok-m">追加したリンクは、この端末に保存されます。「共有する」にしたリンクは、「みんな」タブの「共有」の手順（提出用の文字→管理者が取り込み・配信）で、メンバーにも届きます。</p></div>`+relBox("onsen");
   const guideV=()=>SPR.map(p=>`<div class="sn-dg" style="border-left-color:#b8622a"><b>${p[0]}</b><p>${p[1]}</p></div>`).join("")+`<p class="sn-note">効能は目安です。持病のある人や妊娠中の人は、入浴の前に医師に相談してください。長湯や飲酒後の入浴は避けましょう。</p>`;
   const render=()=>{root.innerHTML=`<div class="sn-tabs">${["入湯記録","行きたい","泉質ガイド","日帰り情報","リンク","みんな"].map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[logV,wantV,guideV,infoV,lkV,()=>sharedV(["os","oi","ol"])][tab]()};
   root.addEventListener("click",e=>{
@@ -1386,6 +1388,33 @@ function initAll(root){
   document.addEventListener("click",ev=>{if(ev.target.dataset&&ev.target.dataset.ok)setTimeout(()=>{if(root.isConnected)render()},50)});
 }
 /* 情報ページ */
+/* ---- 地図のオフライン保存 ---- */
+const MP_TC="fn-tiles-v1";let MP_LC=null;
+function mpTileUrls(c,r,base){
+  const lat=c[0],cs=Math.cos(lat*CR),zf=Math.log2(156543.03392*cs*320/(2*r)),z=Math.min(18,Math.max(5,Math.round(zf))),V=2*r*Math.pow(2,z)/(156543.03392*cs)*1.4143,n=256*Math.pow(2,z),cx=(c[1]+180)/360*n,cy=(1-Math.log(Math.tan(lat*CR)+1/cs)/Math.PI)/2*n,x0=cx-V/2,y0=cy-V/2,ext=base==="photo"?["seamlessphoto","jpg"]:["std","png"],out=[];
+  for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+V)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+V)/256);ty++){if(tx<0||ty<0||tx>=Math.pow(2,z)||ty>=Math.pow(2,z))continue;out.push("https://cyberjapandata.gsi.go.jp/xyz/"+ext[0]+"/"+z+"/"+tx+"/"+ty+"."+ext[1])}
+  return out;
+}
+function tileSrc(img){
+  const u=img.dataset.tu;if(!u)return;
+  const fb=()=>{img.src=u},use=b=>{img.src=URL.createObjectURL(b)};
+  if(!window.caches){fb();return}
+  caches.open(MP_TC).then(c=>c.match(u).then(r=>r?r.blob().then(use):fetch(u).then(rs=>{if(!rs.ok)throw 0;c.put(u,rs.clone());return rs.blob()}).then(use))).catch(fb);
+}
+const tileLoadAll=root=>{root.querySelectorAll("img[data-tu]").forEach(tileSrc)};
+async function mpSave(c,base,say){
+  if(!window.caches){say("この端末では、地図を保存できません。");return}
+  const set=new Set();[1000,3000,5000].forEach(r=>mpTileUrls(c,r,base).forEach(u=>set.add(u)));
+  const list=[...set];
+  if(list.length>300){say("範囲が広すぎて保存できません。");return}
+  const cache=await caches.open(MP_TC);let done=0,fail=0,idx=0;
+  say("保存中… 0/"+list.length);
+  const worker=async()=>{while(idx<list.length){const u=list[idx++];try{if(!(await cache.match(u))){const r=await fetch(u);if(!r.ok)throw 0;await cache.put(u,r)}}catch(e){fail++}done++;if(done%5===0||done===list.length)say("保存中… "+done+"/"+list.length)}};
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  let n=0;try{n=(await cache.keys()).length}catch(e){}
+  sv("fn_mp_off",{n,t:Date.now()});
+  say(fail===list.length?"保存できませんでした。通信できる場所で、もう一度試してください。":"保存しました（"+(list.length-fail)+"枚"+(fail?"、失敗"+fail+"枚":"")+"）。通信がなくても、この範囲の地図が出ます。");
+}
 /* ---- コンパス ---- */
 const CR=Math.PI/180,DIR8=h=>["北","北東","東","南東","南","南西","西","北西"][Math.round(((h%360)+360)%360/45)%8],REL=a=>{a=((a%360)+360)%360;return a<22.5||a>=337.5?"まっすぐ前":a<67.5?"右前":a<112.5?"右":a<157.5?"右後ろ":a<202.5?"後ろ":a<247.5?"左後ろ":a<292.5?"左":"左前"},cmpFmt=d=>d<1000?Math.round(d)+"m":(d/1000).toFixed(1)+"km";
 const CMP={h:null,t:null,on:false,msg:"",pos:null,fns:{},cor:true,tgt:null,_w:null,_last:0,_to:null,_s:null,ev:{abs:0,rel:0,wk:0,so:0,gp:0,ra:0},sErr:"",src:"",hr:null,off:null};
@@ -1426,7 +1455,7 @@ function cmpEvt(e){
 }
 async function cmpStart(){
   if(CMP.on)return;
-  CMP.ev={abs:0,rel:0,wk:0,so:0,gp:0};CMP.sErr="";
+  CMP.ev={abs:0,rel:0,wk:0,so:0,gp:0,ra:0};CMP.sErr="";
   try{
     if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
       const r=await DeviceOrientationEvent.requestPermission();
@@ -1531,7 +1560,7 @@ function initInfo(root){
     const chips=pos?`<div class="sn-note">近くのスポット・収穫地点（タップで方角を表示）</div><div class="sn-chips">${cmpT.map((t,i)=>`<button class="sn-chip${CMP.tgt&&CMP.tgt.la===t.la&&CMP.tgt.lo===t.lo?" on":""}" data-ct="${i}">${t.k} ${esc(t.n)}　${cmpFmt(t.d)}</button>`).join("")||'<span class="sn-note">位置つきのスポットや収穫の記録がありません。</span>'}</div><button class="sn-del" data-a="re">一覧を更新</button>`:`<p class="sn-note">現在地を取得するか、コンパスを開始すると、近くのスポットや収穫地点が出ます。</p>`;
     return `<div class="ic"><h4>🧭 コンパス</h4>${svg}<div class="ib" id="cmp-deg" style="text-align:center">${CMP.t==null?"—":DIR8(CMP.t)+" "+Math.round(CMP.t)+"°"}</div><div class="sn-note" id="cmp-msg" style="text-align:center">${esc(CMP.t!=null?"真北に補正："+(cmpDecl()?cmpDecl().toFixed(1)+"°":"なし"):(CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。")))}</div><div style="text-align:center;margin:8px 0"><button class="sn-btn" data-cs="${CMP.on?0:1}">${CMP.on?"コンパスを止める":"コンパスを開始"}</button> <button class="sn-chip${CMP.cor?" on":""}" data-cc="1">真北に補正</button></div>${CMP.on&&CMP.ev.ra>0&&CMP.ev.abs+CMP.ev.so===0&&CMP.tgt&&CMP.hr!=null?`<div style="text-align:center;margin:6px 0"><button class="sn-chip" data-ca="1">いま目的地の方向を向いている（向きを合わせる）</button></div>`:""}<div class="sn-note" id="cmp-dg" style="text-align:center;font-size:11px">${CMP.on?esc(cmpDiag()):""}</div><div class="ib" id="cmp-ti" style="font-size:15px">${cmpTi()}</div>${chips}<p class="sn-note">金属や電子機器の近くでは、針が狂います。端末を8の字に振ると補正されます。あくまで目安です。道に迷わないために、地図やGPSアプリも併用してください。</p></div>`;
   };
-  const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+cmpC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()};
+  const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+cmpC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()+relBox("info")};
   const go=async(u,key,m)=>{if(!loc){msg[m]="先に現在地を取得してください。";render();return}msg[m]="取得中… ";render();try{const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();if(m==="wx"){wx=j;sv("fn_wx",wx)}else{tide=j;sv("fn_tide",tide)}msg[m]=""}catch(e){msg[m]="取得できませんでした。電波のある場所で、もう一度試してください。"}render()};
   root.addEventListener("click",e=>{
     const b=e.target.closest("button");if(!b)return;const a=b.dataset.a;
@@ -1570,6 +1599,26 @@ function initInfo(root){
 /* 参考資料・追加ページ */
 const REF_CATS=["山菜","果実・きのこ","登山","温泉","天気・地図","安全","その他"];
 const REF_DEF=[{c:"天気・地図",t:"気象庁",u:"https://www.jma.go.jp/"},{c:"天気・地図",t:"国土地理院 地図",u:"https://maps.gsi.go.jp/"},{c:"登山",t:"YAMAP",u:"https://yamap.com/"},{c:"登山",t:"ヤマレコ",u:"https://www.yamareco.com/"},{c:"安全",t:"厚生労働省",u:"https://www.mhlw.go.jp/"},{c:"安全",t:"林野庁",u:"https://www.rinya.maff.go.jp/"},{c:"安全",t:"環境省",u:"https://www.env.go.jp/"}];
+
+const RL_CATS={sansai:["山菜","安全"],fruit:["果実・きのこ","安全"],kinoko:["果実・きのこ","安全"],saibai:["果実・きのこ"],tozan:["登山","天気・地図","安全"],onsen:["温泉"],info:["天気・地図","安全"]};
+const RL_EXTRA=[{c:"天気・地図",t:"国土地理院：地磁気を知る（磁北と真北のずれ）",u:"https://www.gsi.go.jp/buturisokuchi/menu01_index.html",pg:"info"},{c:"天気・地図",t:"国土地理院：地磁気測量（偏角とは）",u:"https://www.gsi.go.jp/buturisokuchi/geomag_index.html",pg:"info"}];
+let RL_ASK=null;
+function relInner(pg){
+  const cats=RL_CATS[pg]||[],E=v=>esc(String(v==null?"":v)),ok=u=>/^https?:\/\//i.test(String(u||"")),own=ld("fn_ref",[]);
+  const row=(x,del)=>`<div class="sn-row">${ok(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener noreferrer"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}　<small class="sn-note">${E(x.c)}</small>${del||""}</div>`;
+  const d=REF_DEF.filter(x=>cats.includes(x.c)).concat(RL_EXTRA.filter(x=>x.pg===pg)),o=own.map((x,i)=>({x,i})).filter(a=>cats.includes(a.x.c));
+  return d.map(x=>row(x)).join("")+o.map(a=>row(a.x,`<br><button class="sn-del${RL_ASK===a.i?" ask":""}" data-rld="${a.i}">${RL_ASK===a.i?"本当に削除":"削除"}</button>`)).join("")+`<div class="ic"><h4>リンクを追加（参考資料ページにも入ります）</h4><select class="sn-in" data-rlc>${cats.map(c=>`<option>${E(c)}</option>`).join("")}</select><input class="sn-in" data-rlt placeholder="名前" maxlength="30"><input class="sn-in" data-rlu placeholder="https://..." maxlength="200"><button class="sn-btn" data-rla="1">追加する</button><p class="sn-note" data-rlm>追加したリンクは、この端末だけに保存されます。</p></div>`;
+}
+const relBox=pg=>`<div class="rl-box" data-rlpg="${pg}"><div class="nl">関連リンク</div>${relInner(pg)}</div>`;
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-rla],button[data-rld]");if(!b)return;
+  const box=b.closest(".rl-box");if(!box)return;
+  const pg=box.dataset.rlpg,own=ld("fn_ref",[]),keep='<div class="nl">関連リンク</div>';
+  if(b.dataset.rld!==undefined){const i=+b.dataset.rld;if(RL_ASK===i){own.splice(i,1);sv("fn_ref",own);RL_ASK=null}else RL_ASK=i;box.innerHTML=keep+relInner(pg);return}
+  const t=box.querySelector("[data-rlt]").value.trim(),u=box.querySelector("[data-rlu]").value.trim(),c=box.querySelector("[data-rlc]").value,m=box.querySelector("[data-rlm]");
+  if(!t||!/^https?:\/\//i.test(u)){m.textContent="名前と、https:// から始まるURLを入れてください。";return}
+  own.unshift({c,t,u});sv("fn_ref",own);RL_ASK=null;box.innerHTML=keep+relInner(pg);
+});
 function initRef(root){
   const E=v=>esc(String(v==null?"":v)),$=i=>root.querySelector("#"+i),okUrl=u=>/^https?:\/\//i.test(String(u||""));
   let cat="全て",ask=null,own=ld("fn_ref",[]);
@@ -2364,11 +2413,12 @@ const HW_FOR=(id,ic,nm,extra)=>[id,ic+" "+nm+"ページ",id,[
   "【旬の暦】月ごとの旬の一覧です。いま旬のものには「旬」の印が付きます。",
   "【スポット】採取した場所を登録します。県の入力と、並べ替えができます。",
   "【収穫】日付・名前・量を記録します。「現在地も記録する」にチェックを入れると、その場所（GPS）も一緒に残り、収穫マップに出ます。",
-  "【収穫マップ】山菜採り・果実と樹の実・きのこ・栽培果物の記録を、国土地理院の地図の上に📌でまとめて表示します。「1km／3km／5km 範囲」で広さを選べます。📌の色は、山菜採り＝緑、果実と樹の実＝赤、きのこ＝オレンジです。📌をタップすると、何が採れたか（日付・名前・量・メモ）が出ます。「中心：最新の記録／現在地」と「地図／航空写真」も切り替えられます。「🧭 向きに合わせて回す」を押すと、いま向いている方向が地図の上になります。背景の地図は通信が必要です。圏外でも📌は出ます。",
+  "【収穫マップ】山菜採り・果実と樹の実・きのこ・栽培果物の記録を、国土地理院の地図の上に📌でまとめて表示します。「1km／3km／5km 範囲」で広さを選べます。📌の色は、山菜採り＝緑、果実と樹の実＝赤、きのこ＝オレンジです。📌をタップすると、何が採れたか（日付・名前・量・メモ）が出ます。「中心：最新の記録／現在地」と「地図／航空写真」も切り替えられます。「🧭 向きに合わせて回す」を押すと、いま向いている方向が地図の上になります。背景の地図は通信が必要ですが、通信できる場所で「この場所の地図を端末に保存」を押しておくと、その周り（1km・3km・5km）の地図が、通信がなくても出ます。見た地図も自動で保存されます。📌は、通信がなくても出ます。",
   "【まとめ】収穫の記録を集計して見られます。",
   "【持ち物・レシピ】出発前の持ち物のチェックと、保存・調理のレシピです。",
   "【ブログ】写真つきの採取記録を載せます。",
   "【パトロール】巡回の予定を入れます。「📅 Googleカレンダーに追加」で、グループのカレンダーにも入れられます。",
+  "【リンク】このページに関係するリンク集です。「参考資料」ページのリンクのうち、関係するカテゴリのものが出ます。ここで追加したリンクは、参考資料ページにも入ります。この端末だけに保存されます。",
   "【メモ・みんな】メモは自分用の記録です。「みんな」には、管理者が配信した共有の内容が出ます。"].concat(extra||[])];
 const HOWTO_MAN=[
 ["base","📖 基本の使い方（全員）","",[
@@ -2385,13 +2435,14 @@ const HOWTO_MAN=[
   "予定を入れる：入れられるのは、管理者と、編集の権限をもらった人です。入れたいときは、管理者にGoogleアカウントを伝えてください。"]],
 ["info","🧭 情報ページ（全員）","info",[
   "現在地（GPS）、コンパス、日の出・日の入り、月齢、潮の満干、天気と気温、安全のお知らせ、今月の旬を見られます。山に入る前の確認に使ってください。",
-  "コンパス：「コンパスを開始」を押すと、針が動きます。「真北に補正」は、磁石の北と地図の北のずれ（日本では西に5〜9度ほど）を直します。下の一覧から、近くのスポットや収穫地点を選ぶと、赤い印でその方角が出て、距離と「右前・左」などの向きも出ます。iPhoneでは、最初に「動きと向き」の許可が出ます。金属や電子機器の近くでは狂うので、あくまで目安にしてください。"]],
+  "コンパス：「コンパスを開始」を押すと、針が動きます。「真北に補正」は、磁石の北と地図の北のずれ（日本では西に5〜9度ほど）を直します。画面の一番下の「関連リンク」には、天気・地図・安全のリンクと、磁北と真北のずれ（偏角）を調べるための国土地理院のページが入っています。下の一覧から、近くのスポットや収穫地点を選ぶと、赤い印でその方角が出て、距離と「右前・左」などの向きも出ます。iPhoneでは、最初に「動きと向き」の許可が出ます。金属や電子機器の近くでは狂うので、あくまで目安にしてください。"]],
 HW_FOR("sansai","🌿","山菜採り",["採るときは、似た毒草に注意してください。見分けに自信がないときは、採らないでください。"]),
 HW_FOR("fruit","🍒","果実と樹の実"),
 HW_FOR("kinoko","🍄","きのこ",["毒きのこと間違えやすい種類があります。見分けに自信がないときは、採らないで、食べないでください。"]),
 HW_FOR("saibai","🍎","栽培果物",["図鑑には、農家や家庭で育てる果物（リンゴ・ナシ・ブドウ・ミカンなど）が入っています。産地と代表的な品種も見られます。"]),
 ["tozan","⛰️ 登山ページ","tozan",[
   "【百名山】一覧を「全て／登頂済／未登頂／行きたい」で絞り込めます。",
+  "【リンク】登山・天気・地図・安全のリンク集です。追加もできます。",
   "【山行記録】歩いた山の記録を残します。天気（晴れ・曇り・雨・雪・霧）も選べます。",
   "【持ち物・入山連絡】山行の持ち物のチェックと、入山の連絡です。",
   "【みんな】管理者が配信した共有の内容が出ます。"]],
@@ -2432,6 +2483,7 @@ const HOWTO_QA=[
 ["収穫マップの地図が出ない（📌だけ出る）","背景の地図は通信が必要です。圏外や電波が弱いときは出ません。📌は通信がなくても出ます。","sansai|fruit|kinoko|saibai"],
 ["収穫マップで、現在地を中心にしたい","「中心：現在地」を押します。位置情報の許可を求められたら、許可してください。","sansai|fruit|kinoko|saibai"],
 ["パトロールの予定を登録したい","「パトロール」タブで、日付・時間・場所を入れて「予定を追加」を押します。登録した予定には「📅 Googleカレンダーに追加」「編集」「削除」が付きます。ここに書いた予定は、この端末だけに保存されます。みんなに知らせたいときは、「📅 Googleカレンダーに追加」から、グループのカレンダーに入れてください。","sansai|fruit|kinoko|saibai"],
+["通信がない山の中でも使えますか？","使えます。記録・図鑑・付箋・コンパス・地点までの方角と距離は、通信がなくても動きます（GPSは端末の機能です）。背景の地図だけは、通信できる場所で、収穫マップの「この場所の地図を端末に保存」を押しておくと、その周りの地図が出ます。出発前に、「中心：現在地」にして保存するのがおすすめです。"],
 ["コンパスの針が動かない・ずれる","「コンパスを開始」を押してください。iPhoneでは「動きと向き」の許可が必要です（設定のブラウザの項目で許可できます）。針が狂うときは、金属や電子機器から離れ、端末を8の字に振ってください。Chromeでは、サイトの設定の「モーションセンサー」が許可になっているかも見てください。磁気センサーが使えない端末（回転センサーだけが動く端末）では、5〜10mほど歩くと北が合います。回転センサーもない端末では、針は動かず、歩いている間だけGPSの進行方向で表示します。向きの目安なので、道に迷わないために、地図やGPSアプリも併用してください。"],
 ["ログインできない・IDやパスワードが分からない","管理者にご連絡ください。"],
 ["データのバックアップは？","もくじの下にある「データのバックアップ」で、記録・付箋・ページ設定をまとめて保存・復元できます。機種変更やアプリの入れ直しの前に使ってください。"],
