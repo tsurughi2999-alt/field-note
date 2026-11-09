@@ -2343,6 +2343,7 @@ function initAdmin(root){
       ["inv","✉️","#4f8446","招待","メンバー招待","QRコードを表示して招待します。最初から見せるページも選べます。（メンバーを募るとき）",1,0],
       ["req","📥","#4f8446","申請","参加・閲覧の申請","新しい人の参加申請を許可・却下します。許可するとIDとパスワードが自動で発行されます。（メンバーが申請したとき）",1,1],
       ["deliver","🚀","#3b7ca3","配信","取り込みと配信","メンバーの共有記録を取り込み、みんなに配るファイル shared.json を書き出します。（許可・名簿・パスワードを変えたあと）",1,1],
+      ["trk","🧭","#2f7f8f","帰り道","同行者の位置・集合場所への帰り道","集合場所（駐車場・複数台の車）を登録し、迷っても帰れるよう方向と距離を表示します。同行者の位置と「◯分前」も見られます。圏外でも使えます。（山に入る前・山の中で）",0,1],
       ["wk","🧮","#2f8f6f","旅費","旅費精算書・割り勘","予算の見積もり、車のガソリン・高速代、実費の割り勘、過去の旅費の保存ができます。「旅費精算書・割り勘」ページと同じ内容です。この端末だけに保存されます。（旅の前と、精算するとき）",0,1]]],
     ["ログイン・メンバー",[
       ["acct","🔑","#8a5a7a","パスワード","管理者パスワード・QRコード","管理者パスワードの設定、管理者モードの解除、新しいメンバー用のQRコードの表示ができます。（管理者の設定を変えるとき・メンバーを募るとき）",0,0]]],
@@ -2405,6 +2406,149 @@ window.fnQrPopup=()=>{
     else if(b.id==="inv-q"){window.fnQrPopup()}
   });
   draw();A.inv=d;
+})();
+/* ---- 同行者の位置・集合場所への帰り道（管理者カード） ---- */
+(function(){
+  const A=window.fnAdm=window.fnAdm||{},d=document.createElement("div");d.className="pp";
+  const K="fn_trk",STALE=10*60*1000,COLS=["#d9534f","#3b7ca3","#2f8f6f","#e08a1e","#7a5aa3","#555555"];
+  const S=()=>{const s=ld(K,null)||{};s.cars=s.cars||[];s.mates=s.mates||[];return s};
+  const put=s=>{sv(K,s);if(window.fnTouch)window.fnTouch()};
+  const $q=q=>d.querySelector(q);
+  let live=null,watchId=null,msg={c:"",m:"",s:""},ccol=0,gpsH=null;
+  const gmOpen=(la,lo)=>"https://www.google.com/maps/search/?api=1&query="+la+","+lo;
+  const gmGo=(la,lo)=>"https://www.google.com/maps/dir/?api=1&destination="+la+","+lo+"&travelmode=walking";
+  const age=t=>{const m=Math.floor((Date.now()-t)/6e4);if(m<1)return "いま";if(m<60)return m+"分前";const h=Math.floor(m/60);if(h<24)return h+"時間"+(m%60)+"分前";return Math.floor(h/24)+"日前"};
+  const hhmm=t=>{const x=new Date(t);return String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0")};
+  const heading=()=>{try{if(typeof CMP!=="undefined"&&CMP&&typeof CMP.t==="number"&&!isNaN(CMP.t))return CMP.t}catch(e){}return gpsH};
+  /* 自分の位置：リアルタイムがあればそれ、なければ直前に保存した位置 */
+  const me=()=>{
+    if(live&&Date.now()-live.at<2*60*1000)return{la:live.la,lo:live.lo,at:live.at,acc:live.acc,live:true};
+    const s=S();if(s.me)return{la:s.me.la,lo:s.me.lo,at:s.me.at,acc:s.me.acc,live:false};
+    return null;
+  };
+  const geo=(a,b)=>cmpGeo({la:a.la,lo:a.lo},{la:b.la,lo:b.lo});
+  const parse=t=>{
+    t=String(t||"");try{t=decodeURIComponent(t)}catch(e){}
+    const pats=[/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&](?:q|ll|query|destination|center)=(-?\d{1,2}\.\d+)[,%2C\s]+(-?\d{1,3}\.\d+)/,/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/(-?\d{1,2}\.\d{3,})\s*[,，、\s]\s*(-?\d{1,3}\.\d{3,})/];
+    for(const p of pats){const m=t.match(p);if(m){const la=+m[1],lo=+m[2];if(Math.abs(la)<=90&&Math.abs(lo)<=180)return{la:+la.toFixed(5),lo:+lo.toFixed(5)}}}
+    return null;
+  };
+  const arrow=(rot,col,sz)=>'<svg width="'+sz+'" height="'+sz+'" viewBox="-20 -20 40 40" style="transform:rotate('+Math.round(rot)+'deg);flex:none"><path d="M0-17L11 13L0 7L-11 13Z" fill="'+col+'" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
+  /* 相手までの方向・距離の表示部品 */
+  const rel=(to)=>{
+    const m=me();if(!m)return{txt:"自分の現在地がまだありません",ar:""};
+    const g=geo(m,to),h=heading();
+    const txt="あと "+cmpFmt(g.d)+"　"+DIR8(g.b)+"（"+Math.round(g.b)+"°）"+(h!=null?"　"+REL(g.b-h)+"の方向":"");
+    return{txt,g,rot:g.b-(h||0),h};
+  };
+  const fnice=v=>{const a=[50,100,200,500,1000,2000,5000,10000,20000,50000];for(const x of a)if(v<=x)return x;return 100000};
+  const radar=()=>{
+    const m=me(),s=S();if(!m)return '<p class="sn-note">「位置の追跡を開始」または「現在地を保存」を押すと、レーダー図が出ます。</p>';
+    const items=[];
+    s.cars.forEach(c=>items.push({k:"c",n:c.n,la:c.la,lo:c.lo,c:c.c,st:0}));
+    s.mates.forEach((x,i)=>items.push({k:"m",n:x.n,la:x.la,lo:x.lo,c:COLS[(i+1)%COLS.length],st:Date.now()-x.at>STALE}));
+    const gs=items.map(it=>({it,g:geo(m,it)}));
+    const mx=Math.max(100,...gs.map(o=>o.g.d)),R=fnice(mx*1.1),h=heading()||0,C=150,W=118;
+    let o='<svg viewBox="0 0 300 300" style="width:100%;max-width:340px;display:block;margin:0 auto"><circle cx="150" cy="150" r="'+W+'" fill="rgba(255,255,255,.55)" stroke="#9aa58a"/><circle cx="150" cy="150" r="'+(W/2)+'" fill="none" stroke="#9aa58a" stroke-dasharray="4 4"/>';
+    const na=(-h)*CR;o+='<text x="'+(C+(W+14)*Math.sin(na))+'" y="'+(C-(W+14)*Math.cos(na)+5)+'" text-anchor="middle" font-size="14" font-weight="700" fill="#c0392b">北</text>';
+    o+='<text x="152" y="'+(150-W+14)+'" font-size="11" fill="#667058">'+cmpFmt(R)+'</text><text x="152" y="'+(150-W/2+12)+'" font-size="10" fill="#667058">'+cmpFmt(R/2)+'</text>';
+    gs.forEach(({it,g})=>{
+      const a=(g.b-h)*CR,r=Math.min(1,g.d/R)*W,x=C+r*Math.sin(a),y=C-r*Math.cos(a),col=it.st?"#999":it.c,ch=esc((it.n||"?").slice(0,1));
+      o+=it.k==="c"?'<rect x="'+(x-10)+'" y="'+(y-10)+'" width="20" height="20" rx="4" fill="'+col+'" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">'+ch+'</text>':'<circle cx="'+x+'" cy="'+y+'" r="10" fill="'+col+'" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">'+ch+'</text>';
+    });
+    o+='<circle cx="150" cy="150" r="7" fill="#2b3526" stroke="#fff" stroke-width="2"/></svg>';
+    return o+'<p class="sn-note" style="text-align:center">中心が自分。四角＝集合場所（車）、丸＝同行者、灰色＝古い情報。'+(heading()!=null?"上が、いま向いている方向です。":"上が北です（方位が取れていません）。")+'</p>';
+  };
+  const meHtml=()=>{
+    const m=me();
+    if(!m)return '<p class="sn-note">まだ位置がありません。「位置の追跡を開始」を押してください。</p>';
+    return '<p class="sn-note" style="margin:0"><b>'+(m.live?"🟢 現在地（追跡中）":"⚪ 直前に保存した位置（"+age(m.at)+"・"+hhmm(m.at)+"）")+'</b>　誤差 約'+(m.acc?Math.round(m.acc)+"m":"—")+'　<a href="'+gmOpen(m.la,m.lo)+'" target="_blank" rel="noopener">Googleマップで見る</a></p>';
+  };
+  const carsHtml=()=>{
+    const s=S();if(!s.cars.length)return '<p class="sn-note">まだ登録がありません。車を停めたら、すぐに「現在地を登録」を押してください。</p>';
+    const m=me();let nearest=-1,nd=1e12;
+    if(m)s.cars.forEach((c,i)=>{const g=geo(m,c);if(g.d<nd){nd=g.d;nearest=i}});
+    return s.cars.map((c,i)=>{const r=rel(c);
+      return '<div class="tk-row" style="border:1px solid var(--line);border-left:6px solid '+c.c+';border-radius:10px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.5)"><div style="display:flex;gap:10px;align-items:center">'+(r.g?arrow(r.rot,c.c,46):"")+'<div style="flex:1;min-width:0"><b>🚗 '+esc(c.n)+(i===nearest&&s.cars.length>1?' <span style="font-size:12px;color:#2f8f6f">いちばん近い</span>':"")+'</b><div style="font-size:15px">'+esc(r.txt)+'</div><div class="sn-note" style="margin:0">登録 '+hhmm(c.at)+(c.m?"　"+esc(c.m):"")+'</div></div></div><div class="sn-g" style="margin-top:6px"><a class="sn-btn" style="text-align:center;text-decoration:none;box-sizing:border-box" href="'+gmGo(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで案内</a><button class="sn-btn sn-ghost" data-tk="cdel" data-i="'+i+'">削除</button></div></div>'}).join("");
+  };
+  const matesHtml=()=>{
+    const s=S();if(!s.mates.length)return '<p class="sn-note">まだ同行者の位置がありません。下の欄に、同行者から届いた位置を貼り付けてください。</p>';
+    return s.mates.map((x,i)=>{const stale=Date.now()-x.at>STALE,r=rel(x),col=stale?"#999":"#2f8f6f";
+      return '<div style="border:1px solid var(--line);border-left:6px solid '+col+';border-radius:10px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.5)"><div style="display:flex;gap:10px;align-items:center">'+(r.g?arrow(r.rot,col,46):"")+'<div style="flex:1;min-width:0"><b>👤 '+esc(x.n)+'</b> <span style="font-size:12px;color:'+(stale?"#a05a2a":"#2f8f6f")+'">'+(stale?"直前の情報（"+age(x.at)+"・"+hhmm(x.at)+"）":"最新（"+age(x.at)+"）")+'</span><div style="font-size:15px">'+esc(r.txt)+'</div>'+(stale?'<div class="sn-note" style="margin:0">圏外・オフラインの可能性があります。最後に届いた位置です。</div>':"")+'</div></div><div class="sn-g" style="margin-top:6px"><a class="sn-btn" style="text-align:center;text-decoration:none;box-sizing:border-box" href="'+gmOpen(x.la,x.lo)+'" target="_blank" rel="noopener">Googleマップで見る</a><button class="sn-btn sn-ghost" data-tk="mdel" data-i="'+i+'">削除</button></div></div>'}).join("");
+  };
+  const paint=()=>{
+    const set=(id,h)=>{const e=$q(id);if(e)e.innerHTML=h};
+    set("#tk-me",meHtml());set("#tk-cars",carsHtml());set("#tk-mates",matesHtml());set("#tk-radar",radar());
+    const w=$q("#tk-w");if(w)w.textContent=watchId!=null?"■ 位置の追跡を止める":"▶ 位置の追跡を開始";
+    ["c","m","s"].forEach(k=>{const e=$q("#tk-m"+k);if(e)e.textContent=msg[k]});
+  };
+  const build=()=>{
+    d.innerHTML='<h3>同行者の位置・帰り道</h3>'
+    +'<p class="sn-note">① 車を停めたら集合場所（駐車場）を登録　② 山の中では「帰り道」の矢印と距離を見る　③ 同行者の位置を貼り付けて、いまどこにいるかを確認します。方向と距離は端末のGPSだけで計算するので、圏外でも動きます。</p>'
+    +'<div class="nl">① 自分の位置</div><div id="tk-me"></div><div class="sn-g" style="margin-top:6px"><button class="sn-btn" id="tk-w" data-tk="w">▶ 位置の追跡を開始</button><button class="sn-btn sn-ghost" data-tk="save">現在地を保存</button></div><p class="sn-note" id="tk-ms"></p>'
+    +'<div class="nl">② 集合場所（駐車場・車）</div><div id="tk-cars"></div>'
+    +'<input class="sn-in" id="tk-cn" placeholder="名前（例：Aさんの車・第2駐車場）" maxlength="20"><div class="sn-chips" id="tk-cc">'+COLS.map((c,i)=>'<button class="sn-chip'+(i===ccol?" on":"")+'" data-tk="col" data-i="'+i+'" style="border-color:'+c+'"><span style="color:'+c+'">●</span> '+["赤","青","緑","橙","紫","灰"][i]+'</button>').join("")+'</div>'
+    +'<input class="sn-in" id="tk-cm" placeholder="メモ（任意・例：林道の入口）" maxlength="40" style="margin-top:8px"><button class="sn-btn" data-tk="cadd">📍 現在地を集合場所に登録</button><p class="sn-note" id="tk-mc"></p>'
+    +'<div class="nl">③ 同行者の位置</div><div id="tk-mates"></div>'
+    +'<p class="sn-note">同行者に、LINEやGoogleマップの「現在地を共有」で位置を送ってもらい、届いたリンクや座標を下に貼り付けます。貼るたびに「◯分前」が更新されます。</p>'
+    +'<input class="sn-in" id="tk-mn" placeholder="同行者の名前" maxlength="20"><textarea class="sn-in" id="tk-mt" rows="2" placeholder="届いたGoogleマップのリンク、または 36.12345,137.12345 の座標を貼り付け"></textarea><input class="sn-in" id="tk-ma" type="number" inputmode="numeric" min="0" placeholder="何分前の位置？（空欄＝いま届いた）"><button class="sn-btn" data-tk="madd">同行者の位置を追加・更新</button><p class="sn-note" id="tk-mm"></p>'
+    +'<div class="nl">④ 自分の位置を送る</div><p class="sn-note">同行者に、いまの自分の位置（Googleマップのリンク付き）を送ります。</p><button class="sn-btn sn-ghost" data-tk="send">自分の位置を送る・コピー</button>'
+    +'<div class="nl">レーダー図</div><div id="tk-radar"></div>'
+    +'<p class="sn-note">※ 同行者の位置は、同行者が位置を送ってくれたときの情報です。圏外の人は自動では更新されません。常にリアルタイムで見るには、別途Googleマップの「現在地の共有」（時間を決めて共有）も使えます。</p>';
+    paint();
+  };
+  const startWatch=()=>{
+    if(!navigator.geolocation){msg.s="この端末では位置を取得できません。";paint();return}
+    msg.s="位置を取得しています…";
+    let last=0;
+    watchId=navigator.geolocation.watchPosition(p=>{
+      live={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5),acc:p.coords.accuracy,at:Date.now()};
+      const h=p.coords.heading,sp=p.coords.speed;if(h!=null&&!isNaN(h)&&sp!=null&&sp>0.8)gpsH=h;
+      if(Date.now()-last>15000){last=Date.now();const s=S();s.me={la:live.la,lo:live.lo,acc:Math.round(live.acc||0),at:live.at};sv(K,s)}
+      msg.s="追跡中です。電波がなくても位置は取れます。";paint();
+    },er=>{msg.s=er&&er.code===1?"位置情報が許可されていません。端末の設定で許可してください。":"位置を取得できませんでした。空が見える場所でお試しください。";paint()},{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+    paint();
+  };
+  const stopWatch=()=>{if(watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;msg.s="追跡を止めました。最後の位置は保存されています。";paint()};
+  const getOnce=cb=>{
+    const m=me();if(m&&m.live){cb(m);return}
+    if(!navigator.geolocation){cb(null);return}
+    navigator.geolocation.getCurrentPosition(p=>{live={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5),acc:p.coords.accuracy,at:Date.now()};const s=S();s.me={la:live.la,lo:live.lo,acc:Math.round(live.acc||0),at:live.at};sv(K,s);cb({la:live.la,lo:live.lo,at:live.at,acc:live.acc,live:true})},()=>cb(null),{enableHighAccuracy:true,timeout:15000,maximumAge:10000});
+  };
+  d.addEventListener("click",e=>{
+    const b=e.target.closest("[data-tk]");if(!b)return;const a=b.dataset.tk,i=+b.dataset.i;
+    if(a==="w"){watchId!=null?stopWatch():startWatch()}
+    else if(a==="save"){msg.s="取得中…";paint();getOnce(m=>{msg.s=m?"保存しました（"+hhmm(m.at)+"）":"取得できませんでした。位置情報の許可を確認してください。";paint()})}
+    else if(a==="col"){ccol=i;d.querySelectorAll("#tk-cc .sn-chip").forEach((x,j)=>x.classList.toggle("on",j===i))}
+    else if(a==="cadd"){
+      const n=($q("#tk-cn").value||"").trim()||"車"+(S().cars.length+1),mm=($q("#tk-cm").value||"").trim();
+      msg.c="現在地を取得しています…";paint();
+      getOnce(m=>{if(!m){msg.c="取得できませんでした。位置情報の許可を確認してください。";paint();return}
+        const s=S();s.cars.push({id:Date.now(),n,c:COLS[ccol],la:m.la,lo:m.lo,at:Date.now(),m:mm});put(s);
+        $q("#tk-cn").value="";$q("#tk-cm").value="";msg.c="「"+n+"」を登録しました。";paint()});
+    }
+    else if(a==="cdel"){const s=S(),c=s.cars[i];if(c&&confirm("「"+c.n+"」を削除しますか？")){s.cars.splice(i,1);put(s);paint()}}
+    else if(a==="mdel"){const s=S(),x=s.mates[i];if(x&&confirm("「"+x.n+"」を削除しますか？")){s.mates.splice(i,1);put(s);paint()}}
+    else if(a==="madd"){
+      const n=($q("#tk-mn").value||"").trim(),p=parse($q("#tk-mt").value),mn=parseFloat($q("#tk-ma").value);
+      if(!n){msg.m="名前を入れてください。";paint();return}
+      if(!p){msg.m="位置を読み取れませんでした。Googleマップの長いリンク、または「緯度,経度」の座標を貼ってください。短いリンク（goo.gl）は読めません。";paint();return}
+      const at=Date.now()-(isNaN(mn)||mn<0?0:mn*6e4),s=S(),k=s.mates.findIndex(x=>x.n===n);
+      const rec={n,la:p.la,lo:p.lo,at};if(k>=0)s.mates[k]=rec;else s.mates.push(rec);put(s);
+      $q("#tk-mt").value="";$q("#tk-ma").value="";msg.m="「"+n+"」の位置を"+(k>=0?"更新":"追加")+"しました。";paint();
+    }
+    else if(a==="send"){
+      msg.s="取得中…";paint();
+      getOnce(m=>{if(!m){msg.s="位置を取得できませんでした。";paint();return}
+        const t="【現在地】"+hhmm(m.at)+"\n"+gmOpen(m.la,m.lo)+"\n"+m.la+","+m.lo;
+        if(navigator.share){navigator.share({text:t}).catch(()=>{});msg.s="共有画面を開きました。"}
+        else{try{navigator.clipboard.writeText(t);msg.s="コピーしました。LINEなどに貼り付けて送ってください。"}catch(x){msg.s="コピーできませんでした。"}}
+        paint()});
+    }
+  });
+  build();
+  setInterval(()=>{if(d.isConnected)paint()},20000);
+  A.trk=d;
 })();
 /* ---- 使い方・Q＆A集 ---- */
 const hvOk=pg=>{if(!pg)return true;if(pg==="admin")return isAdm();if(isAdm())return true;return pg.split("|").some(id=>canView({id}))};
@@ -2490,6 +2634,7 @@ const HOWTO_QA=[
 ["アプリが古いままで更新されない","アプリを完全に閉じてから、開き直してください。それでも変わらないときは、少し時間をおいて、もう一度開いてください。"],
 ["ホーム画面に置くには？","ブラウザのメニューから「ホーム画面に追加」（または「アプリをインストール」）を選びます。"],
 ["新しいメンバーを招待するには？（管理者向け）","管理者ページの「メンバー招待」で、最初から見せるページを選んで保存し、「QRコードを表示」を押します。読み取った人に、ログイン画面の「はじめての方：参加を申請する」を押してもらい、届いた申請を許可すると、IDとパスワードが発行されます。","admin"],
+["山で迷ったときに、集合場所へ帰るには？（管理者向け）","管理者ページの「帰り道」で、車を停めたらすぐ「現在地を集合場所に登録」を押します。車が複数台あるときは、名前と色を変えて登録します。山の中では「位置の追跡を開始」を押すと、集合場所までの方向（矢印）と距離が出て、「Googleマップで案内」で地図の案内も開けます。方向と距離はGPSだけで計算するので、圏外でも動きます。同行者の位置は、LINEやGoogleマップで届いたリンクや座標を貼り付けると、「◯分前」の表示つきで出ます。更新が古い人は、灰色の「直前の情報」になります。","admin"],
 ["図鑑の項目を消したい・名前を直したい（管理者向け）","図鑑の詳細を開き、「名前・ふりがな・Wikipedia・画像を編集」で名前を直せます。消すときは「この項目を削除」を押します。メンバーにも反映するには、「図鑑コピー」の「fn-zukan.json を書き出す」を押し、できたファイルをGitHubに上げ直してください。","admin"]
 ];
 function initHowto(root){
