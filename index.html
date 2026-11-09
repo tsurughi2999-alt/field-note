@@ -716,7 +716,7 @@ function initSansai(root,cfg){
   const buildP=()=>{const hd=new Set(ld(CF.pre+"hide",[]).concat(((ld("fn_zr",{}).hd||{})[CF.pre.slice(3,5)])||[])),rl=(ld("fn_zr",{})[CF.pre.slice(3,5)]||[]),lov=new Set(cu.map(c=>c.n)),ov=new Set(cu.map(c=>c.n).concat(rl.map(c=>c.n))),cv=(c,f)=>({id:c.id,n:c.n,e:c.e||"🌿",m:c.m||[],r:c.r||"",d:c.d||"",c:c.c||"#9bb88a",x:c.x||{},[f]:1});P=CF.data.p.filter(a=>!ov.has(a[1])&&!hd.has(a[1])).map(a=>({id:a[0],n:a[1],e:a[2],m:a[3],r:a[4],d:a[5],c:a[6],x:a[7]||{}})).concat(rl.filter(c=>!lov.has(c.n)&&!hd.has(c.n)).map(c=>cv(c,"rm")),cu.map(c=>cv(c,"cu"))).sort((a,b)=>kn(a).localeCompare(kn(b),"ja"))};buildP();
   const ic=p=>{const u=ZP[CF.pre+p.n];return u?`<span class="sn-e" style="background:${p.c};padding:0;overflow:hidden;border:2px solid ${p.c}"><img src="${u}" alt="" style="width:100%;height:100%;object-fit:cover"></span>`:`<span class="sn-e" style="background:${p.c}">${p.e}</span>`},zph=p=>{const u=ZP[CF.pre+p.n];return u?`<img src="${u}" data-zph="1" alt="" style="display:block;width:100%;max-width:300px;border-radius:10px;margin:2px 0 8px">`:""},wk=p=>`<br><small><a href="https://ja.wikipedia.org/wiki/Special:Search?go=Go&search=${encodeURIComponent((p.x&&p.x.k)||p.n.replace(/[（(].*/,""))}" target="_blank" rel="noopener">Wikipediaで調べる</a></small>`;
   const D=CF.data.d.map(a=>({id:a[0],n:a[1],e:a[2],lv:a[3],sim:a[4],sid:a[5],d:a[6],h:a[7],r:a[8],s:a[9],w:a[10]}));
-  let tab=0,open=null,zed=null,mapR=3000,mapC="last",mapMe=null,mapF={sn:1,fr:1,kn:1,ck:1},mapB="std",mapSel=null,mapMsg="",dop=false,sel=[],gps=null,ask=null,bk=false,spots=ld(CF.pre+"spots",[]),harv=ld(CF.pre+"harv",[]);
+  let tab=0,open=null,zed=null,mapR=3000,mapRot=false,mapC="last",mapMe=null,mapF={sn:1,fr:1,kn:1,ck:1},mapB="std",mapSel=null,mapMsg="",dop=false,sel=[],gps=null,ask=null,bk=false,spots=ld(CF.pre+"spots",[]),harv=ld(CF.pre+"harv",[]);
   const mo=new Date().getMonth()+1,pn=id=>(P.find(p=>p.id===id)||{n:"?"}).n.replace(/（.*/,"");
   const mt=m=>m.length>1?`${m[0]}〜${m[m.length-1]}月`:`${m[0]}月`;
   const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
@@ -751,27 +751,29 @@ function initSansai(root,cfg){
   const pathSvg=pts=>{if(!pts||pts.length<2)return "";const la=pts.map(p=>p[0]),lo=pts.map(p=>p[1]),a0=Math.min(...la),a1=Math.max(...la),o0=Math.min(...lo),o1=Math.max(...lo),k=Math.cos((a0+a1)/2*R2),S=Math.max((o1-o0)*k,a1-a0,1e-4);return `<svg viewBox="0 0 300 120" style="width:100%;height:100px;background:rgba(0,0,0,.04);border-radius:8px"><polyline fill="none" stroke="#3b7ca3" stroke-width="2" points="${pts.map(p=>(150+((p[1]-(o0+o1)/2)*k)/S*100).toFixed(1)+","+(60-(p[0]-(a0+a1)/2)/S*100).toFixed(1)).join(" ")}"/></svg>`};
   const MPC={sn:["山菜採り","#4f8446","fn_sn_"],fr:["果実と樹の実","#c0392b","fn_fr_"],kn:["きのこ","#d9822b","fn_kn_"],ck:["栽培果物","#7b4fb0","fn_ck_"]};
   const mpNm=(pg,id)=>{const D=({sn:SN_DATA,fr:FR_DATA,kn:KN_DATA,ck:CK_DATA})[pg],a=D&&D.p.find(a=>a[0]===id);if(a)return a[1];const c=ld(MPC[pg][2]+"custom",[]).find(c=>c.id===id)||(ld("fn_zr",{})[pg]||[]).find(c=>c.id===id);return c?c.n:"?"};
+  const cmpMapUpd=()=>{const bx=document.querySelector(".mp-box[data-rot]");if(!bx)return false;if(CMP.t!=null)bx.style.setProperty("--h",CMP.t.toFixed(1)+"deg");const m=document.getElementById("mp-cm");if(m)m.textContent=CMP.t==null?(CMP.msg||"向きを取得中です…"):"向き "+DIR8(CMP.t)+" "+Math.round(CMP.t)+"°（真北基準）"};
   const mapV=()=>{
-    if(!document.getElementById("mp-css")){const st=document.createElement("style");st.id="mp-css";st.textContent=".mp-box{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:#ece6d0 repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 1px,transparent 1px 25%),repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 1px,transparent 1px 25%)}.mp-box img{position:absolute;display:block;max-width:none;margin:0;pointer-events:none;user-select:none}.mp-ring{position:absolute;inset:0;border:2px dashed rgba(30,60,160,.6);border-radius:50%;pointer-events:none;z-index:2}.mp-ctr{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#2a6fdb;border:2px solid #fff;box-shadow:0 0 0 3px rgba(42,111,219,.3);z-index:2;pointer-events:none}.mp-pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;min-width:0;padding:0;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;box-shadow:0 1px 5px rgba(0,0,0,.55);cursor:pointer;z-index:3}.mp-pin.on{outline:3px solid #1e2a1a;z-index:5}.mp-lb{position:absolute;transform:translate(-50%,0);margin-top:16px;font-size:11px;font-weight:700;color:#1e2a1a;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;pointer-events:none;z-index:4}.mp-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}";document.head.appendChild(st)}
+    if(!document.getElementById("mp-css")){const st=document.createElement("style");st.id="mp-css";st.textContent=".mp-box{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:#ece6d0 repeating-linear-gradient(0deg,rgba(0,0,0,.06) 0 1px,transparent 1px 25%),repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 1px,transparent 1px 25%)}.mp-box img{position:absolute;display:block;max-width:none;margin:0;pointer-events:none;user-select:none}.mp-ring{position:absolute;inset:0;border:2px dashed rgba(30,60,160,.6);border-radius:50%;pointer-events:none;z-index:2}.mp-ctr{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#2a6fdb;border:2px solid #fff;box-shadow:0 0 0 3px rgba(42,111,219,.3);z-index:2;pointer-events:none}.mp-pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;min-width:0;padding:0;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;box-shadow:0 1px 5px rgba(0,0,0,.55);cursor:pointer;z-index:3}.mp-pin.on{outline:3px solid #1e2a1a;z-index:5}.mp-lb{position:absolute;transform:translate(-50%,0);margin-top:16px;font-size:11px;font-weight:700;color:#1e2a1a;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;pointer-events:none;z-index:4}.mp-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}.mp-rot{position:absolute;transform:rotate(calc(var(--h,0deg)*-1));will-change:transform}.mp-rot .mp-pin{transform:translate(-50%,-50%) rotate(var(--h,0deg))}.mp-rot .mp-lb{transform:translate(-50%,0) rotate(var(--h,0deg));transform-origin:50% -16px}.mp-n{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.88);border:1px solid #888;z-index:6;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;box-sizing:border-box;font-weight:700;font-size:13px;color:#c0392b;transform:rotate(calc(var(--h,0deg)*-1));pointer-events:none}.mp-n::before{content:\"\";position:absolute;top:2px;left:50%;margin-left:-5px;border:5px solid transparent;border-bottom:9px solid #c0392b;border-top:0}";document.head.appendChild(st)}
     const all=[];Object.keys(MPC).forEach(k=>{ld(MPC[k][2]+"harv",[]).forEach(h=>{if(h.la!=null&&h.lo!=null)all.push({k,h,n:mpNm(k,h.p)})})});
+    if(mapRot)CMP.fns.map=cmpMapUpd;
     const fl=all.filter(x=>mapF[x.k]),cnt=k=>all.filter(x=>x.k===k).length;
-    const chips=`<div class="sn-chips">${[1000,3000,5000].map(r=>`<button class="sn-chip${mapR===r?" on":""}" data-mr="${r}">${r/1000}km 範囲</button>`).join("")}</div><div class="sn-chips">${Object.keys(MPC).map(k=>`<button class="sn-chip${mapF[k]?" on":""}" data-mf="${k}"><span class="mp-dot" style="background:${MPC[k][1]}"></span>${MPC[k][0]}（${cnt(k)}）</button>`).join("")}</div><div class="sn-chips"><button class="sn-chip${mapC==="last"?" on":""}" data-mc="last">中心：最新の記録</button><button class="sn-chip${mapC==="me"?" on":""}" data-mc="me">中心：現在地</button><button class="sn-chip${mapB==="std"?" on":""}" data-mb="std">地図</button><button class="sn-chip${mapB==="photo"?" on":""}" data-mb="photo">航空写真</button></div>`;
+    const chips=`<div class="sn-chips">${[1000,3000,5000].map(r=>`<button class="sn-chip${mapR===r?" on":""}" data-mr="${r}">${r/1000}km 範囲</button>`).join("")}</div><div class="sn-chips">${Object.keys(MPC).map(k=>`<button class="sn-chip${mapF[k]?" on":""}" data-mf="${k}"><span class="mp-dot" style="background:${MPC[k][1]}"></span>${MPC[k][0]}（${cnt(k)}）</button>`).join("")}</div><div class="sn-chips"><button class="sn-chip${mapC==="last"?" on":""}" data-mc="last">中心：最新の記録</button><button class="sn-chip${mapC==="me"?" on":""}" data-mc="me">中心：現在地</button><button class="sn-chip${mapB==="std"?" on":""}" data-mb="std">地図</button><button class="sn-chip${mapB==="photo"?" on":""}" data-mb="photo">航空写真</button><button class="sn-chip${mapRot?" on":""}" data-mrot="1">🧭 向きに合わせて回す</button></div>`;
     let c=null;
     if(mapC==="me"&&mapMe)c=mapMe;
     else{const src=fl.length?fl:all;if(src.length){const l=src.slice().sort((a,b)=>String(b.h.d).localeCompare(String(a.h.d)))[0];c=[l.h.la,l.h.lo]}}
     if(!c)return `<div class="ic"><h4>収穫マップ</h4>${chips}<p class="sn-note">${mapMsg?esc(mapMsg)+"　":""}「収穫」で「現在地も記録する」にチェックを入れて記録すると、ここに📌で表示されます。（山菜採り・果実と樹の実・きのこの記録をまとめて表示します）</p></div>`;
     const r=mapR,zf=Math.log2(156543.03392*Math.cos(c[0]*R2)*320/(2*r)),z=Math.min(18,Math.max(5,Math.round(zf))),V=2*r*Math.pow(2,z)/(156543.03392*Math.cos(c[0]*R2)),n=256*Math.pow(2,z);
     const W=(la,lo)=>[(lo+180)/360*n,(1-Math.log(Math.tan(la*R2)+1/Math.cos(la*R2))/Math.PI)/2*n];
-    const [cx,cy]=W(c[0],c[1]),x0=cx-V/2,y0=cy-V/2,ext=mapB==="photo"?["seamlessphoto","jpg"]:["std","png"];
+    const K=mapRot?1.4143:1,V2=V*K,[cx,cy]=W(c[0],c[1]),x0=cx-V2/2,y0=cy-V2/2,ext=mapB==="photo"?["seamlessphoto","jpg"]:["std","png"];
     let tiles="";
-    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+V)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+V)/256);ty++){if(tx<0||ty<0||tx>=Math.pow(2,z)||ty>=Math.pow(2,z))continue;tiles+=`<img alt="" src="https://cyberjapandata.gsi.go.jp/xyz/${ext[0]}/${z}/${tx}/${ty}.${ext[1]}" style="left:${((tx*256-x0)/V*100).toFixed(3)}%;top:${((ty*256-y0)/V*100).toFixed(3)}%;width:${(256/V*100).toFixed(3)}%;height:${(256/V*100).toFixed(3)}%" onerror="this.style.display='none'">`}
+    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+V2)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+V2)/256);ty++){if(tx<0||ty<0||tx>=Math.pow(2,z)||ty>=Math.pow(2,z))continue;tiles+=`<img alt="" src="https://cyberjapandata.gsi.go.jp/xyz/${ext[0]}/${z}/${tx}/${ty}.${ext[1]}" style="left:${((tx*256-x0)/V2*100).toFixed(3)}%;top:${((ty*256-y0)/V2*100).toFixed(3)}%;width:${(256/V2*100).toFixed(3)}%;height:${(256/V2*100).toFixed(3)}%" onerror="this.style.display='none'">`}
     const items=fl.map(x=>({x,d:dist2(c,[x.h.la,x.h.lo])})).filter(o=>o.d<=r*1.42).sort((a,b)=>String(b.x.h.d).localeCompare(String(a.x.h.d))),inR=items.filter(o=>o.d<=r).length;
     const fmt=d=>d<1000?Math.round(d)+"m":(d/1000).toFixed(1)+"km";
     const one=(o,full)=>{const h=o.x.h;return `<b>${esc(h.d)}</b>　<span class="mp-dot" style="background:${MPC[o.x.k][1]}"></span>${esc(MPC[o.x.k][0])}・<b>${esc(o.x.n)}</b>${h.a?"　"+esc(String(h.a))+esc(h.u||""):""}${full&&h.s?"<br>📍 "+esc(h.s):""}${full&&h.m?"<br>"+esc(h.m):""}`};
-    const pins=items.map((o,i)=>{const [wx,wy]=W(o.x.h.la,o.x.h.lo),Lf=((wx-x0)/V*100).toFixed(2),T=((wy-y0)/V*100).toFixed(2);return `<button class="mp-pin${mapSel===i?" on":""}" data-mp="${i}" style="left:${Lf}%;top:${T}%;background:${MPC[o.x.k][1]}" aria-label="${esc(o.x.n)}">📌</button><span class="mp-lb" style="left:${Lf}%;top:${T}%">${esc(o.x.n.replace(/（.*/,"").slice(0,5))}</span>`}).join("");
+    const pins=items.map((o,i)=>{const [wx,wy]=W(o.x.h.la,o.x.h.lo),Lf=((wx-x0)/V2*100).toFixed(2),T=((wy-y0)/V2*100).toFixed(2);return `<button class="mp-pin${mapSel===i?" on":""}" data-mp="${i}" style="left:${Lf}%;top:${T}%;background:${MPC[o.x.k][1]}" aria-label="${esc(o.x.n)}">📌</button><span class="mp-lb" style="left:${Lf}%;top:${T}%">${esc(o.x.n.replace(/（.*/,"").slice(0,5))}</span>`}).join("");
     const sel=mapSel!==null&&items[mapSel]?items[mapSel]:null;
     const det=sel?`<div class="sn-row" style="border-left:4px solid ${MPC[sel.x.k][1]};padding-left:8px">${one(sel,1)}<br><small class="sn-note">中心から約${fmt(sel.d)}</small>　<a class="sn-note" href="https://www.google.com/maps?q=${sel.x.h.la},${sel.x.h.lo}" target="_blank" rel="noopener">Googleマップで開く</a></div>`:'<p class="sn-note">📌をタップすると、何が採れたかが出ます。</p>';
-    return `<div class="ic"><h4>収穫マップ（${r/1000}km範囲に${inR}か所／全${fl.length}か所）</h4>${chips}<div class="mp-box">${tiles}<div class="mp-ring"></div>${mapC==="me"&&mapMe?'<i class="mp-ctr"></i>':""}${pins}</div><div class="sn-note">点線の円が中心から${r/1000}kmです。上が北です。背景は国土地理院の地図で、圏外では出ません（📌は出ます）。</div>${mapMsg?`<p class="sn-note">${esc(mapMsg)}</p>`:""}${det}</div>`+items.map((o,i)=>`<div class="sn-row">${one(o,0)}<br><small class="sn-note">約${fmt(o.d)}</small>　<button class="sn-chip" data-mp="${i}">📌 地図で見る</button></div>`).join("");
+    return `<div class="ic"><h4>収穫マップ（${r/1000}km範囲に${inR}か所／全${fl.length}か所）</h4>${chips}<div class="mp-box"${mapRot?` data-rot="1" style="--h:${(CMP.t||0).toFixed(1)}deg"`:""}><div class="mp-rot" style="left:${(-(K-1)/2*100).toFixed(3)}%;top:${(-(K-1)/2*100).toFixed(3)}%;width:${(K*100).toFixed(3)}%;height:${(K*100).toFixed(3)}%">${tiles}${pins}</div><div class="mp-ring"></div>${mapC==="me"&&mapMe?'<i class="mp-ctr"></i>':""}${mapRot?'<div class="mp-n">N</div>':""}</div>${mapRot?`<p class="sn-note" id="mp-cm">${CMP.t==null?esc(CMP.msg||"向きを取得中です…"):"向き "+DIR8(CMP.t)+" "+Math.round(CMP.t)+"°（真北基準）"}</p>`:""}<div class="sn-note">点線の円が中心から${r/1000}kmです。上が北です。背景は国土地理院の地図で、圏外では出ません（📌は出ます）。</div>${mapMsg?`<p class="sn-note">${esc(mapMsg)}</p>`:""}${det}</div>`+items.map((o,i)=>`<div class="sn-row">${one(o,0)}<br><small class="sn-note">約${fmt(o.d)}</small>　<button class="sn-chip" data-mp="${i}">📌 地図で見る</button></div>`).join("");
   };
   const sumV=()=>{
     const ys=[...new Set(harv.map(h=>(h.d||"").slice(0,4)).concat(String(xyr)))].filter(Boolean).sort().reverse(),H=harv.filter(h=>(h.d||"").startsWith(String(xyr)));
@@ -840,6 +842,7 @@ function initSansai(root,cfg){
     if(d.mr!==undefined){mapR=+d.mr;mapSel=null;mapMsg="";render();return}
     if(d.mf!==undefined){mapF[d.mf]=mapF[d.mf]?0:1;mapSel=null;render();return}
     if(d.mb!==undefined){mapB=d.mb;render();return}
+    if(d.mrot!==undefined){mapRot=!mapRot;if(mapRot){cmpStart().then(()=>render())}else delete CMP.fns.map;render();return}
     if(d.mp!==undefined){mapSel=+d.mp;render();return}
     if(d.mc!==undefined){mapSel=null;mapMsg="";if(d.mc==="me"){if(!navigator.geolocation){mapMsg="この端末では現在地を取得できません。";render();return}mapMsg="現在地を取得中です…";render();navigator.geolocation.getCurrentPosition(q=>{mapMe=[q.coords.latitude,q.coords.longitude];mapC="me";mapMsg="";render()},()=>{mapMsg="現在地を取得できませんでした。位置情報の許可を確認してください。";render()},{enableHighAccuracy:true,timeout:12000})}else{mapC="last";render()}return}
     if(d.zcl!==undefined){const oid=open;open=null;zed=null;ask=null;render();const q=root.querySelector('[data-o="'+oid+'"]');if(q)q.scrollIntoView({block:"center"});return}
@@ -1383,6 +1386,46 @@ function initAll(root){
   document.addEventListener("click",ev=>{if(ev.target.dataset&&ev.target.dataset.ok)setTimeout(()=>{if(root.isConnected)render()},50)});
 }
 /* 情報ページ */
+/* ---- コンパス ---- */
+const CR=Math.PI/180,DIR8=h=>["北","北東","東","南東","南","南西","西","北西"][Math.round(((h%360)+360)%360/45)%8],REL=a=>{a=((a%360)+360)%360;return a<22.5||a>=337.5?"まっすぐ前":a<67.5?"右前":a<112.5?"右":a<157.5?"右後ろ":a<202.5?"後ろ":a<247.5?"左後ろ":a<292.5?"左":"左前"},cmpFmt=d=>d<1000?Math.round(d)+"m":(d/1000).toFixed(1)+"km";
+const CMP={h:null,t:null,on:false,msg:"",pos:null,fns:{},cor:true,tgt:null,_w:null,_last:0,_to:null};
+const cmpDecl=()=>{const la=(CMP.pos||ld("fn_loc",null)||{}).la;return CMP.cor&&la!=null&&la>=24&&la<=46?-(4.5+(la-26)*0.29):0};
+function cmpGeo(a,b){const R=6371000,p1=a.la*CR,p2=b.la*CR,dl=(b.lo-a.lo)*CR,dp=p2-p1,h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2,y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return{d:2*R*Math.asin(Math.sqrt(h)),b:(Math.atan2(y,x)/CR+360)%360}}
+function cmpTargets(){const out=[];[["sn","山菜採り","#4f8446"],["fr","果実と樹の実","#c0392b"],["kn","きのこ","#d9822b"],["ck","栽培果物","#7b4fb0"]].forEach(([pg,lb,col])=>{const pre="fn_"+pg+"_";ld(pre+"spots",[]).forEach(s=>{if(s.la!=null&&s.lo!=null)out.push({k:"📍",n:String(s.n||""),la:s.la,lo:s.lo,lb,col})});ld(pre+"harv",[]).forEach(h=>{if(h.la!=null&&h.lo!=null)out.push({k:"📌",n:spName(pg,h.p),la:h.la,lo:h.lo,lb,col})})});return out}
+function cmpRun(){Object.keys(CMP.fns).forEach(k=>{try{if(CMP.fns[k]()===false)delete CMP.fns[k]}catch(e){delete CMP.fns[k]}})}
+function cmpStop(){window.removeEventListener("deviceorientation",cmpEvt,true);window.removeEventListener("deviceorientationabsolute",cmpEvt,true);if(CMP._w!=null&&navigator.geolocation)navigator.geolocation.clearWatch(CMP._w);CMP._w=null;clearTimeout(CMP._to);CMP.on=false;CMP.h=null;CMP.t=null}
+function cmpEvt(e){
+  let h=null;
+  if(typeof e.webkitCompassHeading==="number"&&!isNaN(e.webkitCompassHeading))h=e.webkitCompassHeading;
+  else if(e.alpha!=null&&e.beta!=null&&e.gamma!=null&&(e.absolute===true||e.type==="deviceorientationabsolute")){
+    const x=e.beta*CR,y=e.gamma*CR,z=e.alpha*CR,cY=Math.cos(y),cZ=Math.cos(z),sX=Math.sin(x),sY=Math.sin(y),sZ=Math.sin(z),Vx=-cZ*sY-sZ*sX*cY,Vy=-sZ*sY+cZ*sX*cY;
+    h=Math.atan2(Vx,Vy)/CR;if(h<0)h+=360;
+    const ang=(window.screen&&screen.orientation&&screen.orientation.angle)||0;h=(h+ang)%360;
+  }
+  if(h==null)return;
+  if(CMP.h==null)CMP.h=h;else{const d=((h-CMP.h+540)%360)-180;CMP.h=(CMP.h+d*0.25+360)%360}
+  CMP.t=(CMP.h+cmpDecl()+360)%360;
+  const n=Date.now();if(n-CMP._last<80)return;CMP._last=n;
+  cmpRun();
+  if(!Object.keys(CMP.fns).length)cmpStop();
+}
+async function cmpStart(){
+  if(CMP.on)return;
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      const r=await DeviceOrientationEvent.requestPermission();
+      if(r!=="granted"){CMP.msg="方位センサーの許可がありません。端末の設定で、ブラウザの「動きと向き」を許可してください。";cmpRun();return}
+      window.addEventListener("deviceorientation",cmpEvt,true);
+    }else{
+      window.addEventListener("deviceorientationabsolute",cmpEvt,true);
+      window.addEventListener("deviceorientation",cmpEvt,true);
+    }
+    CMP.on=true;CMP.msg="";
+    CMP._to=setTimeout(()=>{if(CMP.t==null){CMP.msg="方位センサーが反応しません。この端末では使えない可能性があります。";cmpRun()}},3000);
+    if(navigator.geolocation&&CMP._w==null)CMP._w=navigator.geolocation.watchPosition(p=>{CMP.pos={la:p.coords.latitude,lo:p.coords.longitude,acc:Math.round(p.coords.accuracy)}},()=>{},{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+  }catch(e){CMP.msg="コンパスを開始できませんでした。"}
+  cmpRun();
+}
 function initInfo(root){
   let loc=ld("fn_loc",null),wx=ld("fn_wx",null),tide=ld("fn_tide",null),emg=ld("fn_emg",{}),bear=ld("fn_bear",[]),msg={},bo=false,ask=null;
   const $=id=>root.querySelector("#"+id),f2=n=>String(n).padStart(2,"0"),hm=d=>d&&!isNaN(d)?f2(d.getHours())+":"+f2(d.getMinutes()):"--:--";
@@ -1439,7 +1482,32 @@ function initInfo(root){
     return `<div class="ic wn"><h4>⑥ 安全のお知らせ</h4>${gl}<div class="sn-note" style="margin-top:6px">緊急連絡先</div><div class="sn-g"><input class="sn-in" id="em-n" placeholder="名前" maxlength="20" value="${esc(emg.n||"")}"><input class="sn-in" id="em-p" type="tel" placeholder="電話番号" maxlength="20" value="${esc(emg.p||"")}"></div><a class="sn-del" href="tel:110">警察 110</a> <a class="sn-del" href="tel:119">救急・消防 119</a> ${emg.p?`<a class="sn-del" href="tel:${esc(emg.p.replace(/[^0-9+]/g,""))}">${esc(emg.n||"連絡先")}に電話</a>`:""}<br><button class="sn-btn sn-ghost" data-a="bear" style="margin-top:10px">🐻 クマ対策${bo?"を閉じる":"を見る"}</button>${bo?BEAR.map(g=>`<div class="sn-dg" style="border-left-color:#c0392b"><b>${g[0]}</b>${g[1].map(x=>`<p>・${x}</p>`).join("")}</div>`).join("")+`<div class="nl">出没・遭遇の記録</div><div class="sn-g"><input class="sn-in" id="br-p" placeholder="場所" maxlength="30"><input class="sn-in" id="br-m" placeholder="メモ" maxlength="50"></div><button class="sn-btn" data-a="bradd">記録する</button>`+bear.map((x,i)=>`<div class="sn-row"><b>${esc(x.d)}</b>　${esc(x.p)}${x.m?"<br>"+esc(x.m):""}<br><button class="sn-del${ask===i?" ask":""}" data-bd="${i}">${ask===i?"本当に削除":"削除"}</button></div>`).join(""):""}</div>`;
   };
   const seasonC=()=>{const g=(d,k)=>d.p.filter(a=>a[3].includes(mo)).map(a=>esc(a[1]));const a=g(SN_DATA),b=g(FR_DATA),c=g(KN_DATA),e=g(CK_DATA);return `<div class="ic"><h4>⑦ 今月（${mo}月）の旬</h4><div class="sn-note"><b>山菜</b>　${a.join("、")||"なし"}</div><div class="sn-note"><b>果実と樹の実</b>　${b.join("、")||"なし"}</div><div class="sn-note"><b>きのこ</b>　${c.join("、")||"なし"}</div><div class="sn-note"><b>栽培果物</b>　${e.join("、")||"なし"}</div></div>`};
-  const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()};
+  let cmpT=[];
+  const cmpPos=()=>CMP.pos||(loc?{la:loc.la,lo:loc.lo}:null);
+  const cmpTi=()=>{const pos=cmpPos(),tg=CMP.tgt;if(!tg||!pos)return "地点を選ぶと、方角と距離が出ます。";const g=cmpGeo(pos,tg);return esc(tg.n)+"：あと "+cmpFmt(g.d)+"　"+DIR8(g.b)+"（"+Math.round(g.b)+"°）"+(CMP.t!=null?"　"+REL(g.b-CMP.t)+"の方向":"")};
+  const cmpUpd=()=>{
+    if(!root.isConnected)return false;
+    const r=$("cmp-rose");if(!r)return false;
+    const dg=$("cmp-deg"),ms=$("cmp-msg"),ti=$("cmp-ti"),tg=$("cmp-tg"),pos=cmpPos();
+    if(CMP.t!=null){
+      r.setAttribute("transform","rotate("+(-CMP.t).toFixed(1)+" 120 120)");
+      dg.textContent=DIR8(CMP.t)+" "+Math.round(CMP.t)+"°";
+      const dc=cmpDecl();ms.textContent="真北に補正："+(dc?dc.toFixed(1)+"°":"なし");
+    }else if(ms)ms.textContent=CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。");
+    if(CMP.tgt&&pos){tg.setAttribute("transform","rotate("+cmpGeo(pos,CMP.tgt).b.toFixed(1)+" 120 120)");tg.style.display=""}else tg.style.display="none";
+    ti.innerHTML=cmpTi();
+  };
+  const cmpC=()=>{
+    CMP.fns.info=cmpUpd;
+    const pos=cmpPos();
+    cmpT=pos?cmpTargets().map(t=>Object.assign({},t,cmpGeo(pos,t))).sort((a,b)=>a.d-b.d).slice(0,8):[];
+    const tk=[...Array(12)].map((_,i)=>`<line x1="120" y1="${i%3?15:10}" x2="120" y2="22" stroke="currentColor" stroke-width="${i%3?1:2}" transform="rotate(${i*30} 120 120)"/>`).join("");
+    const gb=CMP.tgt&&pos?cmpGeo(pos,CMP.tgt).b:0;
+    const svg=`<svg viewBox="0 0 240 240" style="width:min(70vw,260px);display:block;margin:6px auto;color:var(--ink)"><g id="cmp-rose" transform="rotate(${(-(CMP.t||0)).toFixed(1)} 120 120)"><circle cx="120" cy="120" r="108" fill="rgba(255,255,255,.55)" stroke="currentColor" stroke-width="2"/>${tk}<text x="120" y="54" text-anchor="middle" dominant-baseline="middle" font-size="26" font-weight="700" fill="#c0392b">北</text><text x="120" y="190" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">南</text><text x="192" y="122" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">東</text><text x="48" y="122" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">西</text><g id="cmp-tg" transform="rotate(${gb.toFixed(1)} 120 120)"${CMP.tgt&&pos?"":' style="display:none"'}><line x1="120" y1="120" x2="120" y2="38" stroke="#e0452b" stroke-width="3" stroke-dasharray="5 4"/><circle cx="120" cy="30" r="9" fill="#e0452b" stroke="#fff" stroke-width="2"/></g></g><path d="M120 2l-10 18h20z" fill="#2a6fdb"/></svg>`;
+    const chips=pos?`<div class="sn-note">近くのスポット・収穫地点（タップで方角を表示）</div><div class="sn-chips">${cmpT.map((t,i)=>`<button class="sn-chip${CMP.tgt&&CMP.tgt.la===t.la&&CMP.tgt.lo===t.lo?" on":""}" data-ct="${i}">${t.k} ${esc(t.n)}　${cmpFmt(t.d)}</button>`).join("")||'<span class="sn-note">位置つきのスポットや収穫の記録がありません。</span>'}</div><button class="sn-del" data-a="re">一覧を更新</button>`:`<p class="sn-note">現在地を取得するか、コンパスを開始すると、近くのスポットや収穫地点が出ます。</p>`;
+    return `<div class="ic"><h4>🧭 コンパス</h4>${svg}<div class="ib" id="cmp-deg" style="text-align:center">${CMP.t==null?"—":DIR8(CMP.t)+" "+Math.round(CMP.t)+"°"}</div><div class="sn-note" id="cmp-msg" style="text-align:center">${esc(CMP.t!=null?"真北に補正："+(cmpDecl()?cmpDecl().toFixed(1)+"°":"なし"):(CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。")))}</div><div style="text-align:center;margin:8px 0"><button class="sn-btn" data-cs="${CMP.on?0:1}">${CMP.on?"コンパスを止める":"コンパスを開始"}</button> <button class="sn-chip${CMP.cor?" on":""}" data-cc="1">真北に補正</button></div><div class="ib" id="cmp-ti" style="font-size:15px">${cmpTi()}</div>${chips}<p class="sn-note">金属や電子機器の近くでは、針が狂います。端末を8の字に振ると補正されます。あくまで目安です。道に迷わないために、地図やGPSアプリも併用してください。</p></div>`;
+  };
+  const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+cmpC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()};
   const go=async(u,key,m)=>{if(!loc){msg[m]="先に現在地を取得してください。";render();return}msg[m]="取得中… ";render();try{const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();if(m==="wx"){wx=j;sv("fn_wx",wx)}else{tide=j;sv("fn_tide",tide)}msg[m]=""}catch(e){msg[m]="取得できませんでした。電波のある場所で、もう一度試してください。"}render()};
   root.addEventListener("click",e=>{
     const b=e.target.closest("button");if(!b)return;const a=b.dataset.a;
@@ -1448,6 +1516,9 @@ function initInfo(root){
     else if(a==="share"&&loc){const t=`現在地：${loc.la}, ${loc.lo}\nhttps://www.google.com/maps?q=${loc.la},${loc.lo}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);msg.gps="現在地をコピーしました。"}catch(x){}render()}}
     else if(a==="wx")go(`https://api.open-meteo.com/v1/forecast?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2`,"fn_wx","wx");
     else if(a==="tide")go(`https://marine-api.open-meteo.com/v1/marine?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2&cell_selection=sea`,"fn_tide","tide");
+    else if(b.dataset.cs!==undefined){if(b.dataset.cs==="1"){cmpStart().then(()=>render())}else{cmpStop();CMP.msg="";render()}}
+    else if(b.dataset.cc!==undefined){CMP.cor=!CMP.cor;render()}
+    else if(b.dataset.ct!==undefined){const t=cmpT[+b.dataset.ct];CMP.tgt=CMP.tgt&&t&&CMP.tgt.la===t.la&&CMP.tgt.lo===t.lo?null:t;render()}
     else if(a==="bear"){bo=!bo;render()}
     else if(a==="bradd"){const p=$("br-p").value.trim(),m=$("br-m").value.trim();if(!p&&!m)return;const n=new Date();bear.unshift({d:n.getFullYear()+"-"+f2(n.getMonth()+1)+"-"+f2(n.getDate()),p,m});sv("fn_bear",bear);render()}
     else if(b.dataset.bd!==undefined){const i=+b.dataset.bd;if(ask===i){bear.splice(i,1);sv("fn_bear",bear);ask=null}else ask=i;render()}
@@ -2268,7 +2339,7 @@ const HW_FOR=(id,ic,nm,extra)=>[id,ic+" "+nm+"ページ",id,[
   "【旬の暦】月ごとの旬の一覧です。いま旬のものには「旬」の印が付きます。",
   "【スポット】採取した場所を登録します。県の入力と、並べ替えができます。",
   "【収穫】日付・名前・量を記録します。「現在地も記録する」にチェックを入れると、その場所（GPS）も一緒に残り、収穫マップに出ます。",
-  "【収穫マップ】山菜採り・果実と樹の実・きのこの記録を、国土地理院の地図の上に📌でまとめて表示します。「1km／3km／5km 範囲」で広さを選べます。📌の色は、山菜採り＝緑、果実と樹の実＝赤、きのこ＝オレンジです。📌をタップすると、何が採れたか（日付・名前・量・メモ）が出ます。「中心：最新の記録／現在地」と「地図／航空写真」も切り替えられます。背景の地図は通信が必要です。圏外でも📌は出ます。",
+  "【収穫マップ】山菜採り・果実と樹の実・きのこ・栽培果物の記録を、国土地理院の地図の上に📌でまとめて表示します。「1km／3km／5km 範囲」で広さを選べます。📌の色は、山菜採り＝緑、果実と樹の実＝赤、きのこ＝オレンジです。📌をタップすると、何が採れたか（日付・名前・量・メモ）が出ます。「中心：最新の記録／現在地」と「地図／航空写真」も切り替えられます。「🧭 向きに合わせて回す」を押すと、いま向いている方向が地図の上になります。背景の地図は通信が必要です。圏外でも📌は出ます。",
   "【まとめ】収穫の記録を集計して見られます。",
   "【持ち物・レシピ】出発前の持ち物のチェックと、保存・調理のレシピです。",
   "【ブログ】写真つきの採取記録を載せます。",
@@ -2288,7 +2359,8 @@ const HOWTO_MAN=[
   "通知：アプリを開いたときと、開いている間に、黄色い付箋でお知らせします。新しい予定や変更があったときと、予定の24時間前・1時間前です。「端末の通知を許可する」を押すと、端末の通知でも届きます。アプリを閉じている間は届きません。",
   "予定を入れる：入れられるのは、管理者と、編集の権限をもらった人です。入れたいときは、管理者にGoogleアカウントを伝えてください。"]],
 ["info","🧭 情報ページ（全員）","info",[
-  "現在地（GPS）、日の出・日の入り、月齢、潮の満干、天気と気温、安全のお知らせ、今月の旬を見られます。山に入る前の確認に使ってください。"]],
+  "現在地（GPS）、コンパス、日の出・日の入り、月齢、潮の満干、天気と気温、安全のお知らせ、今月の旬を見られます。山に入る前の確認に使ってください。",
+  "コンパス：「コンパスを開始」を押すと、針が動きます。「真北に補正」は、磁石の北と地図の北のずれ（日本では西に5〜9度ほど）を直します。下の一覧から、近くのスポットや収穫地点を選ぶと、赤い印でその方角が出て、距離と「右前・左」などの向きも出ます。iPhoneでは、最初に「動きと向き」の許可が出ます。金属や電子機器の近くでは狂うので、あくまで目安にしてください。"]],
 HW_FOR("sansai","🌿","山菜採り",["採るときは、似た毒草に注意してください。見分けに自信がないときは、採らないでください。"]),
 HW_FOR("fruit","🍒","果実と樹の実"),
 HW_FOR("kinoko","🍄","きのこ",["毒きのこと間違えやすい種類があります。見分けに自信がないときは、採らないで、食べないでください。"]),
@@ -2335,6 +2407,7 @@ const HOWTO_QA=[
 ["収穫マップの地図が出ない（📌だけ出る）","背景の地図は通信が必要です。圏外や電波が弱いときは出ません。📌は通信がなくても出ます。","sansai|fruit|kinoko|saibai"],
 ["収穫マップで、現在地を中心にしたい","「中心：現在地」を押します。位置情報の許可を求められたら、許可してください。","sansai|fruit|kinoko|saibai"],
 ["パトロールの予定を登録したい","「パトロール」タブで、日付・時間・場所を入れて「予定を追加」を押します。登録した予定には「📅 Googleカレンダーに追加」「編集」「削除」が付きます。ここに書いた予定は、この端末だけに保存されます。みんなに知らせたいときは、「📅 Googleカレンダーに追加」から、グループのカレンダーに入れてください。","sansai|fruit|kinoko|saibai"],
+["コンパスの針が動かない・ずれる","「コンパスを開始」を押してください。iPhoneでは「動きと向き」の許可が必要です（設定のブラウザの項目で許可できます）。針が狂うときは、金属や電子機器から離れ、端末を8の字に振ってください。向きの目安なので、道に迷わないために、地図やGPSアプリも併用してください。"],
 ["ログインできない・IDやパスワードが分からない","管理者にご連絡ください。"],
 ["データのバックアップは？","もくじの下にある「データのバックアップ」で、記録・付箋・ページ設定をまとめて保存・復元できます。機種変更やアプリの入れ直しの前に使ってください。"],
 ["アプリが古いままで更新されない","アプリを完全に閉じてから、開き直してください。それでも変わらないときは、少し時間をおいて、もう一度開いてください。"],
