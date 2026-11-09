@@ -2312,7 +2312,7 @@ function initMembers(root){
   rlDraw();A.rules=rl;
   /* ---- バックアップ ---- */
   const bk=document.createElement("div");bk.className="pp";
-  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_gkey","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued","fn_admmemo"];
+  const KEYS=["fn_members","fn_keys","fn_pages","fn_reqs","fn_st","fn_rules","fn_pool","fn_gcal","fn_gkey","fn_admh","fn_uid","fn_auth","fn_admin","fn_issued","fn_admmemo","fn_trk"];
   const bkDraw=()=>{const b=ld("fn_bk",{at:0,dirty:0}),need=!b.at||Date.now()-b.at>30*864e5||(b.dirty||0)>=10;
     bk.innerHTML=`<h3>管理者データのバックアップ</h3>${need?'<p class="sn-note" style="color:#b9473a"><b>バックアップをおすすめします。</b>名簿・ID・許可の情報は、この端末にしかありません。端末をなくすと、メンバーのログインができなくなります。</p>':'<p class="sn-note">名簿・ID・許可の情報は、この端末にしかありません。変更したら、バックアップを取ってください。</p>'}<p class="sn-note">前回：${b.at?new Date(b.at).toLocaleDateString("ja-JP"):"まだありません"}　（それ以降の変更：${b.dirty||0}回）</p><button class="sn-btn" data-b="out">管理者データをファイルで保存</button><p class="sn-note">ファイルには、メンバーのログイン情報が含まれます。ほかの人に渡さないでください。</p><div class="nl">復元する</div><input type="file" id="bk-f" accept=".json,application/json"><p class="sn-note" id="bk-m"></p>`};
   bk.addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.dataset.b!=="out")return;
@@ -2410,7 +2410,7 @@ window.fnQrPopup=()=>{
 /* ---- 同行者の位置・集合場所への帰り道（管理者カード） ---- */
 (function(){
   const A=window.fnAdm=window.fnAdm||{},d=document.createElement("div");d.className="pp";
-  const K="fn_trk",STALE=10*60*1000,COLS=["#d9534f","#3b7ca3","#2f8f6f","#e08a1e","#7a5aa3","#555555"];
+  const K="fn_trk",STALE=10*60*1000,COLS=["#d9534f","#3b7ca3","#2f8f6f","#e08a1e","#7a5aa3","#777777","#b8bcc2","#222222","#ffffff","#7ecbe8"],CN=["赤","青","緑","橙","紫","灰","銀","黒","白","水"],MC=["#d9534f","#3b7ca3","#2f8f6f","#e08a1e","#7a5aa3","#555555"],LT=["#b8bcc2","#ffffff","#7ecbe8"],lt=c=>LT.includes(c),bc=c=>c==="#ffffff"?"#aaa":c,dot=c=>'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+c+';border:1px solid #777;vertical-align:-1px"></span>',MAKERS=["トヨタ","ホンダ","日産","マツダ","スバル","スズキ","ダイハツ","三菱","レクサス","いすゞ","日野","輸入車","その他"];
   const S=()=>{const s=ld(K,null)||{};s.cars=s.cars||[];s.mates=s.mates||[];return s};
   const put=s=>{sv(K,s);if(window.fnTouch)window.fnTouch()};
   const $q=q=>d.querySelector(q);
@@ -2433,7 +2433,7 @@ window.fnQrPopup=()=>{
     for(const p of pats){const m=t.match(p);if(m){const la=+m[1],lo=+m[2];if(Math.abs(la)<=90&&Math.abs(lo)<=180)return{la:+la.toFixed(5),lo:+lo.toFixed(5)}}}
     return null;
   };
-  const arrow=(rot,col,sz)=>'<svg width="'+sz+'" height="'+sz+'" viewBox="-20 -20 40 40" style="transform:rotate('+Math.round(rot)+'deg);flex:none"><path d="M0-17L11 13L0 7L-11 13Z" fill="'+col+'" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
+  const arrow=(rot,col,sz)=>'<svg width="'+sz+'" height="'+sz+'" viewBox="-20 -20 40 40" style="transform:rotate('+Math.round(rot)+'deg);flex:none"><path d="M0-17L11 13L0 7L-11 13Z" fill="'+col+'" stroke="'+(lt(col)?"#555":"#fff")+'" stroke-width="2" stroke-linejoin="round"/></svg>';
   /* 相手までの方向・距離の表示部品 */
   const rel=(to)=>{
     const m=me();if(!m)return{txt:"自分の現在地がまだありません",ar:""};
@@ -2446,7 +2446,7 @@ window.fnQrPopup=()=>{
     const m=me(),s=S();if(!m)return '<p class="sn-note">「位置の追跡を開始」または「現在地を保存」を押すと、レーダー図が出ます。</p>';
     const items=[];
     s.cars.forEach(c=>items.push({k:"c",n:c.n,la:c.la,lo:c.lo,c:c.c,st:0}));
-    s.mates.forEach((x,i)=>items.push({k:"m",n:x.n,la:x.la,lo:x.lo,c:COLS[(i+1)%COLS.length],st:Date.now()-x.at>STALE}));
+    s.mates.forEach((x,i)=>items.push({k:"m",n:x.n,la:x.la,lo:x.lo,c:MC[(i+1)%MC.length],st:Date.now()-x.at>STALE}));
     const gs=items.map(it=>({it,g:geo(m,it)}));
     const mx=Math.max(100,...gs.map(o=>o.g.d)),R=fnice(mx*1.1),h=heading()||0,C=150,W=118;
     let o='<svg viewBox="0 0 300 300" style="width:100%;max-width:340px;display:block;margin:0 auto"><circle cx="150" cy="150" r="'+W+'" fill="rgba(255,255,255,.55)" stroke="#9aa58a"/><circle cx="150" cy="150" r="'+(W/2)+'" fill="none" stroke="#9aa58a" stroke-dasharray="4 4"/>';
@@ -2454,7 +2454,8 @@ window.fnQrPopup=()=>{
     o+='<text x="152" y="'+(150-W+14)+'" font-size="11" fill="#667058">'+cmpFmt(R)+'</text><text x="152" y="'+(150-W/2+12)+'" font-size="10" fill="#667058">'+cmpFmt(R/2)+'</text>';
     gs.forEach(({it,g})=>{
       const a=(g.b-h)*CR,r=Math.min(1,g.d/R)*W,x=C+r*Math.sin(a),y=C-r*Math.cos(a),col=it.st?"#999":it.c,ch=esc((it.n||"?").slice(0,1));
-      o+=it.k==="c"?'<rect x="'+(x-10)+'" y="'+(y-10)+'" width="20" height="20" rx="4" fill="'+col+'" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">'+ch+'</text>':'<circle cx="'+x+'" cy="'+y+'" r="10" fill="'+col+'" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">'+ch+'</text>';
+      const tc=lt(col)?"#222":"#fff",sk=lt(col)?"#555":"#fff";
+      o+=it.k==="c"?'<rect x="'+(x-10)+'" y="'+(y-10)+'" width="20" height="20" rx="4" fill="'+col+'" stroke="'+sk+'" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="'+tc+'" font-weight="700">'+ch+'</text>':'<circle cx="'+x+'" cy="'+y+'" r="10" fill="'+col+'" stroke="#fff" stroke-width="2"/><text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">'+ch+'</text>';
     });
     o+='<circle cx="150" cy="150" r="7" fill="#2b3526" stroke="#fff" stroke-width="2"/></svg>';
     return o+'<p class="sn-note" style="text-align:center">中心が自分。四角＝集合場所（車）、丸＝同行者、灰色＝古い情報。'+(heading()!=null?"上が、いま向いている方向です。":"上が北です（方位が取れていません）。")+'</p>';
@@ -2464,12 +2465,45 @@ window.fnQrPopup=()=>{
     if(!m)return '<p class="sn-note">まだ位置がありません。「位置の追跡を開始」を押してください。</p>';
     return '<p class="sn-note" style="margin:0"><b>'+(m.live?"🟢 現在地（追跡中）":"⚪ 直前に保存した位置（"+age(m.at)+"・"+hhmm(m.at)+"）")+'</b>　誤差 約'+(m.acc?Math.round(m.acc)+"m":"—")+'　<a href="'+gmOpen(m.la,m.lo)+'" target="_blank" rel="noopener">Googleマップで見る</a></p>';
   };
+  const carsub=c=>{const t=[(c.mk||"")+(c.md?" "+c.md:""),c.ow?"持主："+c.ow:""].filter(x=>x.trim()).join("　");return t?'<div style="font-size:14px">'+esc(t)+'</div>':""};
   const carsHtml=()=>{
-    const s=S();if(!s.cars.length)return '<p class="sn-note">まだ登録がありません。車を停めたら、すぐに「現在地を登録」を押してください。</p>';
+    const s=S();if(!s.cars.length)return '<p class="sn-note">まだ登録がありません。車を停めたら、すぐに「現在地を集合場所に登録」を押してください。</p>';
     const m=me();let nearest=-1,nd=1e12;
     if(m)s.cars.forEach((c,i)=>{const g=geo(m,c);if(g.d<nd){nd=g.d;nearest=i}});
-    return s.cars.map((c,i)=>{const r=rel(c);
-      return '<div class="tk-row" style="border:1px solid var(--line);border-left:6px solid '+c.c+';border-radius:10px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.5)"><div style="display:flex;gap:10px;align-items:center">'+(r.g?arrow(r.rot,c.c,46):"")+'<div style="flex:1;min-width:0"><b>🚗 '+esc(c.n)+(i===nearest&&s.cars.length>1?' <span style="font-size:12px;color:#2f8f6f">いちばん近い</span>':"")+'</b><div style="font-size:15px">'+esc(r.txt)+'</div><div class="sn-note" style="margin:0">登録 '+hhmm(c.at)+(c.m?"　"+esc(c.m):"")+'</div></div></div><div class="sn-g" style="margin-top:6px"><a class="sn-btn" style="text-align:center;text-decoration:none;box-sizing:border-box" href="'+gmGo(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで案内</a><button class="sn-btn sn-ghost" data-tk="cdel" data-i="'+i+'">削除</button></div></div>'}).join("");
+    return s.cars.map((c,i)=>{const r=rel(c),cn=CN[COLS.indexOf(c.c)]||"";
+      return '<div class="tk-row" style="border:1px solid var(--line);border-left:6px solid '+bc(c.c)+';border-radius:10px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.5)"><div data-tk="cdet" data-i="'+i+'" style="display:flex;gap:10px;align-items:center;cursor:pointer">'+(r.g?arrow(r.rot,c.c,46):"")+'<div style="flex:1;min-width:0"><b>🚗 '+esc(c.n)+' '+dot(c.c)+(cn?'<span style="font-size:12px"> '+cn+'</span>':"")+(i===nearest&&s.cars.length>1?' <span style="font-size:12px;color:#2f8f6f">いちばん近い</span>':"")+'</b>'+carsub(c)+'<div style="font-size:15px">'+esc(r.txt)+'</div><div class="sn-note" style="margin:0">登録 '+hhmm(c.at)+(c.m?"　"+esc(c.m):"")+'　▶ タップで詳細</div></div></div><div class="sn-g" style="margin-top:6px"><a class="sn-btn" style="text-align:center;text-decoration:none;box-sizing:border-box" href="'+gmGo(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで案内</a><button class="sn-btn sn-ghost" data-tk="cdel" data-i="'+i+'">削除</button></div></div>'}).join("");
+  };
+  const memNames=()=>{try{return(ld("fn_members",null)||(typeof remote==="function"?(remote().members||[]):[])).filter(m=>(m.st||"ok")==="ok"&&m.n).map(m=>m.n)}catch(e){return[]}};
+  const openDet=i=>{
+    const s0=S(),c=s0.cars[i];if(!c)return;
+    const old=document.getElementById("tk-det");if(old)old.remove();
+    let col=Math.max(0,COLS.indexOf(c.c));
+    const m=document.createElement("div");m.id="tk-det";
+    m.style.cssText="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:12px;--ink:#2b3526;--line:#ddd3b8;--sub:#667058;--bg:#fff;--acc:#4f8446";
+    const names=memNames(),r=rel(c);
+    m.innerHTML='<div style="background:#fffdf6;color:#2b3526;border-radius:14px;padding:16px;width:min(94vw,420px);max-height:92vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.4)"><h3 style="margin:0 0 6px">🚗 車の詳細</h3>'
+    +'<div class="sn-note" style="margin:0 0 8px">'+esc(r.txt)+'<br>登録 '+hhmm(c.at)+'（'+age(c.at)+'）　<a href="'+gmOpen(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで見る</a></div>'
+    +'<div class="nl">名前</div><input class="sn-in" id="td-n" maxlength="20" value="'+esc(c.n)+'">'
+    +'<div class="nl">色</div><div class="sn-chips" id="td-c">'+COLS.map((x,j)=>'<button class="sn-chip'+(j===col?" on":"")+'" data-j="'+j+'" style="border-color:'+bc(x)+'">'+dot(x)+' '+CN[j]+'</button>').join("")+'</div>'
+    +'<div class="nl" style="margin-top:8px">メーカー</div><input class="sn-in" id="td-mk" list="td-mkl" maxlength="20" placeholder="例：トヨタ" value="'+esc(c.mk||"")+'"><datalist id="td-mkl">'+MAKERS.map(x=>'<option value="'+x+'">').join("")+'</datalist>'
+    +'<div class="nl">車種</div><input class="sn-in" id="td-md" maxlength="30" placeholder="例：ハイエース" value="'+esc(c.md||"")+'">'
+    +'<div class="nl">ナンバー（任意・下4桁など）</div><input class="sn-in" id="td-no" maxlength="12" placeholder="例：1234" value="'+esc(c.no||"")+'">'
+    +'<div class="nl">持主（メンバー名）</div><input class="sn-in" id="td-ow" list="td-owl" maxlength="20" placeholder="メンバーから選ぶか、手入力" value="'+esc(c.ow||"")+'"><datalist id="td-owl">'+names.map(x=>'<option value="'+esc(x)+'">').join("")+'</datalist>'
+    +'<div class="nl">同乗メンバー</div><input class="sn-in" id="td-pa" maxlength="60" placeholder="例：Bさん、Cさん" value="'+esc(c.pa||"")+'">'
+    +'<div class="nl">メモ</div><input class="sn-in" id="td-me" maxlength="40" value="'+esc(c.m||"")+'">'
+    +'<div class="sn-g"><button class="sn-btn" id="td-s">保存</button><button class="sn-btn sn-ghost" id="td-x">閉じる</button></div></div>';
+    m.addEventListener("click",e=>{
+      const ch=e.target.closest("#td-c .sn-chip");
+      if(ch){col=+ch.dataset.j;m.querySelectorAll("#td-c .sn-chip").forEach((x,j)=>x.classList.toggle("on",j===col));return}
+      if(e.target===m||e.target.id==="td-x"){m.remove();return}
+      if(e.target.id==="td-s"){
+        const s=S(),k=s.cars.findIndex(x=>x.id===c.id);if(k<0){m.remove();return}
+        const g=id=>(m.querySelector(id).value||"").trim();
+        Object.assign(s.cars[k],{n:g("#td-n")||c.n,c:COLS[col],mk:g("#td-mk"),md:g("#td-md"),no:g("#td-no"),ow:g("#td-ow"),pa:g("#td-pa"),m:g("#td-me")});
+        put(s);m.remove();msg.c="「"+s.cars[k].n+"」の詳細を保存しました。";paint();
+      }
+    });
+    document.body.appendChild(m);
   };
   const matesHtml=()=>{
     const s=S();if(!s.mates.length)return '<p class="sn-note">まだ同行者の位置がありません。下の欄に、同行者から届いた位置を貼り付けてください。</p>';
@@ -2487,7 +2521,7 @@ window.fnQrPopup=()=>{
     +'<p class="sn-note">① 車を停めたら集合場所（駐車場）を登録　② 山の中では「帰り道」の矢印と距離を見る　③ 同行者の位置を貼り付けて、いまどこにいるかを確認します。方向と距離は端末のGPSだけで計算するので、圏外でも動きます。</p>'
     +'<div class="nl">① 自分の位置</div><div id="tk-me"></div><div class="sn-g" style="margin-top:6px"><button class="sn-btn" id="tk-w" data-tk="w">▶ 位置の追跡を開始</button><button class="sn-btn sn-ghost" data-tk="save">現在地を保存</button></div><p class="sn-note" id="tk-ms"></p>'
     +'<div class="nl">② 集合場所（駐車場・車）</div><div id="tk-cars"></div>'
-    +'<input class="sn-in" id="tk-cn" placeholder="名前（例：Aさんの車・第2駐車場）" maxlength="20"><div class="sn-chips" id="tk-cc">'+COLS.map((c,i)=>'<button class="sn-chip'+(i===ccol?" on":"")+'" data-tk="col" data-i="'+i+'" style="border-color:'+c+'"><span style="color:'+c+'">●</span> '+["赤","青","緑","橙","紫","灰"][i]+'</button>').join("")+'</div>'
+    +'<input class="sn-in" id="tk-cn" placeholder="名前（例：Aさんの車・第2駐車場）" maxlength="20"><div class="sn-chips" id="tk-cc">'+COLS.map((c,i)=>'<button class="sn-chip'+(i===ccol?" on":"")+'" data-tk="col" data-i="'+i+'" style="border-color:'+bc(c)+'">'+dot(c)+' '+CN[i]+'</button>').join("")+'</div>'
     +'<input class="sn-in" id="tk-cm" placeholder="メモ（任意・例：林道の入口）" maxlength="40" style="margin-top:8px"><button class="sn-btn" data-tk="cadd">📍 現在地を集合場所に登録</button><p class="sn-note" id="tk-mc"></p>'
     +'<div class="nl">③ 同行者の位置</div><div id="tk-mates"></div>'
     +'<p class="sn-note">同行者に、LINEやGoogleマップの「現在地を共有」で位置を送ってもらい、届いたリンクや座標を下に貼り付けます。貼るたびに「◯分前」が更新されます。</p>'
@@ -2527,6 +2561,7 @@ window.fnQrPopup=()=>{
         const s=S();s.cars.push({id:Date.now(),n,c:COLS[ccol],la:m.la,lo:m.lo,at:Date.now(),m:mm});put(s);
         $q("#tk-cn").value="";$q("#tk-cm").value="";msg.c="「"+n+"」を登録しました。";paint()});
     }
+    else if(a==="cdet"){openDet(i)}
     else if(a==="cdel"){const s=S(),c=s.cars[i];if(c&&confirm("「"+c.n+"」を削除しますか？")){s.cars.splice(i,1);put(s);paint()}}
     else if(a==="mdel"){const s=S(),x=s.mates[i];if(x&&confirm("「"+x.n+"」を削除しますか？")){s.mates.splice(i,1);put(s);paint()}}
     else if(a==="madd"){
