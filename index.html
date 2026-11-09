@@ -1388,36 +1388,41 @@ function initAll(root){
 /* 情報ページ */
 /* ---- コンパス ---- */
 const CR=Math.PI/180,DIR8=h=>["北","北東","東","南東","南","南西","西","北西"][Math.round(((h%360)+360)%360/45)%8],REL=a=>{a=((a%360)+360)%360;return a<22.5||a>=337.5?"まっすぐ前":a<67.5?"右前":a<112.5?"右":a<157.5?"右後ろ":a<202.5?"後ろ":a<247.5?"左後ろ":a<292.5?"左":"左前"},cmpFmt=d=>d<1000?Math.round(d)+"m":(d/1000).toFixed(1)+"km";
-const CMP={h:null,t:null,on:false,msg:"",pos:null,fns:{},cor:true,tgt:null,_w:null,_last:0,_to:null,_s:null,ev:{abs:0,rel:0,wk:0,so:0,gp:0},sErr:"",src:""};
+const CMP={h:null,t:null,on:false,msg:"",pos:null,fns:{},cor:true,tgt:null,_w:null,_last:0,_to:null,_s:null,ev:{abs:0,rel:0,wk:0,so:0,gp:0,ra:0},sErr:"",src:"",hr:null,off:null};
 const cmpDiag=()=>"受信 絶対"+CMP.ev.abs+"／相対"+CMP.ev.rel+"／iOS"+CMP.ev.wk+"／センサー"+CMP.ev.so+"／GPS向き"+CMP.ev.gp+(CMP.sErr?"　エラー:"+CMP.sErr:"");
 const cmpDecl=()=>{const la=(CMP.pos||ld("fn_loc",null)||{}).la;return CMP.cor&&la!=null&&la>=24&&la<=46?-(4.5+(la-26)*0.29):0};
 function cmpGeo(a,b){const R=6371000,p1=a.la*CR,p2=b.la*CR,dl=(b.lo-a.lo)*CR,dp=p2-p1,h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2,y=Math.sin(dl)*Math.cos(p2),x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);return{d:2*R*Math.asin(Math.sqrt(h)),b:(Math.atan2(y,x)/CR+360)%360}}
 function cmpTargets(){const out=[];[["sn","山菜採り","#4f8446"],["fr","果実と樹の実","#c0392b"],["kn","きのこ","#d9822b"],["ck","栽培果物","#7b4fb0"]].forEach(([pg,lb,col])=>{const pre="fn_"+pg+"_";ld(pre+"spots",[]).forEach(s=>{if(s.la!=null&&s.lo!=null)out.push({k:"📍",n:String(s.n||""),la:s.la,lo:s.lo,lb,col})});ld(pre+"harv",[]).forEach(h=>{if(h.la!=null&&h.lo!=null)out.push({k:"📌",n:spName(pg,h.p),la:h.la,lo:h.lo,lb,col})})});return out}
 function cmpRun(){Object.keys(CMP.fns).forEach(k=>{try{if(CMP.fns[k]()===false)delete CMP.fns[k]}catch(e){delete CMP.fns[k]}})}
-function cmpFeed(h,src){
+function cmpFeed(h,src,tr){
   if(CMP.h==null)CMP.h=h;else{const d=((h-CMP.h+540)%360)-180;CMP.h=(CMP.h+d*0.25+360)%360}
-  CMP.src=src||"";CMP.t=(CMP.h+cmpDecl()+360)%360;
+  CMP.src=src||"";CMP.t=tr?CMP.h:(CMP.h+cmpDecl()+360)%360;
   const n=Date.now();if(n-CMP._last<80)return;CMP._last=n;
   cmpRun();
   if(!Object.keys(CMP.fns).length)cmpStop();
+}
+function cmpAlpha(e){
+  const x=e.beta*CR,y=e.gamma*CR,z=e.alpha*CR,cY=Math.cos(y),cZ=Math.cos(z),sX=Math.sin(x),sY=Math.sin(y),sZ=Math.sin(z),Vx=-cZ*sY-sZ*sX*cY,Vy=-sZ*sY+cZ*sX*cY;
+  let h=Math.atan2(Vx,Vy)/CR;if(h<0)h+=360;
+  const ang=(window.screen&&screen.orientation&&screen.orientation.angle)||0;return (h+ang)%360;
 }
 function cmpQ(q){
   const x=q[0],y=q[1],z=q[2],w=q[3],zx=2*(x*z+w*y),zy=2*(y*z-w*x),zz=1-2*(x*x+y*y);
   let h;if(Math.abs(zz)>0.7)h=Math.atan2(2*(x*y-w*z),1-2*(x*x+z*z))/CR;else h=Math.atan2(-zx,-zy)/CR;
   cmpFeed((h+360)%360,"sensor");
 }
-function cmpStop(){if(CMP._s){try{CMP._s.stop()}catch(e){}CMP._s=null}window.removeEventListener("deviceorientation",cmpEvt,true);window.removeEventListener("deviceorientationabsolute",cmpEvt,true);if(CMP._w!=null&&navigator.geolocation)navigator.geolocation.clearWatch(CMP._w);CMP._w=null;clearTimeout(CMP._to);CMP.on=false;CMP.h=null;CMP.t=null;CMP.src=""}
+function cmpStop(){if(CMP._s){try{CMP._s.stop()}catch(e){}CMP._s=null}window.removeEventListener("deviceorientation",cmpEvt,true);window.removeEventListener("deviceorientationabsolute",cmpEvt,true);if(CMP._w!=null&&navigator.geolocation)navigator.geolocation.clearWatch(CMP._w);CMP._w=null;clearTimeout(CMP._to);CMP.on=false;CMP.h=null;CMP.t=null;CMP.src="";CMP.hr=null;CMP.off=null}
 function cmpEvt(e){
   if(e.type==="deviceorientationabsolute")CMP.ev.abs++;else if(typeof e.webkitCompassHeading==="number")CMP.ev.wk++;else CMP.ev.rel++;
   if(CMP.ev.so>0)return;
-  let h=null;
-  if(typeof e.webkitCompassHeading==="number"&&!isNaN(e.webkitCompassHeading))h=e.webkitCompassHeading;
-  else if(e.alpha!=null&&e.beta!=null&&e.gamma!=null&&(e.absolute===true||e.type==="deviceorientationabsolute")){
-    const x=e.beta*CR,y=e.gamma*CR,z=e.alpha*CR,cY=Math.cos(y),cZ=Math.cos(z),sX=Math.sin(x),sY=Math.sin(y),sZ=Math.sin(z),Vx=-cZ*sY-sZ*sX*cY,Vy=-sZ*sY+cZ*sX*cY;
-    h=Math.atan2(Vx,Vy)/CR;if(h<0)h+=360;
-    const ang=(window.screen&&screen.orientation&&screen.orientation.angle)||0;h=(h+ang)%360;
-  }
-  if(h!=null)cmpFeed(h,"event");
+  if(typeof e.webkitCompassHeading==="number"&&!isNaN(e.webkitCompassHeading)){cmpFeed(e.webkitCompassHeading,"event");return}
+  if(e.alpha==null||e.beta==null||e.gamma==null)return;
+  if(e.absolute===true||e.type==="deviceorientationabsolute"){cmpFeed(cmpAlpha(e),"event");return}
+  if(CMP.ev.abs>0)return;
+  CMP.ev.ra++;
+  const h=cmpAlpha(e);
+  if(CMP.hr==null)CMP.hr=h;else{const d=((h-CMP.hr+540)%360)-180;CMP.hr=(CMP.hr+d*0.3+360)%360}
+  if(CMP.off!=null)cmpFeed((CMP.hr+CMP.off)%360,"rel",true);
 }
 async function cmpStart(){
   if(CMP.on)return;
@@ -1439,8 +1444,8 @@ async function cmpStart(){
       }
     }
     CMP.on=true;CMP.msg="";
-    CMP._to=setTimeout(()=>{if(CMP.t==null){CMP.msg="この端末では、方位センサー（磁気センサー）から向きを取れません。歩いている間は、GPSの進行方向で代わりに表示します。";cmpRun()}},3500);
-    if(navigator.geolocation&&CMP._w==null)CMP._w=navigator.geolocation.watchPosition(p=>{CMP.pos={la:p.coords.latitude,lo:p.coords.longitude,acc:Math.round(p.coords.accuracy)};const hd=p.coords.heading;if(hd!=null&&!isNaN(hd)&&(p.coords.speed||0)>0.7&&CMP.ev.so+CMP.ev.abs+CMP.ev.wk===0){CMP.ev.gp++;cmpFeed(((hd-cmpDecl())+360)%360,"gps")}},()=>{},{enableHighAccuracy:true,maximumAge:2000,timeout:30000});
+    CMP._to=setTimeout(()=>{if(CMP.t==null){CMP.msg=CMP.ev.ra>0?"この端末では、磁気センサーから北が取れません。5〜10mほど歩くと、GPSの進行方向で北が合い、そのあとは端末の回転に追従します。目的地の方向を向いて「向きを合わせる」を押しても合わせられます。":(CMP.ev.rel>0&&CMP.ev.abs+CMP.ev.so+CMP.ev.wk===0)?"この端末には、方位センサー（磁気センサー）がないようです。針は動きません。盤は北が上のままで、選んだ地点の方角と距離だけ出ます。歩いている間は、GPSの進行方向で針が動きます。向きを知りたいときは、センサーのあるスマートフォンを使ってください。":"この端末では、方位センサー（磁気センサー）から向きを取れません。歩いている間は、GPSの進行方向で代わりに表示します。";cmpRun()}},3500);
+    if(navigator.geolocation&&CMP._w==null)CMP._w=navigator.geolocation.watchPosition(p=>{CMP.pos={la:p.coords.latitude,lo:p.coords.longitude,acc:Math.round(p.coords.accuracy)};const hd=p.coords.heading;if(hd!=null&&!isNaN(hd)&&(p.coords.speed||0)>0.7&&CMP.ev.so+CMP.ev.abs+CMP.ev.wk===0){CMP.ev.gp++;if(CMP.hr!=null){const m=(hd-CMP.hr+360)%360;if(CMP.off==null)CMP.off=m;else{const d=((m-CMP.off+540)%360)-180;CMP.off=(CMP.off+0.35*d+360)%360}cmpFeed((CMP.hr+CMP.off)%360,"rel",true)}else cmpFeed(hd,"gps",true)}},()=>{},{enableHighAccuracy:true,maximumAge:2000,timeout:30000});
   }catch(e){CMP.msg="コンパスを開始できませんでした。"}
   cmpRun();
 }
@@ -1511,7 +1516,7 @@ function initInfo(root){
     if(CMP.t!=null){
       r.setAttribute("transform","rotate("+(-CMP.t).toFixed(1)+" 120 120)");
       dg.textContent=DIR8(CMP.t)+" "+Math.round(CMP.t)+"°";
-      const dc=cmpDecl();ms.textContent=(CMP.src==="gps"?"GPSの進行方向（歩いている間だけ）　":"")+"真北に補正："+(dc?dc.toFixed(1)+"°":"なし");
+      const dc=cmpDecl();ms.textContent=(CMP.src==="gps"?"GPSの進行方向（歩いている間だけ）　":CMP.src==="rel"?"回転センサー＋GPSで北を補正　":"")+"真北に補正："+(dc?dc.toFixed(1)+"°":"なし");
     }else if(ms)ms.textContent=CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。");
     if(CMP.tgt&&pos){tg.setAttribute("transform","rotate("+cmpGeo(pos,CMP.tgt).b.toFixed(1)+" 120 120)");tg.style.display=""}else tg.style.display="none";
     ti.innerHTML=cmpTi();
@@ -1524,7 +1529,7 @@ function initInfo(root){
     const gb=CMP.tgt&&pos?cmpGeo(pos,CMP.tgt).b:0;
     const svg=`<svg viewBox="0 0 240 240" style="width:min(70vw,260px);display:block;margin:6px auto;color:var(--ink)"><g id="cmp-rose" transform="rotate(${(-(CMP.t||0)).toFixed(1)} 120 120)"><circle cx="120" cy="120" r="108" fill="rgba(255,255,255,.55)" stroke="currentColor" stroke-width="2"/>${tk}<text x="120" y="54" text-anchor="middle" dominant-baseline="middle" font-size="26" font-weight="700" fill="#c0392b">北</text><text x="120" y="190" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">南</text><text x="192" y="122" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">東</text><text x="48" y="122" text-anchor="middle" dominant-baseline="middle" font-size="22" fill="currentColor">西</text><g id="cmp-tg" transform="rotate(${gb.toFixed(1)} 120 120)"${CMP.tgt&&pos?"":' style="display:none"'}><line x1="120" y1="120" x2="120" y2="38" stroke="#e0452b" stroke-width="3" stroke-dasharray="5 4"/><circle cx="120" cy="30" r="9" fill="#e0452b" stroke="#fff" stroke-width="2"/></g></g><path d="M120 2l-10 18h20z" fill="#2a6fdb"/></svg>`;
     const chips=pos?`<div class="sn-note">近くのスポット・収穫地点（タップで方角を表示）</div><div class="sn-chips">${cmpT.map((t,i)=>`<button class="sn-chip${CMP.tgt&&CMP.tgt.la===t.la&&CMP.tgt.lo===t.lo?" on":""}" data-ct="${i}">${t.k} ${esc(t.n)}　${cmpFmt(t.d)}</button>`).join("")||'<span class="sn-note">位置つきのスポットや収穫の記録がありません。</span>'}</div><button class="sn-del" data-a="re">一覧を更新</button>`:`<p class="sn-note">現在地を取得するか、コンパスを開始すると、近くのスポットや収穫地点が出ます。</p>`;
-    return `<div class="ic"><h4>🧭 コンパス</h4>${svg}<div class="ib" id="cmp-deg" style="text-align:center">${CMP.t==null?"—":DIR8(CMP.t)+" "+Math.round(CMP.t)+"°"}</div><div class="sn-note" id="cmp-msg" style="text-align:center">${esc(CMP.t!=null?"真北に補正："+(cmpDecl()?cmpDecl().toFixed(1)+"°":"なし"):(CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。")))}</div><div style="text-align:center;margin:8px 0"><button class="sn-btn" data-cs="${CMP.on?0:1}">${CMP.on?"コンパスを止める":"コンパスを開始"}</button> <button class="sn-chip${CMP.cor?" on":""}" data-cc="1">真北に補正</button></div><div class="sn-note" id="cmp-dg" style="text-align:center;font-size:11px">${CMP.on?esc(cmpDiag()):""}</div><div class="ib" id="cmp-ti" style="font-size:15px">${cmpTi()}</div>${chips}<p class="sn-note">金属や電子機器の近くでは、針が狂います。端末を8の字に振ると補正されます。あくまで目安です。道に迷わないために、地図やGPSアプリも併用してください。</p></div>`;
+    return `<div class="ic"><h4>🧭 コンパス</h4>${svg}<div class="ib" id="cmp-deg" style="text-align:center">${CMP.t==null?"—":DIR8(CMP.t)+" "+Math.round(CMP.t)+"°"}</div><div class="sn-note" id="cmp-msg" style="text-align:center">${esc(CMP.t!=null?"真北に補正："+(cmpDecl()?cmpDecl().toFixed(1)+"°":"なし"):(CMP.on?(CMP.msg||"向きを取得中…"):(CMP.msg||"「コンパスを開始」を押してください。")))}</div><div style="text-align:center;margin:8px 0"><button class="sn-btn" data-cs="${CMP.on?0:1}">${CMP.on?"コンパスを止める":"コンパスを開始"}</button> <button class="sn-chip${CMP.cor?" on":""}" data-cc="1">真北に補正</button></div>${CMP.on&&CMP.ev.ra>0&&CMP.ev.abs+CMP.ev.so===0&&CMP.tgt&&CMP.hr!=null?`<div style="text-align:center;margin:6px 0"><button class="sn-chip" data-ca="1">いま目的地の方向を向いている（向きを合わせる）</button></div>`:""}<div class="sn-note" id="cmp-dg" style="text-align:center;font-size:11px">${CMP.on?esc(cmpDiag()):""}</div><div class="ib" id="cmp-ti" style="font-size:15px">${cmpTi()}</div>${chips}<p class="sn-note">金属や電子機器の近くでは、針が狂います。端末を8の字に振ると補正されます。あくまで目安です。道に迷わないために、地図やGPSアプリも併用してください。</p></div>`;
   };
   const render=()=>{const n=new Date();root.innerHTML=`<div class="hd" style="display:flex;justify-content:space-between;align-items:baseline"><span class="sn-note">${n.getMonth()+1}月${n.getDate()}日　${hm(n)}</span><button class="sn-del" data-a="re">画面を更新</button></div>`+gpsC()+cmpC()+`<div class="ir">${sunC().replace('class="ic"','class="ic" style="flex:1.2"')}</div>`+moonC()+tideC()+wxC()+safeC()+seasonC()};
   const go=async(u,key,m)=>{if(!loc){msg[m]="先に現在地を取得してください。";render();return}msg[m]="取得中… ";render();try{const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();if(m==="wx"){wx=j;sv("fn_wx",wx)}else{tide=j;sv("fn_tide",tide)}msg[m]=""}catch(e){msg[m]="取得できませんでした。電波のある場所で、もう一度試してください。"}render()};
@@ -1537,6 +1542,7 @@ function initInfo(root){
     else if(a==="tide")go(`https://marine-api.open-meteo.com/v1/marine?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2&cell_selection=sea`,"fn_tide","tide");
     else if(b.dataset.cs!==undefined){if(b.dataset.cs==="1"){cmpStart().then(()=>render())}else{cmpStop();CMP.msg="";render()}}
     else if(b.dataset.cc!==undefined){CMP.cor=!CMP.cor;render()}
+    else if(b.dataset.ca!==undefined){const ps=cmpPos();if(ps&&CMP.tgt&&CMP.hr!=null){CMP.off=(cmpGeo(ps,CMP.tgt).b-CMP.hr+360)%360;cmpFeed((CMP.hr+CMP.off)%360,"rel",true)}render()}
     else if(b.dataset.ct!==undefined){const t=cmpT[+b.dataset.ct];CMP.tgt=CMP.tgt&&t&&CMP.tgt.la===t.la&&CMP.tgt.lo===t.lo?null:t;render()}
     else if(a==="bear"){bo=!bo;render()}
     else if(a==="bradd"){const p=$("br-p").value.trim(),m=$("br-m").value.trim();if(!p&&!m)return;const n=new Date();bear.unshift({d:n.getFullYear()+"-"+f2(n.getMonth()+1)+"-"+f2(n.getDate()),p,m});sv("fn_bear",bear);render()}
@@ -2426,7 +2432,7 @@ const HOWTO_QA=[
 ["収穫マップの地図が出ない（📌だけ出る）","背景の地図は通信が必要です。圏外や電波が弱いときは出ません。📌は通信がなくても出ます。","sansai|fruit|kinoko|saibai"],
 ["収穫マップで、現在地を中心にしたい","「中心：現在地」を押します。位置情報の許可を求められたら、許可してください。","sansai|fruit|kinoko|saibai"],
 ["パトロールの予定を登録したい","「パトロール」タブで、日付・時間・場所を入れて「予定を追加」を押します。登録した予定には「📅 Googleカレンダーに追加」「編集」「削除」が付きます。ここに書いた予定は、この端末だけに保存されます。みんなに知らせたいときは、「📅 Googleカレンダーに追加」から、グループのカレンダーに入れてください。","sansai|fruit|kinoko|saibai"],
-["コンパスの針が動かない・ずれる","「コンパスを開始」を押してください。iPhoneでは「動きと向き」の許可が必要です（設定のブラウザの項目で許可できます）。針が狂うときは、金属や電子機器から離れ、端末を8の字に振ってください。Chromeでは、サイトの設定の「モーションセンサー」が許可になっているかも見てください。磁気センサーのない端末では、針は動かず、歩いている間だけGPSの進行方向で表示します。向きの目安なので、道に迷わないために、地図やGPSアプリも併用してください。"],
+["コンパスの針が動かない・ずれる","「コンパスを開始」を押してください。iPhoneでは「動きと向き」の許可が必要です（設定のブラウザの項目で許可できます）。針が狂うときは、金属や電子機器から離れ、端末を8の字に振ってください。Chromeでは、サイトの設定の「モーションセンサー」が許可になっているかも見てください。磁気センサーが使えない端末（回転センサーだけが動く端末）では、5〜10mほど歩くと北が合います。回転センサーもない端末では、針は動かず、歩いている間だけGPSの進行方向で表示します。向きの目安なので、道に迷わないために、地図やGPSアプリも併用してください。"],
 ["ログインできない・IDやパスワードが分からない","管理者にご連絡ください。"],
 ["データのバックアップは？","もくじの下にある「データのバックアップ」で、記録・付箋・ページ設定をまとめて保存・復元できます。機種変更やアプリの入れ直しの前に使ってください。"],
 ["アプリが古いままで更新されない","アプリを完全に閉じてから、開き直してください。それでも変わらないときは、少し時間をおいて、もう一度開いてください。"],
