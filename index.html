@@ -2121,7 +2121,7 @@ function initMembers(root){
   const myuid=()=>ld("fn_uid",null);
   const selfRec=()=>{if(adm())return null;const m=meRec();return m};
   const pgList=()=>pages().filter(p=>FIXED.indexOf(p.id)<0);
-  let open=null,edit=null,ask=null,msg="",tok="",cred="",credv=null,inv=false,flt=null,bc=false,bt=null,bcText="【フィールドノート】\n";
+  let open=null,edit=null,ask=null,ce=null,msg="",tok="",cred="",credv=null,inv=false,flt=null,bc=false,bt=null,bcText="【フィールドノート】\n";
   const grab=()=>{const v=id=>root.querySelector("#"+id);if(!edit||!v("mf-n"))return;
     Object.assign(edit,{n:v("mf-n").value.trim(),nn:v("mf-nn").value.trim(),bio:v("mf-b").value.trim(),memo:v("mf-m").value.trim(),tel:v("mf-tel").value.trim(),mail:v("mf-ml").value.trim(),line:v("mf-ln").value.trim()});
     if(edit.self){edit.pub={};root.querySelectorAll(".mf-pb").forEach(c=>{edit.pub[c.value]=c.checked?1:0})}
@@ -2141,7 +2141,7 @@ function initMembers(root){
   const vpg=m=>{const ids=(m.pg||[]).filter(id=>pgList().some(p=>p.id===id));if(adm()||!remote().gate)return ids;const mp=(meRec()||{}).pg||[];return ids.filter(id=>mp.includes(id))};
   const pgChips=m=>vpg(m).map(id=>{const q=pages().find(p=>p.id===id);return q?`<span class="mc-pg" style="border-color:${E(q.color||"var(--line)")}"><i>${q.icon}</i>${E(q.name)}</span>`:""}).join("")||'<span class="mc-none">ページ未登録</span>';
   const fbar=a=>{const n={};a.forEach(m=>vpg(m).forEach(id=>{n[id]=(n[id]||0)+1}));const ch=pgList().filter(p=>n[p.id]).map(p=>`<button class="sn-chip mc-f${flt===p.id?" on":""}" data-f="${E(p.id)}">${p.icon} ${E(p.name)}（${n[p.id]}）</button>`).join("");return ch?`<div class="sn-chips" style="margin:6px 0"><button class="sn-chip mc-f${flt?"":" on"}" data-f="">全員（${a.length}）</button>${ch}</div>`:""};
-  if(!document.getElementById("mc-css")){const st=document.createElement("style");st.id="mc-css";st.textContent=".mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}@media(min-width:600px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}.mc{border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.35);cursor:pointer;min-width:0}.mc-open{grid-column:1/-1;background:rgba(255,255,255,.55)}.mc-top{display:flex;gap:8px;align-items:center}.mc-nm{min-width:0;display:flex;flex-direction:column;line-height:1.3}.mc-nm b{font-size:14px;overflow-wrap:anywhere}.mc-nm small{font-size:11px;opacity:.7;overflow-wrap:anywhere}.mc-pgs{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}.mc-pg{font-size:11px;line-height:1.5;padding:0 7px;border:1px solid var(--line);border-radius:10px;white-space:nowrap}.mc-pg i{font-style:normal;margin-right:2px}.mc-none{font-size:11px;opacity:.55}.mc-cts{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}.mc-ct{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none;color:inherit;min-width:52px}.mc-ct span{width:46px;height:46px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center}.mc-sv{display:inline-block;margin:2px 0 8px;font-size:13px;color:inherit}.mc-f{font:inherit;cursor:pointer}";document.head.appendChild(st)}
+  if(!document.getElementById("mc-css")){const st=document.createElement("style");st.id="mc-css";st.textContent=".mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px}@media(min-width:600px){.mc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}.mc{border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.35);cursor:pointer;min-width:0}.mc-open{grid-column:1/-1;background:rgba(255,255,255,.55)}.mc-top{display:flex;gap:8px;align-items:center}.mc-nm{min-width:0;display:flex;flex-direction:column;line-height:1.3}.mc-nm b{font-size:14px;overflow-wrap:anywhere}.mc-nm small{font-size:11px;opacity:.7;overflow-wrap:anywhere}.mc-pgs{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px}.mc-pg{font-size:11px;line-height:1.5;padding:0 7px;border:1px solid var(--line);border-radius:10px;white-space:nowrap}.mc-pg i{font-style:normal;margin-right:2px}.mc-none{font-size:11px;opacity:.55}.mc-cts{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0}.mc-ct{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;text-decoration:none;color:inherit;min-width:52px}.mc-ct span{width:46px;height:46px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center}.mc-sv{display:inline-block;margin:2px 0 8px;font-size:13px;color:inherit}.mc-f{font:inherit;cursor:pointer}.mc-car{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin:6px 0;background:rgba(255,255,255,.5)}.mc-cd{width:16px;height:16px;border-radius:50%;border:1px solid #777;flex:none;margin-top:3px}.mc-car .mc-cb{display:flex;gap:6px;margin-top:6px}.mc-car .mc-cb button{width:auto;padding:5px 12px;font-size:13px}";document.head.appendChild(st)}
   
   const bcTo=()=>{const me=myuid(),mr=meRec();return memVisible().filter(m=>(m.st||"ok")==="ok"&&!(m.uid&&(m.uid===me||(mr&&m.uid===mr.uid)))&&(!bt||vpg(m).includes(bt)))};
   const bcNums=to=>to.map(m=>ctVal(m,"tel").replace(/[^0-9+]/g,"")).filter(Boolean);
@@ -2159,6 +2159,20 @@ function initMembers(root){
     if(f.self)return `<div class="sn-row"><div class="nl">自分のプロフィールを編集</div>${top}${mid}${photoBlock(f)}${contact(f)}<div class="nl">ほかのメンバーに見せるもの</div><div class="sn-chips">${[["ph","写真"],["bio","紹介文"],["memo","メモ"],["joined","入会日"]].map(([k,l])=>`<label class="sn-chip" style="cursor:pointer"><input type="checkbox" class="mf-pb" value="${k}"${pb[k]===0?"":" checked"}> ${l}</label>`).join("")}</div><div class="sn-g"><button class="sn-btn" data-a="sendprof">更新を管理者に申請する</button><button class="sn-btn sn-ghost" data-a="cancel">やめる</button></div><p class="sn-note">${E(msg)}</p></div>`;
     const acct=f.i>=0?`<div class="nl">ログイン用のIDとパスワード</div><p class="sn-note">${f.uid?"ID："+E(f.uid)+"（パスワードは発行したときだけ表示されます）":"まだ発行していません。"}</p><button class="sn-btn sn-ghost" data-a="issue">${f.uid?"IDとパスワードを再発行する":"IDとパスワードを発行する"}</button>${cred?`<textarea class="sn-in" id="mf-cr" rows="6" readonly>${E(cred)}</textarea><button class="sn-btn sn-ghost" data-a="cpcr">この文面をコピー</button>${credv?sendBlk(f):""}<p class="sn-note">この画面を閉じると、パスワードは見られなくなります。</p>`:""}`:"";
     return `<div class="sn-row"><div class="nl">${f.i<0?"メンバーを追加":"メンバーを編集"}</div>${top}<input class="sn-in" id="mf-r" placeholder="役割（、で区切る　例：採取リーダー、記録係）" value="${E((f.role||[]).join("、"))}"><input class="sn-in" id="mf-k" list="mf-kl" placeholder="ランク" value="${E(f.rank)}"><datalist id="mf-kl"><option value="初級（初心者）"><option value="中級"><option value="上級"></datalist><div class="nl">入会日</div><input class="sn-in" type="date" id="mf-j" value="${E(f.joined)}">${mid}${photoBlock(f)}${contact(f)}<div class="nl">状態</div><select class="sn-in" id="mf-st"><option value="ok"${(f.st||"ok")==="ok"?" selected":""}>利用中</option><option value="hold"${f.st==="hold"?" selected":""}>一時停止</option><option value="out"${f.st==="out"?" selected":""}>退会</option></select><div class="nl">閲覧を許可するページ</div><div class="sn-chips">${pgList().map(p=>`<label class="sn-chip" style="cursor:pointer"><input type="checkbox" class="mf-pg" value="${E(p.id)}"${(f.pg||[]).includes(p.id)?" checked":""}> ${p.icon} ${E(p.name)}</label>`).join("")}</div><div class="nl">ページのリーダー</div><div class="sn-chips">${pgList().map(p=>`<label class="sn-chip" style="cursor:pointer"><input type="checkbox" class="mf-ld" value="${E(p.id)}"${(f.lead||[]).includes(p.id)?" checked":""}> ${p.icon} ${E(p.name)}</label>`).join("")}</div>${acct}<div class="sn-g"><button class="sn-btn" data-a="save">保存</button><button class="sn-btn sn-ghost" data-a="cancel">やめる</button></div><p class="sn-note">${E(msg)}</p></div>`};
+  const CCOL=[["赤","#d9534f"],["青","#3b7ca3"],["緑","#2f8f6f"],["橙","#e08a1e"],["紫","#7a5aa3"],["灰","#777777"],["銀","#b8bcc2"],["黒","#222222"],["白","#ffffff"],["水","#7ecbe8"]],MKS=["トヨタ","ホンダ","日産","マツダ","スバル","スズキ","ダイハツ","三菱","レクサス","いすゞ","日野","輸入車","その他"];
+  const ccol=c=>(CCOL.find(x=>x[0]===c)||[0,"#999"])[1];
+  const carForm=()=>{const f=ce.f;return `<div class="mc-car" style="display:block"><div class="nl">${ce.k<0?"車を追加":"車を編集"}</div><input class="sn-in" id="cf-mk" list="cf-mkl" maxlength="20" placeholder="メーカー（例：トヨタ）" value="${E(f.mk)}"><datalist id="cf-mkl">${MKS.map(x=>`<option value="${x}">`).join("")}</datalist><input class="sn-in" id="cf-md" maxlength="30" placeholder="車種（例：ハイエース）" value="${E(f.md)}"><select class="sn-in" id="cf-c">${CCOL.map(x=>`<option value="${x[0]}"${f.c===x[0]?" selected":""}>色：${x[0]}</option>`).join("")}</select><input class="sn-in" id="cf-no" maxlength="12" placeholder="ナンバー（任意・下4桁など。管理者だけに見えます）" value="${E(f.no)}"><input class="sn-in" id="cf-me" maxlength="40" placeholder="メモ（任意）" value="${E(f.me)}"><div class="sn-g"><button class="sn-btn" data-ca="save">保存</button><button class="sn-btn sn-ghost" data-ca="cancel">やめる</button></div></div>`};
+  const carBlock=(m,i)=>{
+    const cs=m.cars||[],ad=adm();if(!ad&&!cs.length)return "";
+    let h=`<div class="mc-cf"><div class="nl">🚗 車（${cs.length}台）</div>`;
+    cs.forEach((c,k)=>{
+      if(ce&&ce.i===i&&ce.k===k){h+=carForm();return}
+      h+=`<div class="mc-car"><span class="mc-cd" style="background:${ccol(c.c)}"></span><div style="flex:1;min-width:0"><b>${E((c.mk||"")+(c.md?" "+c.md:"")||"（車種未登録）")}</b><small class="sn-note" style="display:block;margin:0">${E(c.c||"")}${ad&&c.no?"　ナンバー "+E(c.no):""}${c.me?"　"+E(c.me):""}</small>${ad?`<div class="mc-cb"><button class="sn-btn sn-ghost" data-ca="edit" data-k="${k}">編集</button><button class="sn-btn sn-ghost" data-ca="del" data-k="${k}">${ce&&ce.i===i&&ce.d===k?"本当に削除":"削除"}</button></div>`:""}</div></div>`;
+    });
+    if(ce&&ce.i===i&&ce.k===-1)h+=carForm();
+    else if(ad)h+=`<button class="sn-btn sn-ghost" data-ca="add">＋ 車を追加</button>`;
+    return h+"</div>";
+  };
   const pgNames=ids=>(ids||[]).map(id=>{const q=pages().find(p=>p.id===id);return q?E(q.icon+" "+q.name):""}).filter(Boolean).join("、");
   const render=()=>{
     if(edit){root.innerHTML=form();return}
@@ -2172,8 +2186,8 @@ function initMembers(root){
       const sh=k=>memPub(m,k);
       const av=m.ph&&sh("ph")?`<img src="${E(m.ph)}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none">`:'<span style="width:40px;height:40px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none">🌿</span>';
       const bdg=(ad?((m.st==="hold"?"【一時停止】":m.st==="out"?"【退会】":"")+(m.uid?"":"【ID未発行】")):"");
-      const det=open===i?`<div style="margin-top:10px">${m.bg&&sh("ph")?`<img src="${E(m.bg)}" alt="" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:""}<div class="sn-chips">${(m.role||[]).map(r=>`<span class="sn-chip on">${E(r)}</span>`).join("")}</div>${(m.lead||[]).length?`<p class="sn-note">リーダー：${pgNames(m.lead)}</p>`:""}${(m.pg||[]).length&&ad?`<p class="sn-note">閲覧：${pgNames(m.pg)}</p>`:""}${m.joined&&sh("joined")?`<p class="sn-note">入会：${E(m.joined)}</p>`:""}${m.bio&&sh("bio")?`<p class="sn-note">${E(m.bio)}</p>`:""}${m.memo&&sh("memo")?`<p class="sn-note">${E(m.memo)}</p>`:""}${ctBar(m)}${ad?`<div class="sn-g"><button class="sn-btn sn-ghost" data-a="edit">編集</button><button class="sn-del${ask===i?" ask":""}" data-a="del">${ask===i?"本当に削除":"削除"}</button></div>`:""}<button class="sn-btn sn-ghost" data-a="close" style="margin-top:12px;width:100%;box-sizing:border-box">▲ 閉じる（一覧にもどる）</button></div>`:"";
-      return `<div class="mc${open===i?" mc-open":""}" data-mi="${i}"><div class="mc-top">${av}<div class="mc-nm"><b>${E(m.n)}</b>${m.nn?`<small>「${E(m.nn)}」</small>`:""}${(bdg||m.rank)?`<small>${E(bdg+(m.rank||""))}</small>`:""}</div></div><div class="mc-pgs">${pgChips(m)}</div>${det}</div>`}).join("")+'</div>':'<p class="sn-note">表示できるメンバーはまだいません。</p>';
+      const det=open===i?`<div style="margin-top:10px">${m.bg&&sh("ph")?`<img src="${E(m.bg)}" alt="" style="max-width:100%;border-radius:10px;margin-bottom:8px">`:""}<div class="sn-chips">${(m.role||[]).map(r=>`<span class="sn-chip on">${E(r)}</span>`).join("")}</div>${(m.lead||[]).length?`<p class="sn-note">リーダー：${pgNames(m.lead)}</p>`:""}${(m.pg||[]).length&&ad?`<p class="sn-note">閲覧：${pgNames(m.pg)}</p>`:""}${m.joined&&sh("joined")?`<p class="sn-note">入会：${E(m.joined)}</p>`:""}${m.bio&&sh("bio")?`<p class="sn-note">${E(m.bio)}</p>`:""}${m.memo&&sh("memo")?`<p class="sn-note">${E(m.memo)}</p>`:""}${ctBar(m)}${carBlock(m,i)}${ad?`<div class="sn-g"><button class="sn-btn sn-ghost" data-a="edit">編集</button><button class="sn-del${ask===i?" ask":""}" data-a="del">${ask===i?"本当に削除":"削除"}</button></div>`:""}<button class="sn-btn sn-ghost" data-a="close" style="margin-top:12px;width:100%;box-sizing:border-box">▲ 閉じる（一覧にもどる）</button></div>`:"";
+      return `<div class="mc${open===i?" mc-open":""}" data-mi="${i}"><div class="mc-top">${av}<div class="mc-nm"><b>${E(m.n)}</b>${m.nn?`<small>「${E(m.nn)}」</small>`:""}${(bdg||m.rank)?`<small>${E(bdg+(m.rank||""))}</small>`:""}</div></div><div class="mc-pgs">${pgChips(m)}${(m.cars||[]).length?`<span class="mc-pg"><i>🚗</i>${(m.cars||[]).length}台</span>`:""}</div>${det}</div>`}).join("")+'</div>':'<p class="sn-note">表示できるメンバーはまだいません。</p>';
     root.innerHTML=h;fnPgMem();
   };
   const blank=(i,self)=>{const m=self?(meRec()||{}):(i>=0?memVisible()[i]:{})||{};return{i,self:!!self,id:m.id,uid:m.uid,n:m.n||"",nn:m.nn||"",role:(m.role||[]).slice(),pg:(m.pg||[]).slice(),lead:(m.lead||[]).slice(),st:m.st||"ok",rank:m.rank||"",joined:m.joined||"",bio:m.bio||"",memo:m.memo||"",ph:m.ph||"",bg:m.bg||"",tel:m.tel||(self&&ld("fn_myc",{}).tel)||"",mail:m.mail||(self&&ld("fn_myc",{}).mail)||"",line:m.line||(self&&ld("fn_myc",{}).line)||"",pub:Object.assign({},m.pub||{})}};
@@ -2184,13 +2198,24 @@ function initMembers(root){
       if(k==="copy"){const ok=()=>{if(m)m.textContent="コピーしました。"},fb=()=>{const ta=document.createElement("textarea");ta.value=tx;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");ok()}catch(x){if(m)m.textContent="コピーできませんでした。"}document.body.removeChild(ta)};try{navigator.clipboard.writeText(tx).then(ok,fb)}catch(x){fb()}}
       else{const u=bcUrl(k,bcTo(),tx);if(u)location.href=u}
       return}
+    if(b&&b.dataset.ca&&i>=0){const c=b.dataset.ca,k=+b.dataset.k,arr=cur(),m=arr[i];if(!m)return;
+      if(c==="add"){ce={i,k:-1,f:{mk:"",md:"",c:"白",no:"",me:""}}}
+      else if(c==="edit"){const x=(m.cars||[])[k]||{};ce={i,k,f:{mk:x.mk||"",md:x.md||"",c:x.c||"白",no:x.no||"",me:x.me||""}}}
+      else if(c==="cancel"){ce=null}
+      else if(c==="del"){if(ce&&ce.i===i&&ce.d===k){m.cars.splice(k,1);try{sv("fn_members",arr)}catch(er){}if(window.fnTouch)fnTouch();ce=null;msg="車を削除しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。"}else{ce={i,k:-2,d:k}}}
+      else if(c==="save"){const g=id=>(root.querySelector(id).value||"").trim(),f={mk:g("#cf-mk"),md:g("#cf-md"),c:g("#cf-c"),no:g("#cf-no"),me:g("#cf-me")};
+        if(!f.mk&&!f.md){msg="メーカーか車種を入れてください。";ce.f=f;render();return}
+        m.cars=m.cars||[];if(ce.k<0)m.cars.push(Object.assign({id:Date.now()},f));else m.cars[ce.k]=Object.assign(m.cars[ce.k]||{},f);
+        try{sv("fn_members",arr)}catch(er){msg="保存できませんでした（容量が足りません）。";render();return}
+        if(window.fnTouch)fnTouch();ce=null;msg="車の情報を保存しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。"}
+      render();return}
     if(b&&b.dataset.f!==undefined){flt=b.dataset.f||null;open=null;ask=null;render();return}
     if(b&&b.dataset.a){const a=b.dataset.a;
       if(a==="add"){edit=blank(-1);msg="";cred=""}
       else if(a==="edit"){edit=blank(i);msg="";cred=""}
       else if(a==="selfedit"){edit=blank(-1,true);msg=""}
       else if(a==="del"){if(ask===i){const arr=cur();arr.splice(i,1);sv("fn_members",arr);if(window.fnTouch)fnTouch();ask=null;open=null;msg="削除しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直してください。"}else{ask=i;render();return}}
-      else if(a==="close"){const oi=open;open=null;ask=null;render();const q=root.querySelector('[data-mi="'+oi+'"]');if(q)q.scrollIntoView({block:"center"});return}
+      else if(a==="close"){const oi=open;open=null;ask=null;ce=null;render();const q=root.querySelector('[data-mi="'+oi+'"]');if(q)q.scrollIntoView({block:"center"});return}
       else if(a==="inv"){inv=!inv}
       else if(a==="bc"){bc=!bc}
       else if(a==="cancel"){edit=null;msg="";cred=""}
@@ -2205,8 +2230,8 @@ function initMembers(root){
         try{sv("fn_members",arr)}catch(err){msg="保存できませんでした（容量が足りません）。";render();return}
         if(window.fnTouch)fnTouch();edit=null;open=null;cred="";msg="保存しました。「取り込みと配信」で配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。"}
       render();return}
-    if(b||!row||edit||e.target.closest("a"))return;
-    ask=null;open=open===i?null:i;render()});
+    if(b||!row||edit||e.target.closest("a")||e.target.closest(".mc-cf"))return;
+    ask=null;ce=null;open=open===i?null:i;render()});
   root.addEventListener("change",e=>{if(e.target.id!=="mf-f")return;const fl=e.target.files[0];if(!fl||!window.fnShrink)return;const r=new FileReader();r.onload=async()=>{grab();edit.ph=await fnShrink(r.result,128,true,.7);edit.bg=await fnShrink(r.result,400,false,.6);render()};r.readAsDataURL(fl)});
   window.fnMemRedraw=()=>{edit=null;render()};render();
 }
@@ -2234,7 +2259,7 @@ function initMembers(root){
     const accts=[{uid,wk:mk}];let miss=[];
     mem.forEach(m=>{if(!ok(m))return;if(m.uid&&keys[m.uid]){if(m.uid!==uid)accts.push({uid:m.uid,wk:keys[m.uid].wk})}else miss.push(m.n)});
     const rules=ld("fn_rules",null)||{text:window.FN_RULES_DEF,v:1};
-    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,gkey:ld("fn_gkey",null)||undefined,qa:ld("fn_qa",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;["tel","mail","line"].forEach(k=>{if(!(x.pub&&x.pub[k]===1))delete x[k]});return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
+    const payload={updated:new Date().toLocaleString("ja-JP"),items:Object.values(ld("fn_pool",{})),adm:ld("fn_admh",null)||undefined,gcal:ld("fn_gcal",null)||undefined,gkey:ld("fn_gkey",null)||undefined,qa:ld("fn_qa",null)||undefined,members:mem.filter(ok).map(m=>{const x=Object.assign({},m);delete x.rid;["tel","mail","line"].forEach(k=>{if(!(x.pub&&x.pub[k]===1))delete x[k]});if(x.cars)x.cars=x.cars.map(c=>{const y=Object.assign({},c);delete y.no;return y});return x}),pages:ld("fn_pages",[]),rules:rules.text,rv:rules.v,gate:1};
     window.__pubWarn=miss.length?"ID未発行のため、ログインできないメンバー："+miss.join("、"):"";
     const stm=ld("fn_st",{}),ks=Object.keys(stm),st={};ks.slice(-300).forEach(k=>st[k]=stm[k]);
     return window.fnPub3(payload,accts,{st,rules:rules.text});
@@ -2474,15 +2499,17 @@ window.fnQrPopup=()=>{
       return '<div class="tk-row" style="border:1px solid var(--line);border-left:6px solid '+bc(c.c)+';border-radius:10px;padding:8px 10px;margin:8px 0;background:rgba(255,255,255,.5)"><div data-tk="cdet" data-i="'+i+'" style="display:flex;gap:10px;align-items:center;cursor:pointer">'+(r.g?arrow(r.rot,c.c,46):"")+'<div style="flex:1;min-width:0"><b>🚗 '+esc(c.n)+' '+dot(c.c)+(cn?'<span style="font-size:12px"> '+cn+'</span>':"")+(i===nearest&&s.cars.length>1?' <span style="font-size:12px;color:#2f8f6f">いちばん近い</span>':"")+'</b>'+carsub(c)+'<div style="font-size:15px">'+esc(r.txt)+'</div><div class="sn-note" style="margin:0">登録 '+hhmm(c.at)+(c.m?"　"+esc(c.m):"")+'　▶ タップで詳細</div></div></div><div class="sn-g" style="margin-top:6px"><a class="sn-btn" style="text-align:center;text-decoration:none;box-sizing:border-box" href="'+gmGo(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで案内</a><button class="sn-btn sn-ghost" data-tk="cdel" data-i="'+i+'">削除</button></div></div>'}).join("");
   };
   const memNames=()=>{try{return(ld("fn_members",null)||(typeof remote==="function"?(remote().members||[]):[])).filter(m=>(m.st||"ok")==="ok"&&m.n).map(m=>m.n)}catch(e){return[]}};
+  const memCars=()=>{try{const o=[];(ld("fn_members",null)||(typeof remote==="function"?(remote().members||[]):[])).filter(m=>(m.st||"ok")==="ok").forEach(m=>(m.cars||[]).forEach(c=>o.push({ow:m.n,mk:c.mk||"",md:c.md||"",c:c.c||"",no:c.no||""})));return o}catch(e){return[]}};
   const openDet=i=>{
     const s0=S(),c=s0.cars[i];if(!c)return;
     const old=document.getElementById("tk-det");if(old)old.remove();
     let col=Math.max(0,COLS.indexOf(c.c));
     const m=document.createElement("div");m.id="tk-det";
     m.style.cssText="position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:12px;--ink:#2b3526;--line:#ddd3b8;--sub:#667058;--bg:#fff;--acc:#4f8446";
-    const names=memNames(),r=rel(c);
+    const names=memNames(),mcs=memCars(),r=rel(c);
     m.innerHTML='<div style="background:#fffdf6;color:#2b3526;border-radius:14px;padding:16px;width:min(94vw,420px);max-height:92vh;overflow:auto;box-shadow:0 8px 30px rgba(0,0,0,.4)"><h3 style="margin:0 0 6px">🚗 車の詳細</h3>'
     +'<div class="sn-note" style="margin:0 0 8px">'+esc(r.txt)+'<br>登録 '+hhmm(c.at)+'（'+age(c.at)+'）　<a href="'+gmOpen(c.la,c.lo)+'" target="_blank" rel="noopener">Googleマップで見る</a></div>'
+    +(mcs.length?'<div class="nl">メンバーの車から選ぶ（メンバーカードに登録した車）</div><select class="sn-in" id="td-pick"><option value="">— 選ぶと下の欄に入ります —</option>'+mcs.map((x,j)=>'<option value="'+j+'">'+esc(x.ow+"：",)+esc((x.mk+" "+x.md).trim()||"車")+(x.c?"（"+esc(x.c)+"）":"")+'</option>').join("")+'</select>':"")
     +'<div class="nl">名前</div><input class="sn-in" id="td-n" maxlength="20" value="'+esc(c.n)+'">'
     +'<div class="nl">色</div><div class="sn-chips" id="td-c">'+COLS.map((x,j)=>'<button class="sn-chip'+(j===col?" on":"")+'" data-j="'+j+'" style="border-color:'+bc(x)+'">'+dot(x)+' '+CN[j]+'</button>').join("")+'</div>'
     +'<div class="nl" style="margin-top:8px">メーカー</div><input class="sn-in" id="td-mk" list="td-mkl" maxlength="20" placeholder="例：トヨタ" value="'+esc(c.mk||"")+'"><datalist id="td-mkl">'+MAKERS.map(x=>'<option value="'+x+'">').join("")+'</datalist>'
@@ -2502,6 +2529,13 @@ window.fnQrPopup=()=>{
         Object.assign(s.cars[k],{n:g("#td-n")||c.n,c:COLS[col],mk:g("#td-mk"),md:g("#td-md"),no:g("#td-no"),ow:g("#td-ow"),pa:g("#td-pa"),m:g("#td-me")});
         put(s);m.remove();msg.c="「"+s.cars[k].n+"」の詳細を保存しました。";paint();
       }
+    });
+    m.addEventListener("change",e=>{
+      if(e.target.id!=="td-pick"||e.target.value==="")return;
+      const x=mcs[+e.target.value];if(!x)return;
+      const set=(id,v)=>{m.querySelector(id).value=v||""};
+      set("#td-mk",x.mk);set("#td-md",x.md);set("#td-ow",x.ow);if(x.no)set("#td-no",x.no);
+      const j=CN.indexOf(x.c);if(j>=0){col=j;m.querySelectorAll("#td-c .sn-chip").forEach((y,q)=>y.classList.toggle("on",q===col))}
     });
     document.body.appendChild(m);
   };
