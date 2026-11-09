@@ -1350,7 +1350,7 @@ function initAll(root){
   const okUrl=u=>/^https?:\/\//i.test(String(u||""));
   const hint='<p class="sn-note">追加したら、「管理者専用」ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
   const dB=k=>`<button class="sn-del${ask===k?" ask":""}" data-dp="${E(k)}">${ask===k?"本当に削除":"削除"}</button>`;
-  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-del" data-rd="${E(x.id)}">読んだ</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
+  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-btn" style="display:block;width:100%;margin-top:8px;padding:12px;font-size:17px;font-weight:700" data-rd="${E(x.id)}">✓ 読んだ（通知を消す）</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
   const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic adm-only"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
   const own=()=>ld("fn_links",[]);
   const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
@@ -1639,8 +1639,8 @@ function initSwim(root,pg){
   const pre="fn_cu_"+pg.id+"_",E=v=>esc(String(v==null?"":v)),$=i=>root.querySelector("#"+i);
   const SW=[["cr","クロール","#3b7ca3"],["br","平泳ぎ","#4f8446"],["ba","背泳ぎ","#b8622a"],["bf","バタフライ","#7a5aa3"],["ot","その他","#8a8a6a"],["un","泳法未入力","#b9a24a"]];
   const f2=n=>String(n).padStart(2,"0"),WD=["日","月","火","水","木","金","土"];
-  let L=ld(pre+"sw",[]),G=ld(pre+"swg",{}),tab=0,ask=null,msg="",gp="w",gv=td(),cym=td().slice(0,7),csel=td();
-  if(!Array.isArray(L))L=[];if(!G||typeof G!=="object")G={};
+  let L=ld(pre+"sw",[]),G=ld(pre+"swg",{}),LK=ld(pre+"lk",[]),tab=0,ask=null,msg="",gp="w",gv=td(),cym=td().slice(0,7),csel=td();
+  if(!Array.isArray(L))L=[];if(!G||typeof G!=="object")G={};if(!Array.isArray(LK))LK=[];
   const idg=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
   const pd=s=>{const a=String(s).split("-").map(Number);return new Date(a[0],a[1]-1,a[2])};
   const fd=d=>d.getFullYear()+"-"+f2(d.getMonth()+1)+"-"+f2(d.getDate());
@@ -1701,8 +1701,12 @@ function initSwim(root,pg){
       g+=`<button data-cd="${ds}" class="${ds===csel?"on ":""}${ds===td()?"tdy":""}" style="${v?"background:rgba(59,124,163,.28)":""}">${i}${v?`<small style="display:block;font-size:9px;line-height:1">${(v/1000).toFixed(1)}</small>`:""}</button>`}
     const cs=streaks();
     return `<div class="cmv"><button data-cm="-1" aria-label="前の月">‹</button><b>${y}年${m}月</b><button data-cm="1" aria-label="次の月">›</button></div><div class="cg">${g}</div><p class="sn-note">泳いだ日：<b>${cnt}日</b>　距離：<b>${km(sm)}</b>　連続：<b>${cs[0]}日</b>（最長 ${cs[1]}日）<br>日付の下の数字はkmです。</p><div class="nl">${E(csel)} の記録</div>`+list(sorted().filter(a=>a.x.d===csel))};
-  const K=["記録","グラフ","目標","カレンダー"];
-  const render=()=>{root.innerHTML=`<div class="sn-tabs">${K.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+top()+[recV,gV,goalV,calV][tab]()};
+  const lkRow=(x,i)=>`<div class="sn-row"><a href="${E(x.u)}" target="_blank" rel="noopener"><b>${E(x.t)}</b></a>${x.m?`<br><small>${E(x.m)}</small>`:""}<br><small class="sn-note">${E(String(x.u).replace(/^https?:\/\//,"").slice(0,48))}</small>${x.d?"":`<br><button class="sn-del${ask==="lk"+i?" ask":""}" data-lkd="${i}">${ask==="lk"+i?"本当に削除":"削除"}</button>`}</div>`;
+  const lkV=()=>{
+    const def=[{t:"近くのプールをGoogleマップで探す",u:"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent("市民プール"),m:"営業時間・料金・混雑は、各プールの公式ページもご確認ください。",d:1}];
+    return '<p class="sn-note">プールの営業時間・料金・混雑など、調べものに使うリンクを集めておけます。追加したリンクは、この端末だけに保存されます。</p><div class="nl">おすすめ</div>'+def.map(x=>lkRow(x,-1)).join("")+'<div class="nl">自分のリンク</div>'+(LK.length?LK.map(lkRow).join(""):'<p class="sn-note">まだありません。</p>')+'<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前（例：◯◯市民プール）" maxlength="40"><input class="sn-in" id="lk-u" type="url" placeholder="https:// から始まるURL"><input class="sn-in" id="lk-m" placeholder="メモ（任意）" maxlength="60"><button class="sn-btn" id="lk-a">追加</button><p class="sn-note" id="lk-msg">'+E(msg)+'</p></div>'};
+  const K=["記録","グラフ","目標","カレンダー","リンク"];
+  const render=()=>{root.innerHTML=`<div class="sn-tabs">${K.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+(tab===4?"":top())+[recV,gV,goalV,calV,lkV][tab]()};
   root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
     if(d.t!==undefined){tab=+d.t;ask=null;msg="";render()}
     else if(d.gp){gp=d.gp;gv=td();render()}
@@ -1710,6 +1714,10 @@ function initSwim(root,pg){
     else if(d.cm){const y=+cym.slice(0,4),m=+cym.slice(5,7),q=new Date(y,m-1+ +d.cm,1);cym=q.getFullYear()+"-"+f2(q.getMonth()+1);csel=cym+"-01";render()}
     else if(d.cd){csel=d.cd;render()}
     else if(d.dl!==undefined){const i=+d.dl;if(ask==="sw"+i){L.splice(i,1);sv(pre+"sw",L);ask=null}else ask="sw"+i;render()}
+    else if(d.lkd!==undefined){const i=+d.lkd;if(ask==="lk"+i){LK.splice(i,1);sv(pre+"lk",LK);ask=null}else ask="lk"+i;render()}
+    else if(b.id==="lk-a"){const t=$("lk-t").value.trim(),u=$("lk-u").value.trim(),m=$("lk-m").value.trim();
+      if(!t||!/^https?:\/\//i.test(u)){$("lk-msg").textContent="名前と、https:// から始まるURLを入れてください。";return}
+      LK.unshift({t,u,m});sv(pre+"lk",LK);msg="追加しました。";render();msg=""}
     else if(b.id==="sw-add"){const nn=i=>Math.min(100000,Math.max(0,Math.round(+($(i).value)||0))),s={};let m=0;
       ["cr","br","ba","bf","ot"].forEach(k=>{const v=nn("sw-"+k);if(v){s[k]=v;m+=v}});
       if(!m){const v=nn("sw-tt");if(v){s.un=v;m=v}}
