@@ -543,6 +543,270 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
   </section>
 </div>
 <div id="dots"></div>
+<style id="gx-css">
+.gx{font-size:14px;color:var(--ink)}
+.gx *{box-sizing:border-box}
+.gx-kind{display:flex;gap:8px;margin:0 0 10px}
+.gx-kind button{flex:1;border:1px solid var(--line);background:none;border-radius:10px;padding:10px 0;font-size:14px;font-weight:700;color:var(--ink)}
+.gx-kind .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.gx-top{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px;align-items:center}
+.gx-b{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;line-height:1.2}
+.gx-p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.gx-r{color:#b5382a;border-color:#e3b3ab}
+.gx-h{font-size:13px;color:var(--sub);margin:0 0 8px;line-height:1.6}
+.gx-f{margin:0 0 10px}.gx-f label{display:block;font-weight:700;font-size:13px;margin:0 0 4px}
+.gx-f select,.gx-box select{width:100%;padding:10px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.gx-cat{margin:14px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(120,110,70,.14);font-weight:700;font-size:13px}
+.gx-card{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--bg);margin:0 0 8px}
+.gx-ic{font-size:26px;flex:none;line-height:1.2}
+.gx-bd{flex:1;min-width:0}.gx-bd b{display:block;font-size:15px}.gx-bd small{display:block;color:var(--sub);font-size:12px;line-height:1.5}
+.gx-bd em{display:block;font-style:normal;color:var(--acc);font-size:11px;margin-top:3px}
+.gx-bt{display:flex;flex-direction:column;gap:6px;flex:none}
+.gx-empty{text-align:center;padding:26px 10px;color:var(--sub);line-height:1.7}
+.gx-tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin:0 0 10px}
+.gx-t{border-collapse:separate;border-spacing:0;min-width:100%}
+.gx-t th,.gx-t td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap;vertical-align:middle}
+.gx-t th:first-child,.gx-t td:first-child{position:sticky;left:0;background:var(--paper);text-align:left;min-width:158px;z-index:1;border-right:1px solid var(--line);white-space:normal}
+.gx-t th span{display:block;font-size:18px}.gx-t th small{display:block;font-size:10px;color:var(--sub)}
+.gx-t th.cur,.gx-t td.cur{background:rgba(79,132,70,.16)}
+.gx-t input[type=checkbox]{width:24px;height:24px;accent-color:var(--acc)}
+.gx-t .gx-cr td{background:rgba(120,110,70,.16);font-weight:700;font-size:12px}
+.gx-nm{font-size:14px}.gx-nm b{font-weight:700}.gx-t td small{display:block;color:var(--sub);font-size:11px;line-height:1.4}
+.gx-rb{display:flex;gap:6px;margin-top:5px}.gx-rb .gx-b{padding:5px 12px;font-size:12px}
+.gx-ds{margin:14px 0 0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+.gx-ds summary{font-weight:700;font-size:13px}.gx-ds .gx-top{margin:10px 0 0}
+.gx-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:flex-end;justify-content:center}
+.gx-box{background:var(--paper,#fbf7ea);color:var(--ink,#2b3526);width:100%;max-width:540px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px;font-size:14px}
+.gx-box *{box-sizing:border-box}
+.gx-box h3{margin:0 0 12px;font-size:17px}.gx-box label.gx-l{display:block;font-weight:700;font-size:13px;margin:12px 0 4px}
+.gx-box .sn-in{margin-bottom:6px}
+.gx-pv{display:flex;align-items:center;gap:10px;margin:0 0 8px}.gx-pv span{font-size:34px;line-height:1}
+.gx-pal{display:flex;flex-wrap:wrap;gap:6px}.gx-pal button{font-size:20px;width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--bg)}.gx-pal .on{border:2px solid var(--acc)}
+.gx-pgs{display:flex;flex-wrap:wrap;gap:6px}
+.gx-pgs label,.gx-pgs button{display:flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:13px;background:var(--bg);color:var(--ink)}
+.gx-pgs label input{width:18px;height:18px;accent-color:var(--acc)}
+.gx-pgs .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.gx-act{display:flex;gap:10px;margin:16px 0 4px}.gx-act .gx-b{flex:1;padding:12px 0;font-size:15px}
+.gx-msg{margin:8px 0;padding:8px 10px;border-radius:8px;background:rgba(79,132,70,.14);font-size:13px}
+.gx-det{margin:14px 0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.gx-det>summary{font-weight:700;font-size:15px;cursor:pointer}.gx-det .gx{margin-top:12px}
+</style>
+<script>
+(function(){
+const INITIAL_CLOTHING = [
+  { id:1, name:"\u9577\u8896\u30b7\u30e3\u30c4",      category:"\u4e0a\u7740",   sansai:[], desc:"\u866b\u523a\u3055\u308c\u30fb\u64e6\u308a\u50b7\u9632\u6b62" },
+  { id:2, name:"\u9577\u30ba\u30dc\u30f3",        category:"\u30ba\u30dc\u30f3", sansai:[], desc:"\u64e6\u308a\u50b7\u30fb\u866b\u523a\u3055\u308c\u30fb\u30d2\u30eb\u9632\u6b62" },
+  { id:3, name:"\u9577\u9774",            category:"\u9774",     sansai:[], desc:"\u6ca2\u6cbf\u3044\u30fb\u6e7f\u5730\u3067\u306e\u63a1\u53d6\u306b\u5fc5\u9808" },
+  { id:4, name:"\u767b\u5c71\u9774",          category:"\u9774",     sansai:[], desc:"\u6025\u659c\u9762\u30fb\u5c71\u5cb3\u5730\u5e2f\u306b" },
+  { id:5, name:"\u8ecd\u624b\u30fb\u624b\u888b",      category:"\u624b\u888b",   sansai:[], desc:"\u30c8\u30b2\u30fb\u5207\u308a\u50b7\u9632\u6b62" },
+  { id:6, name:"\u5e3d\u5b50",            category:"\u5e3d\u5b50",   sansai:[], desc:"\u65e5\u5dee\u3057\u30fb\u866b\u30fb\u6728\u306e\u679d\u304b\u3089\u982d\u3092\u5b88\u308b" },
+  { id:7, name:"\u30ec\u30a4\u30f3\u30a6\u30a7\u30a2",    category:"\u96e8\u5177",   sansai:[], desc:"\u6025\u306a\u96e8\u30fb\u671d\u9732\u5bfe\u7b56" },
+  { id:8, name:"\u30e4\u30c3\u30b1\u30fb\u9632\u98a8\u30a6\u30a7\u30a2", category:"\u4e0a\u7740", sansai:[], desc:"\u9ad8\u5c71\u30fb\u7a1c\u7dda\u3067\u306e\u9632\u98a8\u306b" },
+  { id:9, name:"\u30b9\u30d1\u30c3\u30c4\u30fb\u30b2\u30a4\u30bf\u30fc", category:"\u811a", sansai:[], desc:"\u30d2\u30eb\u30fb\u86c7\u30fb\u96e8\u9732\u304b\u3089\u8db3\u9996\u3092\u5b88\u308b" },
+  { id:10, name:"\u30d8\u30eb\u30e1\u30c3\u30c8",     category:"\u982d",     sansai:[], desc:"\u843d\u77f3\u30fb\u6025\u659c\u9762\u3067\u306e\u5b89\u5168\u78ba\u4fdd" },
+];
+
+const INITIAL_TOOLS = [
+  { id:1, name:"\u30ca\u30a4\u30d5\u30fb\u938c",      category:"\u63a1\u53d6\u9053\u5177", sansai:[], desc:"\u830e\u30fb\u6839\u3092\u5207\u308b\u306e\u306b\u4f7f\u7528" },
+  { id:2, name:"\u30cf\u30b5\u30df",          category:"\u63a1\u53d6\u9053\u5177", sansai:[], desc:"\u7e4a\u7d30\u306a\u5c71\u83dc\u306e\u63a1\u53d6\u306b" },
+  { id:3, name:"\u30b9\u30b3\u30c3\u30d7\u30fb\u79fb\u690d\u30b4\u30c6", category:"\u63a1\u53d6\u9053\u5177", sansai:[], desc:"\u6839\u3054\u3068\u63a1\u53d6\u3059\u308b\u969b\u306b" },
+  { id:4, name:"\u30b6\u30eb\u30fb\u30ab\u30b4",      category:"\u53ce\u7d0d",   sansai:[], desc:"\u63a1\u53d6\u3057\u305f\u5c71\u83dc\u3092\u5165\u308c\u308b" },
+  { id:5, name:"\u30d3\u30cb\u30fc\u30eb\u888b",      category:"\u53ce\u7d0d",   sansai:[], desc:"\u9bae\u5ea6\u4fdd\u6301\u30fb\u6ce5\u6c5a\u308c\u9632\u6b62" },
+  { id:6, name:"\u65b0\u805e\u7d19",          category:"\u53ce\u7d0d",   sansai:[], desc:"\u5c71\u83dc\u3092\u5305\u3093\u3067\u9bae\u5ea6\u3092\u4fdd\u3064" },
+  { id:7, name:"\u718a\u9234",            category:"\u5b89\u5168",   sansai:[], desc:"\u718a\u3068\u306e\u906d\u9047\u3092\u9632\u3050\u5fc5\u9700\u54c1" },
+  { id:8, name:"\u718a\u6483\u9000\u30b9\u30d7\u30ec\u30fc",  category:"\u5b89\u5168",   sansai:[], desc:"\u4e07\u4e00\u306e\u718a\u906d\u9047\u306b\u5099\u3048\u3066" },
+  { id:9, name:"\u30d8\u30c3\u30c9\u30e9\u30f3\u30d7",    category:"\u7167\u660e",   sansai:[], desc:"\u65e9\u671d\u30fb\u8584\u6697\u3044\u6797\u5185\u3067\u306e\u63a1\u53d6\u306b" },
+  { id:10, name:"\u30d5\u30a1\u30fc\u30b9\u30c8\u30a8\u30a4\u30c9\u30ad\u30c3\u30c8", category:"\u6551\u6025", sansai:[], desc:"\u5207\u308a\u50b7\u30fb\u866b\u523a\u3055\u308c\u30fb\u306d\u3093\u3056\u5bfe\u5fdc" },
+  { id:11, name:"GPS\u30fb\u30b9\u30de\u30fc\u30c8\u30d5\u30a9\u30f3", category:"\u30ca\u30d3", sansai:[], desc:"\u73fe\u5728\u5730\u78ba\u8a8d\u30fb\u9053\u8ff7\u3044\u9632\u6b62" },
+  { id:12, name:"\u30b3\u30f3\u30d1\u30b9\u30fb\u5730\u56f3", category:"\u30ca\u30d3",   sansai:[], desc:"\u96fb\u6ce2\u306e\u306a\u3044\u5c71\u5965\u3067\u306e\u5fc5\u9700\u54c1" },
+  { id:13, name:"\u6c34\u7b52\u30fb\u98f2\u307f\u6c34",   category:"\u643a\u884c\u98df", sansai:[], desc:"\u8131\u6c34\u9632\u6b62\u30fb\u9577\u6642\u9593\u63a1\u53d6\u306b" },
+  { id:14, name:"\u30bf\u30aa\u30eb",         category:"\u305d\u306e\u4ed6", sansai:[], desc:"\u6c57\u30fb\u6c5a\u308c\u30fb\u6c34\u6fe1\u308c\u5bfe\u7b56" },
+  { id:15, name:"\u866b\u9664\u3051\u30b9\u30d7\u30ec\u30fc", category:"\u305d\u306e\u4ed6", sansai:[], desc:"\u30d6\u30e6\u30fb\u30c0\u30cb\u30fb\u868a\u5bfe\u7b56" },
+];
+const GEAR_NAME_ICONS = [
+  ["火バサミ","🥢"],["トング","🥢"],["コンテナ","🧺"],["鍬","⛏️"],["カート","🛒"],["笛","🪈"],["ホイッスル","🪈"],
+  ["ヘルメット","⛑️"],["ヘッドランプ","🔦"],["ライト","🔦"],["ファーストエイド","🩹"],["救急","🩹"],["熊鈴","🔔"],["熊撃退","🧴"],["スプレー","🧴"],
+  ["長袖","👕"],["シャツ","👕"],["長ズボン","👖"],["ズボン","👖"],["パンツ","👖"],["長靴","👢"],["登山靴","🥾"],["靴","🥾"],
+  ["軍手","🧤"],["手袋","🧤"],["帽子","🧢"],["レインウェア","☔"],["雨具","☔"],["ヤッケ","🧥"],["防風","🧥"],["ジャケット","🧥"],["スパッツ","🧦"],["ゲイター","🧦"],["靴下","🧦"],
+  ["ナイフ","🔪"],["鎌","🔪"],["ハサミ","✂️"],["スコップ","🪏"],["移植ゴテ","⛏️"],["ザル","🧺"],["カゴ","🧺"],["籠","🧺"],["ビニール","🛍️"],["新聞","📰"],
+  ["GPS","📱"],["スマートフォン","📱"],["スマホ","📱"],["コンパス","🧭"],["地図","🗺️"],["水筒","🥤"],["飲み水","🥤"],["タオル","🧣"],["虫除け","🦟"],["日焼け","🧴"],["食","🍙"]
+];
+const GEAR_CAT_ICONS = {
+  "上着":"🧥","ズボン":"👖","靴":"🥾","手袋":"🧤","帽子":"🧢","雨具":"☔","脚":"🧦","頭":"⛑️",
+  "採取道具":"🔪","収納":"🧺","安全":"🦺","照明":"🔦","救急":"🩹","ナビ":"🧭","携行食":"🍙","その他":"🎒"
+};
+const GEAR_EXTRA_ICONS = [
+  ["防寒","🧥"],["ダウン","🧥"],["フリース","🧥"],["セーター","🧥"],["カッパ","☔"],["ポンチョ","☔"],["傘","☂️"],["雨","☔"],
+  ["マスク","😷"],["ネックウォーマー","🧣"],["マフラー","🧣"],["手ぬぐい","🧣"],["バンダナ","🧣"],["サングラス","🕶️"],["メガネ","👓"],["眼鏡","👓"],["ゴーグル","🥽"],
+  ["ヘアネット","🧢"],["防虫ネット","🦟"],["ネット","🦟"],["日焼け止め","🧴"],["虫除けスプレー","🦟"],["虫除け","🦟"],["蚊","🦟"],["ダニ","🦟"],["ヒル","🐛"],
+  ["ハチ","🐝"],["蜂","🐝"],["ヘビ","🐍"],["蛇","🐍"],["熊","🐻"],["鈴","🔔"],["ホイッスル","🪈"],["笛","🪈"],
+  ["リュック","🎒"],["ザック","🎒"],["バッグ","🎒"],["ナップサック","🎒"],["ウエストポーチ","👝"],["ポーチ","👝"],["腰袋","👝"],["袋","🛍️"],["ポリ","🛍️"],["ゴミ","🗑️"],
+  ["コンテナ","🧺"],["バスケット","🧺"],["ネットバッグ","🧺"],["クーラー","🧊"],["保冷","🧊"],["氷","🧊"],
+  ["カート","🛒"],["台車","🛒"],["一輪車","🛒"],["キャリー","🛒"],
+  ["トング","🥢"],["火バサミ","🥢"],["ピンセット","🥢"],["鍬","⛏️"],["クワ","⛏️"],["ツルハシ","⛏️"],["ピッケル","⛏️"],["スコップ","🪏"],["シャベル","🪏"],["ショベル","🪏"],["移植ゴテ","🪏"],
+  ["ナタ","🪓"],["鉈","🪓"],["斧","🪓"],["ノコギリ","🪚"],["鋸","🪚"],["剪定","✂️"],["枝切り","✂️"],["包丁","🔪"],["カッター","🔪"],["鎌","🔪"],
+  ["ロープ","🪢"],["紐","🪢"],["ひも","🪢"],["ワイヤー","🪢"],["ブルーシート","🟦"],["シート","🟦"],["テント","⛺"],["イス","🪑"],["椅子","🪑"],
+  ["ランタン","🏮"],["懐中電灯","🔦"],["ヘッドライト","🔦"],["電池","🔋"],["バッテリー","🔋"],["充電","🔋"],["モバイル","🔋"],
+  ["カメラ","📷"],["双眼鏡","🔭"],["時計","⌚"],["高度計","⌚"],["無線","📻"],["トランシーバー","📻"],["ラジオ","📻"],["衛星","📡"],
+  ["ライター","🔥"],["マッチ","🔥"],["バーナー","🔥"],["コンロ","🔥"],["ストーブ","🔥"],["鍋","🍲"],["カップ","🥣"],["食器","🍽️"],["箸","🥢"],
+  ["ペットボトル","🥤"],["水","💧"],["お茶","🍵"],["コーヒー","☕"],["ジュース","🥤"],["塩","🧂"],["塩分","🧂"],["飴","🍬"],["アメ","🍬"],["チョコ","🍫"],["お菓子","🍫"],["行動食","🍫"],["おにぎり","🍙"],["弁当","🍱"],["パン","🍞"],["カップ麺","🍜"],["果物","🍎"],["バナナ","🍌"],
+  ["絆創膏","🩹"],["バンドエイド","🩹"],["包帯","🩹"],["三角巾","🩹"],["消毒","🧴"],["薬","💊"],["ポイズンリムーバー","💉"],["ティッシュ","🧻"],["ウェットティッシュ","🧻"],["トイレ","🧻"],
+  ["保険証","🪪"],["身分証","🪪"],["免許","🪪"],["連絡","📞"],["電話","📞"],["入山届","📝"],["登山届","📝"],["メモ","📝"],["ノート","📝"],["ペン","🖊️"],["鉛筆","🖊️"],["図鑑","📖"],["本","📖"],["地形図","🗺️"],
+  ["はかり","⚖️"],["秤","⚖️"],["定規","📏"],["メジャー","📏"],["タッパー","🥡"],["ジップ","🛍️"],["ビン","🫙"],["瓶","🫙"],
+  ["ベスト","🦺"],["反射","🦺"],["オレンジ","🦺"],["杖","🦯"],["ストック","🦯"],["ステッキ","🦯"],
+  ["長袖","👕"],["半袖","👕"],["Tシャツ","👕"],["インナー","👕"],["下着","🩲"],["タイツ","🧦"],["レギンス","🧦"],["サンダル","🩴"],["スニーカー","👟"],["ブーツ","👢"],["足袋","🧦"],["地下足袋","🥾"],
+  ["ゴム手","🧤"],["作業手袋","🧤"],["グローブ","🧤"],["キャップ","🧢"],["ハット","👒"],["麦わら","👒"],["笠","👒"],["日よけ","👒"]
+];
+let GEAR_ICON_TABLE = null;
+function gearNorm(str) {
+  let t = String(str || "").normalize("NFKC").toLowerCase();
+  t = t.replace(/[\u3041-\u3096]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+  return t.replace(/[\u30fc\s\u30fb\u3000]/g, "");
+}
+function gearAutoIcon(name, category, isClothing) {
+  if (!GEAR_ICON_TABLE) {
+    GEAR_ICON_TABLE = GEAR_NAME_ICONS.concat(GEAR_EXTRA_ICONS).map(e => [gearNorm(e[0]), e[1]]).filter(e => e[0]);
+  }
+  const n = gearNorm(name);
+  let best = null, bestLen = 0;
+  if (n) {
+    for (let i = 0; i < GEAR_ICON_TABLE.length; i++) {
+      const k = GEAR_ICON_TABLE[i][0];
+      if (k.length > bestLen && n.indexOf(k) >= 0) { best = GEAR_ICON_TABLE[i][1]; bestLen = k.length; }
+    }
+  }
+  if (best) return best;
+  if (category && GEAR_CAT_ICONS[category]) return GEAR_CAT_ICONS[category];
+  return isClothing ? "👕" : "🎒";
+}
+function gearIcon(item, isClothing) {
+  if (item && item.icon) return item.icon;
+  return gearAutoIcon(item && item.name, item && item.category, isClothing);
+}
+function gearCatIcon(cat, isClothing) { return GEAR_CAT_ICONS[cat] || (isClothing ? "👕" : "🎒"); }
+const KEY="fn_gear_v1",DEFPG=["sansai","fruit","kinoko"];
+const CATS={c:["上着","ズボン","靴","手袋","帽子","雨具","脚","頭","その他"],t:["採取道具","収納","安全","照明","救急","ナビ","携行食","その他"]};
+const NOPG=["info","all","members","tecchou","ref","region","howto","memo","admin","warikan"];
+const E=v=>esc(String(v==null?"":v));
+const PAL=["🧥","👕","👖","🥾","👢","🧤","🧢","☔","🧣","🔪","✂️","⛏️","🪏","🪓","🧺","🛒","🎒","🔦","🔔","🪈","🧭","📱","🔋","🥤","🍙","🩹","💊","🦟","🧴","🪢","🛍️","📝"];
+const targets=()=>{try{return pages().filter(p=>!NOPG.includes(p.id)&&!/割り勘|精算/.test(p.name||""))}catch(e){return[]}};
+const conv=(k,a)=>a.map(i=>{const o={id:"g"+k+i.id,name:i.name,cat:i.category||"その他",desc:i.desc||"",pg:DEFPG.slice(),sp:{}};if(i.icon)o.icon=i.icon;if(Array.isArray(i.sansai)&&i.sansai.length)o.sp={sansai:i.sansai.slice()};return o});
+const norm=i=>{if(!Array.isArray(i.pg))i.pg=[];if(!i.sp||typeof i.sp!=="object")i.sp={};if(!i.cat)i.cat="その他";return i};
+function load(){const d=ld(KEY,null);if(d&&Array.isArray(d.c)&&Array.isArray(d.t)){d.c.forEach(norm);d.t.forEach(norm);return d}return{c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)}}
+const save=d=>sv(KEY,d);
+const ST={};
+function overlay(html){const o=document.createElement("div");o.className="gx-ov";o.innerHTML='<div class="gx-box">'+html+'</div>';document.body.appendChild(o);return o}
+window.fnGearMount=function(el,pid,species,cb){
+  const s=ST[pid]||(ST[pid]={kind:"c",mode:"view",spf:"all"});
+  const isC=()=>s.kind==="c",kn=()=>isC()?"服装":"道具";
+  let msg="";
+  const upd=()=>{if(cb)cb()};
+  const showIt=i=>i.pg.includes(pid)&&(s.spf==="all"||!(i.sp[pid]&&i.sp[pid].length)||i.sp[pid].map(String).includes(String(s.spf)));
+  const groups=L=>{const g={};L.forEach(i=>{(g[i.cat]=g[i.cat]||[]).push(i)});const od=CATS[s.kind];return Object.keys(g).sort((a,b)=>{const x=od.indexOf(a),y=od.indexOf(b);return(x<0?99:x)-(y<0?99:y)}).map(k=>[k,g[k]])};
+  const kindBar=()=>`<div class="gx-kind"><button data-gxk="c" class="${isC()?"on":""}">👕 服装</button><button data-gxk="t" class="${isC()?"":"on"}">🎒 道具</button></div>`;
+  const spNames=i=>{const a=(i.sp[pid]||[]);if(!a.length||!species)return"";return a.map(id=>{const f=species.find(x=>String(x.id)===String(id));return f?f.n:""}).filter(Boolean).join("・")};
+  const viewHTML=()=>{
+    const D=load(),L=D[s.kind].filter(showIt);
+    if(species&&s.spf!=="all"&&!species.some(x=>String(x.id)===String(s.spf)))s.spf="all";
+    const sel=species&&species.length?`<div class="gx-f"><label>🌿 対象で絞り込み</label><select data-gxs="1"><option value="all">すべて表示</option>${species.map(x=>`<option value="${E(x.id)}"${String(s.spf)===String(x.id)?" selected":""}>${E(x.n)}</option>`).join("")}</select></div>`:"";
+    const body=L.length?groups(L).map(([c,a])=>`<div class="gx-cat">${gearCatIcon(c,isC())} ${E(c)}</div>`+a.map(i=>`<div class="gx-card"><div class="gx-ic">${gearIcon(i,isC())}</div><div class="gx-bd"><b>${E(i.name)}</b>${i.desc?`<small>${E(i.desc)}</small>`:""}<em>${spNames(i)?"対象："+E(spNames(i)):"このページ全体で共通"}</em></div><div class="gx-bt"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></div>`).join("")).join(""):`<div class="gx-empty">このページに表示する${kn()}はまだありません。<br>「一覧表・チェック」でチェックを入れるか、「＋ 追加」で作ってください。</div>`;
+    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。</p>`+sel+body;
+  };
+  const tableHTML=()=>{
+    const D=load(),L=D[s.kind],T=targets();
+    const head='<tr><th>項目</th>'+T.map(p=>`<th class="${p.id===pid?"cur":""}"><span>${E(p.icon)}</span><small>${E(String(p.name).replace(/（.*/,"").slice(0,5))}</small></th>`).join("")+'</tr>';
+    const rows=groups(L).map(([c,a])=>`<tr class="gx-cr"><td colspan="${T.length+1}">${gearCatIcon(c,isC())} ${E(c)}</td></tr>`+a.map(i=>`<tr><td><div class="gx-nm">${gearIcon(i,isC())} <b>${E(i.name)}</b></div>${i.desc?`<small>${E(i.desc)}</small>`:""}<div class="gx-rb"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></td>`+T.map(p=>`<td class="${p.id===pid?"cur":""}"><input type="checkbox" data-gxc="${E(i.id)}" data-gxp2="${E(p.id)}"${i.pg.includes(p.id)?" checked":""} aria-label="${E(p.name)}"></td>`).join("")+'</tr>').join("")).join("");
+    const hasDev=(()=>{try{return !!(localStorage.getItem("sansai_clothing")||localStorage.getItem("sansai_tools"))}catch(e){return false}})();
+    return `<div class="gx-top"><button class="gx-b" data-gxm="view">← 戻る</button><b style="font-size:16px">📋 ${kn()}の一覧表</b></div>`+kindBar()+`<p class="gx-h">横にスクロールして、必要なページにチェックを入れます。チェックした項目が、そのページに表示されます。（緑の列がこのページです）</p><div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button></div>`+(msg?`<div class="gx-msg">${E(msg)}</div>`:"")+(L.length?`<div class="gx-tw"><table class="gx-t"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`:`<div class="gx-empty">リストがありません。「＋ 追加」から作ってください。</div>`)+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button></div><details class="gx-ds"><summary>山菜手帳からの取り込み・初期化</summary><p class="gx-h" style="margin-top:8px">山菜手帳の服装・道具を、ここへ移せます。取り込むと、服装・道具のリストが山菜手帳の内容に置き換わります。（チェックの設定は、同じ名前の項目で引き継ぎます）</p><div class="gx-top">${hasDev?'<button class="gx-b" data-gxi="dev">この端末の山菜手帳から取り込む</button>':""}<button class="gx-b" data-gxi="file">バックアップファイルから取り込む</button><button class="gx-b gx-r" data-gxi="reset">初期リストに戻す</button></div><input type="file" accept=".json,application/json" data-gxf="1" hidden></details>`;
+  };
+  const draw=()=>{el.innerHTML=s.mode==="table"?tableHTML():viewHTML();upd()};
+  /* ---- 追加・編集フォーム ---- */
+  const openForm=item=>{
+    const T=targets();
+    const fm=item?{id:item.id,name:item.name,cat:item.cat,newcat:"",desc:item.desc||"",icon:item.icon||"",pg:item.pg.slice(),sp:JSON.parse(JSON.stringify(item.sp||{}))}:{id:null,name:"",cat:CATS[s.kind][0],newcat:"",desc:"",icon:"",pg:T.some(p=>p.id===pid)?[pid]:[],sp:{}};
+    const D0=load();const cats=CATS[s.kind].concat(D0[s.kind].map(i=>i.cat)).filter((c,i,a)=>a.indexOf(c)===i);
+    let ov;
+    const body=()=>{
+      const auto=gearAutoIcon(fm.name,fm.cat,isC());
+      const spBlock=species&&species.length&&fm.pg.includes(pid)?`<label class="gx-l">このページでの対象（選ばなければ全部）</label><div class="gx-pgs">${species.map(x=>`<button type="button" data-fs="${E(x.id)}" class="${(fm.sp[pid]||[]).map(String).includes(String(x.id))?"on":""}">${E(x.n)}</button>`).join("")}</div>`:"";
+      return `<h3>${fm.id?"✏️ 編集":"＋ "+kn()+"を追加"}</h3>
+<label class="gx-l">名前 *</label><input class="sn-in" data-f="name" maxlength="30" value="${E(fm.name)}" placeholder="${isC()?"例：長靴":"例：熊鈴"}">
+<label class="gx-l">アイコン（名前から自動で選ばれます）</label><div class="gx-pv"><span>${fm.icon||auto}</span><small style="flex:1;color:var(--sub)">${fm.icon?"手動で選択中":"自動"}</small>${fm.icon?'<button type="button" class="gx-b" data-ic="">自動に戻す</button>':""}</div><div class="gx-pal">${PAL.map(ic=>`<button type="button" data-ic="${ic}" class="${fm.icon===ic?"on":""}">${ic}</button>`).join("")}</div>
+<label class="gx-l">分類</label><select data-f="cat">${cats.map(c=>`<option${c===fm.cat?" selected":""}>${E(c)}</option>`).join("")}</select><input class="sn-in" data-f="newcat" maxlength="12" placeholder="新しい分類を作る場合はここに入力" value="${E(fm.newcat)}">
+<label class="gx-l">説明・備考</label><input class="sn-in" data-f="desc" maxlength="60" value="${E(fm.desc)}" placeholder="例：沢沿いの採取に必須">
+<label class="gx-l">表示するページ（チェックしたページに出ます）</label><div class="gx-pgs">${T.map(p=>`<label><input type="checkbox" data-fp="${E(p.id)}"${fm.pg.includes(p.id)?" checked":""}>${E(p.icon)} ${E(String(p.name).replace(/（.*/,""))}</label>`).join("")}</div>${spBlock}
+<div class="gx-act"><button type="button" class="gx-b" data-x="cancel">キャンセル</button><button type="button" class="gx-b gx-p" data-x="save">保存する</button></div>`;
+    };
+    ov=overlay(body());
+    const box=()=>ov.firstChild,redraw=()=>{box().innerHTML=body()};
+    ov.addEventListener("input",e=>{const f=e.target.dataset&&e.target.dataset.f;if(f&&f!=="cat"){fm[f]=e.target.value;if(f==="name"){const pv=box().querySelector(".gx-pv span");if(pv&&!fm.icon)pv.textContent=gearAutoIcon(fm.name,fm.cat,isC())}}});
+    ov.addEventListener("change",e=>{const t=e.target,d=t.dataset||{};if(d.f==="cat"){fm.cat=t.value;redraw()}else if(d.fp!==undefined){const k=fm.pg.indexOf(d.fp);if(t.checked&&k<0)fm.pg.push(d.fp);if(!t.checked&&k>=0)fm.pg.splice(k,1);redraw()}});
+    ov.addEventListener("click",e=>{
+      if(e.target===ov){ov.remove();return}
+      const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+      if(d.ic!==undefined){fm.icon=d.ic;redraw();return}
+      if(d.fs!==undefined){const a=fm.sp[pid]=fm.sp[pid]||[],k=a.map(String).indexOf(String(d.fs));if(k>=0)a.splice(k,1);else a.push(species.find(x=>String(x.id)===String(d.fs)).id);redraw();return}
+      if(d.x==="cancel"){ov.remove();return}
+      if(d.x==="save"){
+        const name=fm.name.trim();if(!name){const n=box().querySelector('[data-f="name"]');if(n)n.focus();return}
+        const D=load(),rec={id:fm.id||"g"+Date.now().toString(36)+Math.random().toString(36).slice(2,4),name,cat:(fm.newcat.trim()||fm.cat||"その他"),desc:fm.desc.trim(),pg:fm.pg.slice(),sp:{}};
+        fm.pg.forEach(p=>{if(fm.sp[p]&&fm.sp[p].length)rec.sp[p]=fm.sp[p].slice()});
+        if(fm.icon)rec.icon=fm.icon;
+        const L=D[s.kind],ix=fm.id?L.findIndex(i=>i.id===fm.id):-1;
+        if(ix>=0)L[ix]=rec;else L.push(rec);
+        save(D);ov.remove();msg="";draw();
+      }
+    });
+  };
+  const confirmBox=(text,okLabel,fn)=>{
+    const ov=overlay(`<h3 style="text-align:center">${text}</h3><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-r" data-x="y">${okLabel}</button></div>`);
+    ov.addEventListener("click",e=>{if(e.target===ov){ov.remove();return}const b=e.target.closest("button");if(!b)return;if(b.dataset.x==="y"){ov.remove();fn()}else if(b.dataset.x==="n")ov.remove()});
+  };
+  /* ---- 山菜手帳から取り込み ---- */
+  const grab=o=>{const g=k=>{let v=o?o[k]:null;if(typeof v==="string"){try{v=JSON.parse(v)}catch(e){v=null}}return Array.isArray(v)?v:null};return{c:g("sansai_clothing"),t:g("sansai_tools")}};
+  const applyImport=src=>{
+    const D=load();let n=0;
+    ["c","t"].forEach(k=>{if(!src[k])return;const old=D[k];
+      D[k]=src[k].filter(i=>i&&i.name).map((i,ix)=>{const m=old.find(x=>x.name===i.name);
+        const o={id:m?m.id:"g"+k+"i"+(i.id||ix)+"_"+ix,name:String(i.name),cat:i.category||"その他",desc:i.desc||"",pg:m?m.pg.slice():DEFPG.slice(),sp:m?m.sp:(Array.isArray(i.sansai)&&i.sansai.length?{sansai:i.sansai.slice()}:{})};
+        if(i.icon)o.icon=i.icon;n++;return o});
+    });
+    if(!n)return 0;save(D);return n;
+  };
+  const doImport=src=>{
+    if(!src.c&&!src.t){msg="服装・道具のデータが見つかりませんでした。";draw();return}
+    confirmBox("山菜手帳の内容で<br>置き換えますか？","取り込む",()=>{const n=applyImport(src);msg=n?n+"件を取り込みました。":"取り込めるデータがありませんでした。";draw()});
+  };
+  el.onclick=e=>{
+    const b=e.target.closest("button");if(!b||!el.contains(b))return;const d=b.dataset;
+    if(d.gxk){s.kind=d.gxk;msg="";draw();return}
+    if(d.gxm){s.mode=d.gxm;msg="";draw();return}
+    if(d.gxa){openForm(null);return}
+    if(d.gxe){const it=load()[s.kind].find(i=>i.id===d.gxe);if(it)openForm(it);return}
+    if(d.gxd){const it=load()[s.kind].find(i=>i.id===d.gxd);if(!it)return;confirmBox("「"+E(it.name)+"」を<br>削除しますか？","削除する",()=>{const D=load();D[s.kind]=D[s.kind].filter(i=>i.id!==it.id);save(D);msg="";draw()});return}
+    if(d.gxi==="dev"){try{doImport(grab({sansai_clothing:localStorage.getItem("sansai_clothing"),sansai_tools:localStorage.getItem("sansai_tools")}))}catch(x){msg="読み込めませんでした。";draw()}return}
+    if(d.gxi==="file"){const f=el.querySelector("[data-gxf]");if(f)f.click();return}
+    if(d.gxi==="reset"){confirmBox("服装・道具を<br>初期リストに戻しますか？<br><small>（追加・編集した内容は消えます）</small>","戻す",()=>{save({c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)});msg="初期リストに戻しました。";draw()});return}
+  };
+  el.onchange=e=>{
+    const t=e.target,d=t.dataset||{};
+    if(d.gxs!==undefined){s.spf=t.value;draw();return}
+    if(d.gxc!==undefined){const D=load(),it=D[s.kind].find(i=>i.id===d.gxc);if(!it)return;const k=it.pg.indexOf(d.gxp2);if(t.checked&&k<0)it.pg.push(d.gxp2);if(!t.checked&&k>=0)it.pg.splice(k,1);save(D);upd();return}
+    if(d.gxf!==undefined){const f=t.files[0];t.value="";if(!f)return;const r=new FileReader();r.onload=()=>{let o=null;try{o=JSON.parse(r.result)}catch(x){}if(!o){msg="ファイルを読み込めませんでした。";draw();return}doImport(grab(o.data||o))};r.readAsText(f)}
+  };
+  draw();
+};
+window.fnGearSide=function(host,pid){
+  host.className="gx-side";
+  const cnt=()=>{const D=load();return D.c.concat(D.t).filter(i=>i.pg.includes(pid)).length};
+  const d=document.createElement("details");d.className="gx-det";d.innerHTML='<summary></summary><div class="gx"></div>';
+  const sm=d.querySelector("summary"),box=d.querySelector(".gx"),upd=()=>{sm.textContent="🎒 服装・道具（"+cnt()+"件）"};
+  upd();let done=0;
+  d.addEventListener("toggle",()=>{if(d.open&&!done){done=1;fnGearMount(box,pid,null,upd)}});
+  host.appendChild(d);
+};
+})();
+</script>
 <script>
 const BASE=[{id:"info",name:"情報",icon:"🧭",color:"#2f6f8f"},{id:"all",name:"みんな",icon:"👥",color:"#7a5aa3"},{id:"members",name:"メンバー",icon:"🧑‍🤝‍🧑",color:"#8a5a7a"},{id:"tecchou",name:"山菜手帳",icon:"📒",color:"#3f6f4a"},{id:"sansai",name:"山菜採り",icon:"🌿",color:"#4f8446"},{id:"fruit",name:"果実と樹の実",icon:"🍒",color:"#b9473a"},{id:"kinoko",name:"きのこ",icon:"🍄",color:"#a06a36"}];
 const ICONS=["🌿","🍒","🍄","♨️","🚗","⛰️","🧭","📷","🌸","🐟","🏊","🌊"];
@@ -625,6 +889,7 @@ function renderPages(){
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo"&&p.id!=="tecchou")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
     if(kd)({A:initAll,I:initInfo,Z:initTecho,S:initSansai,F:initSansai,K:initSansai,B:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    if(kd==="T"||kd==="O"||kd==="C"){const gh=document.createElement("div");s.querySelector(".sn").after(gh);fnGearSide(gh,p.id)}
     s.insertAdjacentHTML("beforeend",`<button class="back back-end" data-go="${TI()}">‹ 目次に戻る</button>`);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
   });
@@ -813,10 +1078,11 @@ function initSansai(root,cfg){
       map=`<svg viewBox="0 0 300 240" style="width:100%;background:rgba(0,0,0,.04);border-radius:10px">${cs.map(c=>c.r?`<circle cx="${X(c).toFixed(1)}" cy="${Y(c).toFixed(1)}" r="${Math.max(5,c.r/111320*250/S).toFixed(1)}" fill="#4f8446" opacity=".35" stroke="#2b3526" stroke-width=".6"/>`:`<circle cx="${X(c).toFixed(1)}" cy="${Y(c).toFixed(1)}" r="3.5" fill="#c0392b" stroke="#fff" stroke-width="1"/>`).join("")}</svg><div class="sn-note">円の大きさが、ぼかした範囲です（円の中のどこかにあります）。赤い点はピンポイントの共有です。上が北です。</div>`+cs.map(c=>`<div class="sn-row"><b>${esc(String(c.x.p))}（${+c.x.mo||"?"}月）</b>　<small>${shLbl(c.r)}</small><br><small class="sn-note">投稿：${esc(String(c.x.from||"?"))}</small>　<a class="sn-note" href="https://www.google.com/maps?q=${c.la},${c.lo}" target="_blank" rel="noopener">Googleマップで開く</a></div>`).join("")}
     return `<button class="sn-btn sn-ghost" data-rf2="1">最新を受け取る</button><p class="sn-note" id="sh-m"></p><div class="ic"><h4>みんなの採取エリア</h4>${map}</div><div class="ic"><h4>みんなのブログ</h4>${B.map(x=>`<div class="sn-row"><b>${esc(String(x.t))}</b>　<small>${esc(String(x.d))}</small>${x.x?"<br>"+esc(String(x.x)):""}<br><small class="sn-note">投稿：${esc(String(x.from||"?"))}</small></div>`).join("")||'<p class="sn-note">まだありません。</p>'}</div>`;
   };
-  const TABS=["図鑑","旬の暦","スポット","収穫","収穫マップ","まとめ","持ち物","レシピ","ブログ","パトロール","メモ","リンク","みんな"];
+  const gxPid=({fn_sn_:"sansai",fn_fr_:"fruit",fn_kn_:"kinoko",fn_ck_:"saibai"})[CF.pre]||"sansai",gxV=()=>'<div class="gx" data-gxp="'+gxPid+'"></div>';
+  const TABS=["図鑑","旬の暦","スポット","収穫","収穫マップ","まとめ","持ち物","服装・道具","レシピ","ブログ","パトロール","メモ","リンク","みんな"];
   const render=()=>{
-    root.innerHTML=`<div class="sn-tabs">${TABS.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV,mapV,sumV,ckV,rcV,blV,ptV,mmV,()=>relBox(({S:"sansai",F:"fruit",K:"kinoko",B:"saibai"})[CF.pre==="fn_sn_"?"S":CF.pre==="fn_fr_"?"F":CF.pre==="fn_kn_"?"K":"B"]),shV][tab]();
-    const bar=root.querySelector(".sn-tabs"),on=bar.querySelector(".on");if(on)bar.scrollLeft=on.offsetLeft-bar.clientWidth/2+on.clientWidth/2;live();tileLoadAll(root);
+    root.innerHTML=`<div class="sn-tabs">${TABS.map((t,i)=>`<button class="${tab===i?"on":""}" data-t="${i}">${t}</button>`).join("")}</div>`+[zukan,cal,spotsV,harvV,mapV,sumV,ckV,gxV,rcV,blV,ptV,mmV,()=>relBox(({S:"sansai",F:"fruit",K:"kinoko",B:"saibai"})[CF.pre==="fn_sn_"?"S":CF.pre==="fn_fr_"?"F":CF.pre==="fn_kn_"?"K":"B"]),shV][tab]();
+    const bar=root.querySelector(".sn-tabs"),on=bar.querySelector(".on");if(on)bar.scrollLeft=on.offsetLeft-bar.clientWidth/2+on.clientWidth/2;live();tileLoadAll(root);{const g=root.querySelector("[data-gxp]");if(g&&window.fnGearMount)fnGearMount(g,gxPid,P.map(p=>({id:p.id,n:String(p.n).replace(/（.*/,"")})))}
   };
   root.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.xsr!==undefined){const h=harv[+t.dataset.xsr];if(h){h.sr=+t.value;sv(CF.pre+"harv",harv);render()}}});
   const reloadSt=()=>{const sig=()=>JSON.stringify([cu,spots,harv,xck,xbl,xrc,xmm,xpp,xpl]),a=sig();cu=ld(CF.pre+"custom",[]);buildP();spots=ld(CF.pre+"spots",[]);harv=ld(CF.pre+"harv",[]);xck=ld(CF.pre+"ck",{});xbl=ld(CF.pre+"blog",[]);xrc=ld(CF.pre+"rc",[]);xmm=ld(CF.pre+"mm",[]);xpp=ld(CF.pre+"pt",[]);xpl=ld(CF.pre+"ptl",[]);return a!==sig()};
