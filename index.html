@@ -562,6 +562,18 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 .gx-bd{flex:1;min-width:0}.gx-bd b{display:block;font-size:15px}.gx-bd small{display:block;color:var(--sub);font-size:12px;line-height:1.5}
 .gx-bd em{display:block;font-style:normal;color:var(--acc);font-size:11px;margin-top:3px}
 .gx-bt{display:flex;flex-direction:column;gap:6px;flex:none}
+.gx-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}
+.gx-tile{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:10px 4px 8px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);min-height:92px;font-size:12px;position:relative;text-align:center}
+.gx-tile .gx-ic{font-size:28px}.gx-tile b{font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}
+.gx-tile i{position:absolute;top:4px;right:7px;font-style:normal;font-size:11px;color:var(--acc)}
+.gx-c1 .gx-nm1{flex:0 0 38%;min-width:0}.gx-c1 .gx-nm1 b{display:block;font-size:15px}.gx-c1 .gx-nm1 em{display:block;font-style:normal;color:var(--acc);font-size:11px;margin-top:3px}
+.gx-c1 .gx-ds1{flex:1;min-width:0;color:var(--sub);font-size:12px;line-height:1.5;align-self:center}
+.gx-cs{display:inline-flex;gap:0;margin-left:auto}.gx-cs button{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;font-size:13px;font-weight:600}
+.gx-cs button:first-child{border-radius:8px 0 0 8px}.gx-cs button:last-child{border-radius:0 8px 8px 0;border-left:0}.gx-cs .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.gx-pop{text-align:center}.gx-pop .big{font-size:52px;line-height:1.1}.gx-pop h3{margin:6px 0 4px;font-size:19px}
+.gx-pop .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--sub);margin:0 0 10px}
+.gx-pop .dt{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.7;margin:0 0 8px;white-space:pre-wrap}
+.gx-pop .tg{text-align:left;color:var(--acc);font-size:12px;margin:0 0 8px}
 .gx-empty{text-align:center;padding:26px 10px;color:var(--sub);line-height:1.7}
 .gx-tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin:0 0 10px}
 .gx-t{border-collapse:separate;border-spacing:0;min-width:100%}
@@ -695,6 +707,7 @@ const norm=i=>{if(!Array.isArray(i.pg))i.pg=[];if(!i.sp||typeof i.sp!=="object")
 function load(){const d=ld(KEY,null);if(d&&Array.isArray(d.c)&&Array.isArray(d.t)){d.c.forEach(norm);d.t.forEach(norm);return d}return{c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)}}
 const save=d=>sv(KEY,d);
 const ST={};
+const getCols=()=>ld("fn_gear_cols",3)===1?1:3;
 function overlay(html){const o=document.createElement("div");o.className="gx-ov";o.innerHTML='<div class="gx-box">'+html+'</div>';document.body.appendChild(o);return o}
 window.fnGearMount=function(el,pid,species,cb){
   const s=ST[pid]||(ST[pid]={kind:"c",mode:"view",spf:"all"});
@@ -709,8 +722,12 @@ window.fnGearMount=function(el,pid,species,cb){
     const D=load(),L=D[s.kind].filter(showIt);
     if(species&&s.spf!=="all"&&!species.some(x=>String(x.id)===String(s.spf)))s.spf="all";
     const sel=species&&species.length?`<div class="gx-f"><label>🌿 対象で絞り込み</label><select data-gxs="1"><option value="all">すべて表示</option>${species.map(x=>`<option value="${E(x.id)}"${String(s.spf)===String(x.id)?" selected":""}>${E(x.n)}</option>`).join("")}</select></div>`:"";
-    const body=L.length?groups(L).map(([c,a])=>`<div class="gx-cat">${gearCatIcon(c,isC())} ${E(c)}</div>`+a.map(i=>`<div class="gx-card"><div class="gx-ic">${gearIcon(i,isC())}</div><div class="gx-bd"><b>${E(i.name)}</b>${i.desc?`<small>${E(i.desc)}</small>`:""}<em>${spNames(i)?"対象："+E(spNames(i)):"このページ全体で共通"}</em></div><div class="gx-bt"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></div>`).join("")).join(""):`<div class="gx-empty">このページに表示する${kn()}はまだありません。<br>「一覧表・チェック」でチェックを入れるか、「＋ 追加」で作ってください。</div>`;
-    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。</p>`+sel+body;
+    const cols=getCols();
+    const tgt=i=>spNames(i)?"対象："+E(spNames(i)):"このページ全体で共通";
+    const item1=i=>`<div class="gx-card gx-c1"><div class="gx-ic">${gearIcon(i,isC())}</div><div class="gx-nm1"><b>${E(i.name)}</b><em>${tgt(i)}</em></div><div class="gx-ds1">${E(i.desc||"")}</div><div class="gx-bt"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></div>`;
+    const item3=i=>`<button type="button" class="gx-tile" data-gxo="${E(i.id)}"><span class="gx-ic">${gearIcon(i,isC())}</span><b>${E(i.name)}</b>${i.desc?"<i>ⓘ</i>":""}</button>`;
+    const body=L.length?groups(L).map(([c,a])=>`<div class="gx-cat">${gearCatIcon(c,isC())} ${E(c)}</div>`+(cols===3?`<div class="gx-g3">${a.map(item3).join("")}</div>`:a.map(item1).join(""))).join(""):`<div class="gx-empty">このページに表示する${kn()}はまだありません。<br>「一覧表・チェック」でチェックを入れるか、「＋ 追加」で作ってください。</div>`;
+    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button><span class="gx-cs"><button data-gxcol="1" class="${cols===1?"on":""}">1列</button><button data-gxcol="3" class="${cols===3?"on":""}">3列</button></span></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。${cols===3?"項目をタップすると詳細が出ます。":""}</p>`+sel+body;
   };
   const tableHTML=()=>{
     const D=load(),L=D[s.kind],T=targets();
@@ -762,6 +779,12 @@ window.fnGearMount=function(el,pid,species,cb){
     const ov=overlay(`<h3 style="text-align:center">${text}</h3><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-r" data-x="y">${okLabel}</button></div>`);
     ov.addEventListener("click",e=>{if(e.target===ov){ov.remove();return}const b=e.target.closest("button");if(!b)return;if(b.dataset.x==="y"){ov.remove();fn()}else if(b.dataset.x==="n")ov.remove()});
   };
+  const askDel=it=>confirmBox("「"+E(it.name)+"」を<br>削除しますか？","削除する",()=>{const D=load();D[s.kind]=D[s.kind].filter(i=>i.id!==it.id);save(D);msg="";draw()});
+  const popup=it=>{
+    const sn=spNames(it);
+    const ov=overlay(`<div class="gx-pop"><div class="big">${gearIcon(it,isC())}</div><h3>${E(it.name)}</h3><span class="tag">${gearCatIcon(it.cat,isC())} ${E(it.cat)}</span><div class="dt">${it.desc?E(it.desc):"詳細はまだありません。「編集」から書き足せます。"}</div><div class="tg">${sn?"対象："+E(sn):"このページ全体で共通"}</div><div class="gx-act"><button type="button" class="gx-b" data-x="e">編集</button><button type="button" class="gx-b gx-r" data-x="d">削除</button><button type="button" class="gx-b gx-p" data-x="c">閉じる</button></div></div>`);
+    ov.addEventListener("click",e=>{if(e.target===ov){ov.remove();return}const b=e.target.closest("button");if(!b)return;const x=b.dataset.x;if(x==="c")ov.remove();else if(x==="e"){ov.remove();openForm(it)}else if(x==="d"){ov.remove();askDel(it)}});
+  };
   /* ---- 山菜手帳から取り込み ---- */
   const grab=o=>{const g=k=>{let v=o?o[k]:null;if(typeof v==="string"){try{v=JSON.parse(v)}catch(e){v=null}}return Array.isArray(v)?v:null};return{c:g("sansai_clothing"),t:g("sansai_tools")}};
   const applyImport=src=>{
@@ -783,7 +806,9 @@ window.fnGearMount=function(el,pid,species,cb){
     if(d.gxm){s.mode=d.gxm;msg="";draw();return}
     if(d.gxa){openForm(null);return}
     if(d.gxe){const it=load()[s.kind].find(i=>i.id===d.gxe);if(it)openForm(it);return}
-    if(d.gxd){const it=load()[s.kind].find(i=>i.id===d.gxd);if(!it)return;confirmBox("「"+E(it.name)+"」を<br>削除しますか？","削除する",()=>{const D=load();D[s.kind]=D[s.kind].filter(i=>i.id!==it.id);save(D);msg="";draw()});return}
+    if(d.gxd){const it=load()[s.kind].find(i=>i.id===d.gxd);if(it)askDel(it);return}
+    if(d.gxo){const it=load()[s.kind].find(i=>i.id===d.gxo);if(it)popup(it);return}
+    if(d.gxcol){sv("fn_gear_cols",+d.gxcol);draw();return}
     if(d.gxi==="dev"){try{doImport(grab({sansai_clothing:localStorage.getItem("sansai_clothing"),sansai_tools:localStorage.getItem("sansai_tools")}))}catch(x){msg="読み込めませんでした。";draw()}return}
     if(d.gxi==="file"){const f=el.querySelector("[data-gxf]");if(f)f.click();return}
     if(d.gxi==="reset"){confirmBox("服装・道具を<br>初期リストに戻しますか？<br><small>（追加・編集した内容は消えます）</small>","戻す",()=>{save({c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)});msg="初期リストに戻しました。";draw()});return}
