@@ -570,7 +570,6 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 .gx-c1 .gx-ds1{flex:1;min-width:0;color:var(--sub);font-size:12px;line-height:1.5;align-self:center}
 .gx-cs{display:inline-flex;gap:0;margin-left:auto}.gx-cs button{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 12px;font-size:13px;font-weight:600}
 .gx-cs button:first-child{border-radius:8px 0 0 8px}.gx-cs button:last-child{border-radius:0 8px 8px 0;border-left:0}.gx-cs .on{background:var(--acc);color:#fff;border-color:var(--acc)}
-.gx-imp{max-height:44vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);margin:0 0 6px}.gx-ir{display:flex;gap:8px;align-items:flex-start;padding:8px;border-bottom:1px solid var(--line)}.gx-ir>input[type=checkbox]{width:22px;height:22px;margin-top:8px;accent-color:var(--acc);flex:none}.gx-ir .sn-in{margin:0 0 2px;padding:7px 8px;font-size:15px}.gx-ir small{display:block;color:var(--sub);font-size:11px;line-height:1.4}.gx-ir select{flex:none;width:76px;padding:8px 4px;font-size:14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 .gx-pop{text-align:center}.gx-pop .big{font-size:52px;line-height:1.1}.gx-pop h3{margin:6px 0 4px;font-size:19px}
 .gx-pop .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--sub);margin:0 0 10px}
 .gx-pop .dt{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.7;margin:0 0 8px;white-space:pre-wrap}
@@ -699,7 +698,7 @@ function gearIcon(item, isClothing) {
 function gearCatIcon(cat, isClothing) { return GEAR_CAT_ICONS[cat] || (isClothing ? "👕" : "🎒"); }
 const KEY="fn_gear_v1",DEFPG=["sansai","fruit","kinoko"];
 const CATS={c:["上着","ズボン","靴","手袋","帽子","雨具","脚","頭","その他"],t:["採取道具","収納","安全","照明","救急","ナビ","携行食","その他"]};
-const NOPG=["info","all","members","tecchou","ref","region","howto","memo","admin","warikan","gear"];
+const NOPG=["info","all","members","tecchou","ref","region","howto","memo","admin","warikan"];
 const E=v=>esc(String(v==null?"":v));
 const PAL=["🧥","👕","👖","🥾","👢","🧤","🧢","☔","🧣","🔪","✂️","⛏️","🪏","🪓","🧺","🛒","🎒","🔦","🔔","🪈","🧭","📱","🔋","🥤","🍙","🩹","💊","🦟","🧴","🪢","🛍️","📝"];
 const targets=()=>{try{return pages().filter(p=>!NOPG.includes(p.id)&&!/割り勘|精算/.test(p.name||""))}catch(e){return[]}};
@@ -707,119 +706,17 @@ const conv=(k,a)=>a.map(i=>{const o={id:"g"+k+i.id,name:i.name,cat:i.category||"
 const norm=i=>{if(!Array.isArray(i.pg))i.pg=[];if(!i.sp||typeof i.sp!=="object")i.sp={};if(!i.cat)i.cat="その他";return i};
 function load(){const d=ld(KEY,null);if(d&&Array.isArray(d.c)&&Array.isArray(d.t)){d.c.forEach(norm);d.t.forEach(norm);return d}return{c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)}}
 const save=d=>sv(KEY,d);
-const dec=buf=>{let t=new TextDecoder("utf-8").decode(buf);if(t.indexOf("\uFFFD")>=0){try{t=new TextDecoder("shift_jis").decode(buf)}catch(e){}}return t.replace(/^\uFEFF/,"")};
-async function unzip(buf){
-  const u=new Uint8Array(buf),dv=new DataView(buf);let e=u.length-22;
-  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
-  if(e<0)throw new Error("zip");
-  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const files={};
-  for(let i=0;i<n;i++){
-    if(dv.getUint32(p,true)!==0x02014b50)break;
-    const meth=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
-    files[new TextDecoder().decode(u.subarray(p+46,p+46+nl))]={meth,csz,lo};p+=46+nl+el+cl;
-  }
-  return{read:async name=>{
-    const f=files[name];if(!f)return null;
-    const q=f.lo,nl=dv.getUint16(q+26,true),el=dv.getUint16(q+28,true),st=q+30+nl+el,data=u.subarray(st,st+f.csz);
-    if(f.meth===0)return new TextDecoder().decode(data);
-    const ds=new DecompressionStream("deflate-raw"),w=ds.writable.getWriter();w.write(data);w.close();
-    return new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
-  }};
-}
-const XP=s=>new DOMParser().parseFromString(s,"application/xml");
-async function readDocx(buf){
-  const z=await unzip(buf),x=await z.read("word/document.xml");if(!x)throw new Error("docx");
-  const body=XP(x).getElementsByTagName("w:body")[0],out=[];
-  const ptext=p=>{let s="";const a=p.getElementsByTagName("*");for(let i=0;i<a.length;i++){const n=a[i].nodeName;if(n==="w:t")s+=a[i].textContent;else if(n==="w:tab")s+=" ";else if(n==="w:br"||n==="w:cr")s+="\n"}return s};
-  Array.from(body.childNodes).forEach(c=>{
-    if(c.nodeName==="w:p")ptext(c).split("\n").forEach(l=>{if(l.trim())out.push({p:l.trim()})});
-    else if(c.nodeName==="w:tbl")Array.from(c.getElementsByTagName("w:tr")).forEach(tr=>{const cells=Array.from(tr.childNodes).filter(n=>n.nodeName==="w:tc").map(tc=>Array.from(tc.getElementsByTagName("w:p")).map(ptext).join(" ").trim());if(cells.some(v=>v))out.push({row:cells})});
-  });
-  return out;
-}
-async function readXlsx(buf){
-  const z=await unzip(buf),ss=[],sst=await z.read("xl/sharedStrings.xml");
-  if(sst)Array.from(XP(sst).getElementsByTagName("si")).forEach(si=>ss.push(Array.from(si.getElementsByTagName("t")).map(t=>t.textContent).join("")));
-  const wb=XP(await z.read("xl/workbook.xml")),rels=XP(await z.read("xl/_rels/workbook.xml.rels")),tg={};
-  Array.from(rels.getElementsByTagName("Relationship")).forEach(r=>{tg[r.getAttribute("Id")]=r.getAttribute("Target")});
-  const sheets=[];
-  for(const sh of Array.from(wb.getElementsByTagName("sheet"))){
-    let tp=(tg[sh.getAttribute("r:id")]||"").replace(/^\//,"");if(tp.indexOf("xl/")!==0)tp="xl/"+tp;
-    const x=await z.read(tp);if(!x)continue;const rows=[];
-    Array.from(XP(x).getElementsByTagName("row")).forEach(r=>{
-      const row=[];
-      Array.from(r.getElementsByTagName("c")).forEach(c=>{
-        const m=(c.getAttribute("r")||"").match(/^([A-Z]+)/);let ci=0;if(m)for(const ch of m[1])ci=ci*26+ch.charCodeAt(0)-64;ci=ci?ci-1:row.length;
-        const t=c.getAttribute("t"),vv=c.getElementsByTagName("v")[0];let v="";
-        if(t==="s")v=vv?(ss[+vv.textContent]||""):"";else if(t==="inlineStr")v=Array.from(c.getElementsByTagName("t")).map(q=>q.textContent).join("");else v=vv?vv.textContent:"";
-        row[ci]=v;
-      });
-      rows.push(Array.from(row,v=>v==null?"":String(v)));
-    });
-    sheets.push({name:sh.getAttribute("name")||"",rows:rows.filter(r=>r.some(v=>String(v).trim()))});
-  }
-  return sheets;
-}
-const loadScript=src=>new Promise((ok,ng)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>ng(new Error("load"));document.head.appendChild(s)});
-async function readPdf(buf){
-  const base="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
-  if(!window.pdfjsLib)await loadScript(base+"pdf.min.js");
-  const lib=window.pdfjsLib;
-  if(!lib.GlobalWorkerOptions.workerSrc||lib.GlobalWorkerOptions.workerSrc.indexOf("blob:")!==0){const code=await(await fetch(base+"pdf.worker.min.js")).text();lib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([code],{type:"text/javascript"}))}
-  const pdf=await lib.getDocument({data:new Uint8Array(buf)}).promise,out=[];
-  for(let n=1;n<=Math.min(pdf.numPages,30);n++){
-    const tc=await(await pdf.getPage(n)).getTextContent(),rows={};
-    tc.items.forEach(it=>{if(!it.str)return;const y=Math.round(it.transform[5]/3);(rows[y]=rows[y]||[]).push(it)});
-    Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{const l=rows[y].sort((a,b)=>a.transform[4]-b.transform[4]).map(i=>i.str).join(" ").replace(/\s+/g," ").trim();if(l)out.push({p:l})});
-  }
-  return out;
-}
-function parseCsv(t){const rows=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===","||ch==="\t"){r.push(c);c=""}else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&t[i+1]==="\n")i++;r.push(c);c="";rows.push(r);r=[]}else c+=ch}if(c||r.length){r.push(c);rows.push(r)}return rows.filter(r=>r.some(x=>String(x).trim()))}
-const HD={name:/^(名前|名称|項目|品名|アイテム|持ち物|持物|name)/i,cat:/^(分類|カテゴリー?|区分|category)/i,desc:/^(説明|備考|詳細|メモ|注意|コメント|desc)/i,kind:/^(種別|種類|タイプ|区別|kind)/i};
-function rowsToItems(rows,hint){
-  if(!rows.length)return[];
-  const m={};rows[0].forEach((c,i)=>{const v=String(c||"").trim();for(const k in HD)if(m[k]===undefined&&HD[k].test(v))m[k]=i});
-  let map,st=0;
-  if(m.name!==undefined){map=m;st=1}else{const w=Math.max.apply(null,rows.map(r=>r.length));map=w>=3?{name:0,cat:1,desc:2}:w===2?{name:0,desc:1}:{name:0}}
-  return rows.slice(st).map(r=>{
-    const g=k=>map[k]!==undefined&&r[map[k]]!=null?String(r[map[k]]).trim():"",name=g("name");if(!name)return null;
-    const kt=g("kind"),kind=/道具|ツール|持ち物|持物|装備/.test(kt)?"t":/服|衣|ウェア/.test(kt)?"c":(hint||null);
-    return{name:name.slice(0,30),cat:g("cat").slice(0,12),desc:g("desc").slice(0,120),kind};
-  }).filter(Boolean);
-}
-const lineItem=(l,kind,cat)=>{
-  l=l.replace(/^[\s・●○◎■□☐☑✓✔▶▷◆◇★☆•\-*＊※]+/,"").replace(/^[(（]?\d+[.)）、．]\s*/,"").trim();
-  if(!l||l.length>80)return null;
-  let name=l,desc="";const m=l.match(/^(.{1,24}?)\s*[：:－—–]\s*(.+)$/)||l.match(/^(.{1,24}?)[（(](.+)[）)]$/);
-  if(m){name=m[1].trim();desc=m[2].trim()}else if(l.length>30){desc=l;name=l.slice(0,20)}
-  return{name,cat:cat||"",desc,kind};
-};
-function blocksToItems(bl,hint){
-  const items=[];let rows=[],kind=hint,cat="";
-  const flush=()=>{if(rows.length){rowsToItems(rows,kind).forEach(i=>{if(!i.cat&&cat)i.cat=cat;items.push(i)});rows=[]}};
-  bl.forEach(b=>{
-    if(b.row){rows.push(b.row);return}
-    flush();const l=b.p,h=l.replace(/^[【\[［■◆●▼◎□\s]+|[】\]］：:\s]+$/g,""),deco=/^[【\[［■◆●▼◎]/.test(l)||/[：:]\s*$/.test(l);
-    if(/^(服装|衣類|衣服|ウェア)$/.test(h)&&(deco||l.length<=6)){kind="c";cat="";return}
-    if(/^(道具|持ち物|持物|装備|ギア)$/.test(h)&&(deco||l.length<=6)){kind="t";cat="";return}
-    if(deco&&h&&h.length<=12&&!/[：:－—–（(]/.test(h)){cat=h;return}
-    const it=lineItem(l,kind,cat);if(it)items.push(it);
-  });
-  flush();return items;
-}
-const GC={c:[["雨具",/雨|レイン|カッパ|合羽|ポンチョ/],["手袋",/手袋|グローブ|軍手/],["帽子",/帽子|ハット|キャップ|ネット/],["靴",/靴|ブーツ|シューズ/],["脚",/ゲーター|スパッツ|靴下|ソックス|脚/],["ズボン",/ズボン|パンツ|タイツ|スラックス/],["上着",/シャツ|ヤッケ|ジャケット|フリース|ウェア|上着|ベスト|コート|防寒/]],t:[["採取道具",/ナイフ|鎌|スコップ|ハサミ|はさみ|剪定|ノコギリ|のこぎり|ピッケル/],["収納",/袋|バッグ|リュック|ザック|コンテナ|カゴ|かご|ケース|ボックス/],["安全",/熊|鈴|ホイッスル|笛|スプレー|ヘルメット|ロープ/],["照明",/ライト|ランタン|ランプ|電池/],["救急",/絆創膏|救急|薬|虫よけ|虫除け|ポイズン|消毒|包帯/],["ナビ",/地図|コンパス|GPS|スマホ|充電|無線|トランシーバー/],["携行食",/水|飲|食|おにぎり|行動食|塩|ゼリー|茶/]]};
-const guessCat=(n,k)=>{const f=GC[k].find(x=>x[1].test(n));return f?f[0]:"その他"};
 const ST={};
 const getCols=()=>ld("fn_gear_cols",3)===1?1:3;
 function overlay(html){const o=document.createElement("div");o.className="gx-ov";o.innerHTML='<div class="gx-box">'+html+'</div>';document.body.appendChild(o);return o}
 window.fnGearMount=function(el,pid,species,cb){
-  const MASTER=pid==="gear",s=ST[pid]||(ST[pid]={kind:"c",mode:MASTER?"table":"view",spf:"all"});
+  const s=ST[pid]||(ST[pid]={kind:"c",mode:"view",spf:"all"});
   const isC=()=>s.kind==="c",kn=()=>isC()?"服装":"道具";
   let msg="";
   const upd=()=>{if(cb)cb()};
   const showIt=i=>i.pg.includes(pid)&&(s.spf==="all"||!(i.sp[pid]&&i.sp[pid].length)||i.sp[pid].map(String).includes(String(s.spf)));
   const groups=L=>{const g={};L.forEach(i=>{(g[i.cat]=g[i.cat]||[]).push(i)});const od=CATS[s.kind];return Object.keys(g).sort((a,b)=>{const x=od.indexOf(a),y=od.indexOf(b);return(x<0?99:x)-(y<0?99:y)}).map(k=>[k,g[k]])};
-  const kindBar=()=>`<input type="file" data-gxfile="1" accept=".docx,.xlsx,.xlsm,.pdf,.csv,.tsv,.txt,.md,.json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,text/csv,application/json" hidden><div class="gx-kind"><button data-gxk="c" class="${isC()?"on":""}">👕 服装</button><button data-gxk="t" class="${isC()?"":"on"}">🎒 道具</button></div>`;
+  const kindBar=()=>`<div class="gx-kind"><button data-gxk="c" class="${isC()?"on":""}">👕 服装</button><button data-gxk="t" class="${isC()?"":"on"}">🎒 道具</button></div>`;
   const spNames=i=>{const a=(i.sp[pid]||[]);if(!a.length||!species)return"";return a.map(id=>{const f=species.find(x=>String(x.id)===String(id));return f?f.n:""}).filter(Boolean).join("・")};
   const viewHTML=()=>{
     const D=load(),L=D[s.kind].filter(showIt);
@@ -830,16 +727,16 @@ window.fnGearMount=function(el,pid,species,cb){
     const item1=i=>`<div class="gx-card gx-c1"><div class="gx-ic">${gearIcon(i,isC())}</div><div class="gx-nm1"><b>${E(i.name)}</b><em>${tgt(i)}</em></div><div class="gx-ds1">${E(i.desc||"")}</div><div class="gx-bt"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></div>`;
     const item3=i=>`<button type="button" class="gx-tile" data-gxo="${E(i.id)}"><span class="gx-ic">${gearIcon(i,isC())}</span><b>${E(i.name)}</b>${i.desc?"<i>ⓘ</i>":""}</button>`;
     const body=L.length?groups(L).map(([c,a])=>`<div class="gx-cat">${gearCatIcon(c,isC())} ${E(c)}</div>`+(cols===3?`<div class="gx-g3">${a.map(item3).join("")}</div>`:a.map(item1).join(""))).join(""):`<div class="gx-empty">このページに表示する${kn()}はまだありません。<br>「一覧表・チェック」でチェックを入れるか、「＋ 追加」で作ってください。</div>`;
-    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button><button class="gx-b" data-gxi="file">📥 ファイル取り込み</button><span class="gx-cs"><button data-gxcol="1" class="${cols===1?"on":""}">1列</button><button data-gxcol="3" class="${cols===3?"on":""}">3列</button></span></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。${cols===3?"項目をタップすると詳細が出ます。":""}</p>`+(msg?`<div class="gx-msg">${E(msg)}</div>`:"")+sel+body;
+    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button><span class="gx-cs"><button data-gxcol="1" class="${cols===1?"on":""}">1列</button><button data-gxcol="3" class="${cols===3?"on":""}">3列</button></span></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。${cols===3?"項目をタップすると詳細が出ます。":""}</p>`+sel+body;
   };
   const tableHTML=()=>{
     const D=load(),L=D[s.kind],T=targets();
     const head='<tr><th>項目</th>'+T.map(p=>`<th class="${p.id===pid?"cur":""}"><span>${E(p.icon)}</span><small>${E(String(p.name).replace(/（.*/,"").slice(0,5))}</small></th>`).join("")+'</tr>';
     const rows=groups(L).map(([c,a])=>`<tr class="gx-cr"><td colspan="${T.length+1}">${gearCatIcon(c,isC())} ${E(c)}</td></tr>`+a.map(i=>`<tr><td><div class="gx-nm">${gearIcon(i,isC())} <b>${E(i.name)}</b></div>${i.desc?`<small>${E(i.desc)}</small>`:""}<div class="gx-rb"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></td>`+T.map(p=>`<td class="${p.id===pid?"cur":""}"><input type="checkbox" data-gxc="${E(i.id)}" data-gxp2="${E(p.id)}"${i.pg.includes(p.id)?" checked":""} aria-label="${E(p.name)}"></td>`).join("")+'</tr>').join("")).join("");
     const hasDev=(()=>{try{return !!(localStorage.getItem("sansai_clothing")||localStorage.getItem("sansai_tools"))}catch(e){return false}})();
-    return `<div class="gx-top">${MASTER?"":'<button class="gx-b" data-gxm="view">← 戻る</button>'}<b style="font-size:16px">📋 ${kn()}の一覧表</b></div>`+kindBar()+`<p class="gx-h">横にスクロールして、必要なページにチェックを入れます。チェックした項目が、そのページに表示されます。${MASTER?"":"（緑の列がこのページです）"}</p><div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxi="file">📥 ファイル取り込み</button></div>`+(msg?`<div class="gx-msg">${E(msg)}</div>`:"")+(L.length?`<div class="gx-tw"><table class="gx-t"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`:`<div class="gx-empty">リストがありません。「＋ 追加」から作ってください。</div>`)+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button></div><details class="gx-ds"><summary>山菜手帳からの取り込み・初期化</summary><p class="gx-h" style="margin-top:8px">山菜手帳の服装・道具を、ここへ移せます。取り込むと、服装・道具のリストが山菜手帳の内容に置き換わります。（チェックの設定は、同じ名前の項目で引き継ぎます）山菜手帳のバックアップ（.json）は、上の「ファイル取り込み」からも読み込めます。</p><div class="gx-top">${hasDev?'<button class="gx-b" data-gxi="dev">この端末の山菜手帳から取り込む</button>':""}<button class="gx-b gx-r" data-gxi="reset">初期リストに戻す</button></div></details>`;
+    return `<div class="gx-top"><button class="gx-b" data-gxm="view">← 戻る</button><b style="font-size:16px">📋 ${kn()}の一覧表</b></div>`+kindBar()+`<p class="gx-h">横にスクロールして、必要なページにチェックを入れます。チェックした項目が、そのページに表示されます。（緑の列がこのページです）</p><div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button></div>`+(msg?`<div class="gx-msg">${E(msg)}</div>`:"")+(L.length?`<div class="gx-tw"><table class="gx-t"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`:`<div class="gx-empty">リストがありません。「＋ 追加」から作ってください。</div>`)+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button></div><details class="gx-ds"><summary>山菜手帳からの取り込み・初期化</summary><p class="gx-h" style="margin-top:8px">山菜手帳の服装・道具を、ここへ移せます。取り込むと、服装・道具のリストが山菜手帳の内容に置き換わります。（チェックの設定は、同じ名前の項目で引き継ぎます）</p><div class="gx-top">${hasDev?'<button class="gx-b" data-gxi="dev">この端末の山菜手帳から取り込む</button>':""}<button class="gx-b" data-gxi="file">バックアップファイルから取り込む</button><button class="gx-b gx-r" data-gxi="reset">初期リストに戻す</button></div><input type="file" accept=".json,application/json" data-gxf="1" hidden></details>`;
   };
-  const draw=()=>{if(MASTER)s.mode="table";el.innerHTML=s.mode==="table"?tableHTML():viewHTML();upd()};
+  const draw=()=>{el.innerHTML=s.mode==="table"?tableHTML():viewHTML();upd()};
   /* ---- 追加・編集フォーム ---- */
   const openForm=item=>{
     const T=targets();
@@ -903,45 +800,6 @@ window.fnGearMount=function(el,pid,species,cb){
     if(!src.c&&!src.t){msg="服装・道具のデータが見つかりませんでした。";draw();return}
     confirmBox("山菜手帳の内容で<br>置き換えますか？","取り込む",()=>{const n=applyImport(src);msg=n?n+"件を取り込みました。":"取り込めるデータがありませんでした。";draw()});
   };
-  const previewImport=(items,fname)=>{
-    const D=load(),T=targets(),exist={};
-    D.c.forEach(i=>{exist["c|"+i.name]=1});D.t.forEach(i=>{exist["t|"+i.name]=1});
-    items=items.slice(0,300).map(i=>{const o=Object.assign({},i);o.kind=o.kind||s.kind;o.dup=!!exist[o.kind+"|"+o.name];o.on=!o.dup;return o});
-    const pgs=T.some(p=>p.id===pid)?[pid]:DEFPG.filter(id=>T.some(p=>p.id===id));
-    const body=()=>`<h3>📥 取り込みの確認</h3><p class="gx-h">${E(fname)} から ${items.length} 件見つかりました。入れたい項目にチェックを入れてください。（同じ名前がすでにある項目は、初期状態でオフです）</p><div class="gx-top"><button type="button" class="gx-b" data-a="all">全部選ぶ</button><button type="button" class="gx-b" data-a="none">全部外す</button></div><div class="gx-imp">${items.map((i,ix)=>`<div class="gx-ir"><input type="checkbox" data-ii="${ix}"${i.on?" checked":""}><div style="flex:1;min-width:0"><input class="sn-in" data-in="${ix}" value="${E(i.name)}" maxlength="30"><small>${E([i.cat,i.desc].filter(Boolean).join(" ／ "))}${i.dup?"（同名あり）":""}</small></div><select data-ik="${ix}"><option value="c"${i.kind==="c"?" selected":""}>服装</option><option value="t"${i.kind==="t"?" selected":""}>道具</option></select></div>`).join("")}</div><label class="gx-l">表示するページ（チェックしたページに出ます）</label><div class="gx-pgs">${T.map(p=>`<label><input type="checkbox" data-ip="${E(p.id)}"${pgs.includes(p.id)?" checked":""}>${E(p.icon)} ${E(String(p.name).replace(/（.*/,""))}</label>`).join("")}</div><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-p" data-x="y">取り込む</button></div>`;
-    const ov=overlay(body()),box=()=>ov.firstChild;
-    ov.addEventListener("input",e=>{const d=e.target.dataset||{};if(d.in!==undefined)items[+d.in].name=e.target.value});
-    ov.addEventListener("change",e=>{const t=e.target,d=t.dataset||{};if(d.ii!==undefined)items[+d.ii].on=t.checked;else if(d.ik!==undefined)items[+d.ik].kind=t.value;else if(d.ip!==undefined){const k=pgs.indexOf(d.ip);if(t.checked&&k<0)pgs.push(d.ip);if(!t.checked&&k>=0)pgs.splice(k,1)}});
-    ov.addEventListener("click",e=>{
-      if(e.target===ov){ov.remove();return}
-      const b=e.target.closest("button");if(!b)return;const d=b.dataset;
-      if(d.a){items.forEach(i=>{i.on=d.a==="all"});box().innerHTML=body();return}
-      if(d.x==="n"){ov.remove();return}
-      if(d.x==="y"){
-        const D2=load();let n=0;
-        items.forEach(i=>{const nm=String(i.name||"").trim();if(!i.on||!nm)return;D2[i.kind].push({id:"g"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:nm,cat:i.cat||guessCat(nm,i.kind),desc:i.desc||"",pg:pgs.slice(),sp:{}});n++});
-        if(n)save(D2);ov.remove();msg=n?n+"件を取り込みました。分類は名前から自動で付けています。「編集」で直せます。":"取り込む項目が選ばれていません。";draw();
-      }
-    });
-  };
-  const importFile=async f=>{
-    const ext=(f.name.split(".").pop()||"").toLowerCase();
-    if(ext==="doc"||ext==="xls"||ext==="ppt"||ext==="pptx"){msg="この形式は読み取れません。Wordは「.docx」、Excelは「.xlsx」で保存し直すか、PDFにしてください。";draw();return}
-    msg="読み取り中です…";draw();
-    try{
-      let items=null,bl=null;
-      if(ext==="docx")bl=await readDocx(await f.arrayBuffer());
-      else if(ext==="xlsx"||ext==="xlsm"){items=[];(await readXlsx(await f.arrayBuffer())).forEach(x=>{const h=/服装|衣|ウェア/.test(x.name)?"c":/道具|持ち物|持物|装備/.test(x.name)?"t":null;items=items.concat(rowsToItems(x.rows,h))})}
-      else if(ext==="pdf")bl=await readPdf(await f.arrayBuffer());
-      else if(ext==="csv"||ext==="tsv")items=rowsToItems(parseCsv(dec(await f.arrayBuffer())),null);
-      else if(ext==="json"){const o=JSON.parse(dec(await f.arrayBuffer())),g=grab(o&&(o.data||o));if(g.c||g.t){msg="";draw();doImport(g);return}items=(Array.isArray(o)?o:[]).filter(x=>x&&x.name).map(x=>({name:String(x.name).slice(0,30),cat:String(x.category||x.cat||""),desc:String(x.desc||""),kind:null}))}
-      else if(ext==="txt"||ext==="md")bl=dec(await f.arrayBuffer()).split(/\r?\n/).filter(x=>x.trim()).map(p=>({p:p.trim()}));
-      else{msg="この形式は読み取れません。Word（.docx）・Excel（.xlsx）・PDF・CSV・テキストに対応しています。";draw();return}
-      if(bl)items=blocksToItems(bl,null);
-      if(!items||!items.length){msg=ext==="pdf"?"文字を読み取れませんでした。画像だけのPDFは未対応です。":"取り込める項目が見つかりませんでした。";draw();return}
-      msg="";draw();previewImport(items,f.name);
-    }catch(err){msg="読み取れませんでした。"+(ext==="pdf"?"PDFの読み取りには、ネット接続が必要です。":"ファイルが壊れていないか確認してください。");draw()}
-  };
   el.onclick=e=>{
     const b=e.target.closest("button");if(!b||!el.contains(b))return;const d=b.dataset;
     if(d.gxk){s.kind=d.gxk;msg="";draw();return}
@@ -952,20 +810,16 @@ window.fnGearMount=function(el,pid,species,cb){
     if(d.gxo){const it=load()[s.kind].find(i=>i.id===d.gxo);if(it)popup(it);return}
     if(d.gxcol){sv("fn_gear_cols",+d.gxcol);draw();return}
     if(d.gxi==="dev"){try{doImport(grab({sansai_clothing:localStorage.getItem("sansai_clothing"),sansai_tools:localStorage.getItem("sansai_tools")}))}catch(x){msg="読み込めませんでした。";draw()}return}
-    if(d.gxi==="file"){const f=el.querySelector("[data-gxfile]");if(f)f.click();return}
+    if(d.gxi==="file"){const f=el.querySelector("[data-gxf]");if(f)f.click();return}
     if(d.gxi==="reset"){confirmBox("服装・道具を<br>初期リストに戻しますか？<br><small>（追加・編集した内容は消えます）</small>","戻す",()=>{save({c:conv("c",INITIAL_CLOTHING),t:conv("t",INITIAL_TOOLS)});msg="初期リストに戻しました。";draw()});return}
   };
   el.onchange=e=>{
     const t=e.target,d=t.dataset||{};
     if(d.gxs!==undefined){s.spf=t.value;draw();return}
     if(d.gxc!==undefined){const D=load(),it=D[s.kind].find(i=>i.id===d.gxc);if(!it)return;const k=it.pg.indexOf(d.gxp2);if(t.checked&&k<0)it.pg.push(d.gxp2);if(!t.checked&&k>=0)it.pg.splice(k,1);save(D);upd();return}
-    if(d.gxfile!==undefined){const f=t.files[0];t.value="";if(f)importFile(f)}
+    if(d.gxf!==undefined){const f=t.files[0];t.value="";if(!f)return;const r=new FileReader();r.onload=()=>{let o=null;try{o=JSON.parse(r.result)}catch(x){}if(!o){msg="ファイルを読み込めませんでした。";draw();return}doImport(grab(o.data||o))};r.readAsText(f)}
   };
   draw();
-};
-window.fnGearPage=function(root){
-  root.innerHTML='<div class="gx"></div>';
-  fnGearMount(root.firstChild,"gear",null);
 };
 window.fnGearSide=function(host,pid){
   host.className="gx-side";
@@ -1000,7 +854,7 @@ const PAL=[CV,YC,HC],DG=["古い辞書風","野帳風","植物標本帳風"];
 const DEF={info:6,all:4,tecchou:8,sansai:8,fruit:2,saibai:2,kinoko:9,tozan:6,onsen:7,ref:4,region:5};
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-const FIXED=["info","all","members","gear","ref","region","howto","memo"],DEFPG=["sansai","fruit","kinoko"];
+const FIXED=["info","all","members","ref","region","howto","memo"],DEFPG=["sansai","fruit","kinoko"];
 function isAdm(){return !!ld("fn_admin",0)}
 function gateOn(){return !isAdm()&&!!remote().gate}
 function meRec(){const u=ld("fn_uid",null);return u?(remote().members||[]).find(m=>m.uid===u)||null:null}
@@ -1020,7 +874,7 @@ let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_b
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EXTRA=[{id:"saibai",name:"栽培果物",icon:"🍎",color:"#c75a3a"},{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"gear",name:"服装・道具",icon:"🎒",color:"#6a8f4f"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"旅費精算書・割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
+const EXTRA=[{id:"saibai",name:"栽培果物",icon:"🍎",color:"#c75a3a"},{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"旅費精算書・割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
 const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
 const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+2;
@@ -1056,10 +910,10 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="tecchou"?"Z":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="saibai"?"B":p.id==="gear"?"J":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘"||p.name==="旅費精算書・割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
-    if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo"&&p.id!=="tecchou"&&p.id!=="gear")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
+    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="tecchou"?"Z":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="saibai"?"B":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘"||p.name==="旅費精算書・割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo"&&p.id!=="tecchou")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,Z:initTecho,S:initSansai,F:initSansai,K:initSansai,B:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom,J:window.fnGearPage})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    if(kd)({A:initAll,I:initInfo,Z:initTecho,S:initSansai,F:initSansai,K:initSansai,B:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
     if(kd==="T"||kd==="O"||kd==="C"){const gh=document.createElement("div");s.querySelector(".sn").after(gh);fnGearSide(gh,p.id)}
     s.insertAdjacentHTML("beforeend",`<button class="back back-end" data-go="${TI()}">‹ 目次に戻る</button>`);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
@@ -1802,7 +1656,7 @@ function initOnsen(root){
 }
 /* みんなのページ */
 function initAll(root){
-  let tab=0,q="",ask=null,msg="";
+  let tab=0,q="",ask=null,msg="",hist=false,edit=null;
   const $=id=>root.querySelector("#"+id),pool=()=>ld("fn_pool",{}),mine=id=>!!pool()["管理者:"+id],L=k=>allSh().filter(x=>x.k===k),E=v=>esc(String(v==null?"":v));
   const addPool=it=>{const p=pool();it.from="管理者";p["管理者:"+it.id]=it;sv("fn_pool",p)};
   const delPool=id=>{const p=pool();delete p["管理者:"+id];sv("fn_pool",p)};
@@ -1810,7 +1664,23 @@ function initAll(root){
   const okUrl=u=>/^https?:\/\//i.test(String(u||""));
   const hint='<p class="sn-note">追加したら、「管理者専用」ページの「配信ファイルの中身を書き出す」でshared.jsonを更新してください。</p>';
   const dB=k=>`<button class="sn-del${ask===k?" ask":""}" data-dp="${E(k)}">${ask===k?"本当に削除":"削除"}</button>`;
-  const ntV=()=>{const seen=ld("fn_seen",[]);return (L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))).map(x=>`<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${seen.includes(x.id)?"":' <i class="sn-now">NEW</i>'}<br><small>${E(x.d)}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${seen.includes(x.id)?"":`<button class="sn-btn" style="display:block;width:100%;margin-top:8px;padding:12px;font-size:17px;font-weight:700" data-rd="${E(x.id)}">✓ 読んだ（通知を消す）</button> `}${mine(x.id)?dB("n"+x.id):""}</div>`).join("")||'<p class="sn-note">お知らせはありません。</p>')+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
+  const ntV=()=>{
+    const seen=ld("fn_seen",[]),isNew=x=>!seen.includes(x.id);
+    const all=L("nt").sort((a,b)=>String(b.d).localeCompare(String(a.d))||String(b.id).localeCompare(String(a.id)));
+    const recent=all.filter((x,i)=>i<3||isNew(x)),old=all.filter(x=>!recent.includes(x));
+    const row=x=>{
+      if(edit===x.id&&mine(x.id))return `<div class="sn-row"><input class="sn-in" id="ne-t" maxlength="40" value="${E(x.t)}"><textarea class="sn-in" id="ne-x" rows="4" maxlength="600">${E(x.x)}</textarea><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ne-m" style="width:20px;height:20px"${x.must?" checked":""}>必ず読ませる</label><div class="sn-g"><button class="sn-btn" data-ns="${E(x.id)}">保存</button><button class="sn-btn sn-ghost" data-nc="1">やめる</button></div></div>`;
+      return `<div class="sn-row"><b>${E(x.t)}</b>${x.must?' <i class="sn-now" style="background:#b3412f">必読</i>':""}${isNew(x)?' <i class="sn-now">NEW</i>':""}<br><small>${E(x.d)}${x.ed?"（編集 "+E(x.ed)+"）":""}</small><br>${E(x.x).replace(/\n/g,"<br>")}<br>${isNew(x)?`<button class="sn-btn" style="display:block;width:100%;margin-top:8px;padding:12px;font-size:17px;font-weight:700" data-rd="${E(x.id)}">✓ 読んだ（通知を消す）</button> `:""}${mine(x.id)?`<button class="sn-btn sn-ghost" data-ne="${E(x.id)}">編集</button> `+dB("n"+x.id):""}</div>`;
+    };
+    let h=recent.map(row).join("")||'<p class="sn-note">お知らせはありません。</p>';
+    if(old.length){
+      h+=`<button class="sn-btn sn-ghost" data-hist="1" style="width:100%;margin-top:10px">過去のお知らせ（履歴 ${old.length}件）${hist?"を閉じる ▲":"を見る ▼"}</button>`;
+      if(hist){
+        let cur="";
+        old.forEach(x=>{const m=String(x.d).slice(0,7),p=m.split("-");if(m!==cur){cur=m;h+=`<div class="nl">${p.length>1?E(p[0])+"年"+(+p[1])+"月":E(m||"日付なし")}</div>`}h+=row(x)});
+      }
+    }
+    return h+`<details class="ic adm-only"><summary>管理者用：お知らせを追加</summary><input class="sn-in" id="nt-t" placeholder="タイトル" maxlength="40"><textarea class="sn-in" id="nt-x" rows="4" maxlength="600" placeholder="内容"></textarea><label class="sn-row" style="display:flex;gap:8px;align-items:center;border:0"><input type="checkbox" id="nt-m" style="width:20px;height:20px">必ず読ませる（開いたとき全画面で表示）</label><button class="sn-btn" id="nt-add">お知らせを追加</button>${hint}</details>`};
   const mbV=()=>(L("mb").map(x=>`<div class="sn-row"><b>${E(x.n)}</b>${x.r?"　<small>"+E(x.r)+"</small>":""}${x.m?"<br>"+E(x.m):""}${mine(x.id)?"<br>"+dB("m"+x.id):""}</div>`).join("")||'<p class="sn-note">名簿はまだありません。</p>')+`<details class="ic adm-only"><summary>管理者用：メンバーを追加</summary><input class="sn-in" id="mb-n" placeholder="名前" maxlength="20"><input class="sn-in" id="mb-r" placeholder="役割（例：管理者・会員）" maxlength="20"><input class="sn-in" id="mb-m" placeholder="メモ" maxlength="60"><button class="sn-btn" id="mb-add">メンバーを追加</button>${hint}</details>`;
   const own=()=>ld("fn_links",[]);
   const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
@@ -1839,6 +1709,10 @@ function initAll(root){
     else if(d.pj){goTo(d.pj)}
     else if(d.rd){const s=ld("fn_seen",[]);if(!s.includes(d.rd))s.push(d.rd);sv("fn_seen",s);render()}
     else if(d.dp){if(ask===d.dp){const k=d.dp[0],id=d.dp.slice(1);if(k==="o"){const a=own();a.splice(+id,1);sv("fn_links",a)}else delPool(id);ask=null}else ask=d.dp;render()}
+    else if(d.hist){hist=!hist;render()}
+    else if(d.ne){edit=d.ne;ask=null;render()}
+    else if(d.nc){edit=null;render()}
+    else if(d.ns){const t=g("ne-t");if(!t){$("ne-t").focus();return}const p=pool(),k="管理者:"+d.ns;if(p[k]){p[k].t=t;p[k].x=g("ne-x");p[k].must=$("ne-m").checked?1:0;p[k].ed=td();sv("fn_pool",p)}edit=null;render()}
     else if(b.id==="nt-add"){const t=g("nt-t");if(!t){$("nt-t").focus();return}addPool({k:"nt",id:nid(),t,x:g("nt-x"),d:td(),must:$("nt-m").checked?1:0});render()}
     else if(b.id==="mb-add"){const n=g("mb-n");if(!n){$("mb-n").focus();return}addPool({k:"mb",id:nid(),n,r:g("mb-r"),m:g("mb-m")});render()}
     else if(b.id==="lk-own"||b.id==="lk-pub"){const t=g("lk-t"),u=g("lk-u");if(!t||!okUrl(u)){$("lk-u").focus();return}if(b.id==="lk-own"){const a=own();a.push({t,u});sv("fn_links",a)}else addPool({k:"lk",id:nid(),t,u});render()}
