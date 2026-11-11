@@ -926,7 +926,7 @@ function renderPages(){
   $("toc").innerHTML=pages().map((p,i)=>{
     const c=i>=bl().length;
     return `<div style="display:flex;align-items:center"><button class="toc${canView(p)?"":" lock"}" data-go="${i+TI()+1}"><span class="ico" style="background:${p.color}">${icoOf(p)}</span><span class="nm">${esc(p.name)}</span>${FIXED.includes(p.id)?'<span class="fx">固定</span>':""}<span class="no">${i+1}ページ</span></button>${c&&isAdm()?`<button class="del" data-del="${i-bl().length}">削除</button>`:""}</div>`;
-  }).join("");
+  }).join("")+'<div style="display:flex;align-items:center"><button class="toc" data-gxtoc="1"><span class="ico" style="background:#6a8f3a">🎒</span><span class="nm">服装・道具</span><span class="no">全ページ共通</span></button></div>';
   {const tc=ld("fn_toccol",2);$("toc").dataset.c=tc;$("tcc").innerHTML='<span class="nl" style="align-self:center">並べ方</span>'+[1,2,3].map(n=>'<button class="sn-chip'+(tc===n?" on":"")+'" data-tc="'+n+'">'+n+"列</button>").join("")}
   $("dots").innerHTML=Array.from({length:pages().length+4+adm().length},(_,i)=>`<button data-go="${i}" aria-label="${i+1}ページ目"></button>`).join("");
   $("addb").textContent=gateOn()?"＋ ページの作成を申請":"＋ ページを追加";$("asave").textContent=gateOn()?"申請の文字を作る":"このページを追加";
@@ -1220,11 +1220,14 @@ function drawPP(){
   paintPaper();drawPP();
 })();
 (function(){
-  const d=document.createElement("details");d.className="pp gx-det";d.id="gxtoc";d.innerHTML='<summary></summary><div class="gx"></div>';
-  const sm=d.querySelector("summary"),box=d.querySelector(".gx"),upd=()=>{const D=JSON.parse(localStorage.getItem("fn_gear_v1")||"null");sm.textContent="🎒 服装・道具（全ページの一覧表"+(D&&D.c&&D.t?"・"+(D.c.length+D.t.length)+"件":"")+"）"};
-  try{upd()}catch(e){sm.textContent="🎒 服装・道具（全ページの一覧表）"}
-  let done=0;d.addEventListener("toggle",()=>{if(d.open&&!done){done=1;fnGearMount(box,"toc",null,()=>{try{upd()}catch(e){}})}});
-  $("tocpg").insertBefore(d,$("ppanel"));
+  $("toc").addEventListener("click",e=>{
+    if(!e.target.closest("[data-gxtoc]"))return;
+    const o=document.createElement("div");o.className="gx-ov";
+    o.innerHTML='<div class="gx-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:17px">🎒 服装・道具（全ページの一覧表）</b><button type="button" class="gx-b" data-gxclose="1">閉じる</button></div><div class="gx"></div></div>';
+    document.body.appendChild(o);
+    fnGearMount(o.querySelector(".gx"),"toc",null);
+    o.addEventListener("click",ev=>{if(ev.target===o||ev.target.closest("[data-gxclose]"))o.remove()});
+  });
 })();
 let ppg=ld("fn_ppg",{}),cvi=ld("fn_cvint",50),rl=ld("fn_rule","none"),dec=ld("fn_dec",{h:1,n:1,f:1}),notes=ld("fn_notes",{});
 CV.push({n:"臙脂",c:"#7a2c25",d:"#511b16",g:"#e2c36e"},{n:"藍",c:"#1f4a6e",d:"#122f48",g:"#e2c36e"},{n:"紫",c:"#4a2f66",d:"#2e1b42",g:"#e2c36e"},{n:"橙",c:"#b8622a",d:"#82401a",g:"#f1dc9a"},{n:"桃",c:"#b4637a",d:"#7e3a4e",g:"#f1dc9a"},{n:"灰",c:"#6b7280",d:"#444a55",g:"#e2c36e"},{n:"若草",c:"#6f8f4a",d:"#47602d",g:"#f1dc9a"});
