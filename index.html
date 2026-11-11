@@ -710,11 +710,11 @@ const ST={};
 const getCols=()=>ld("fn_gear_cols",3)===1?1:3;
 function overlay(html){const o=document.createElement("div");o.className="gx-ov";o.innerHTML='<div class="gx-box">'+html+'</div>';document.body.appendChild(o);return o}
 window.fnGearMount=function(el,pid,species,cb){
-  const s=ST[pid]||(ST[pid]={kind:"c",mode:"view",spf:"all"});
+  const s=ST[pid]||(ST[pid]={kind:"c",mode:pid==="toc"?"table":"view",spf:"all"});
   const isC=()=>s.kind==="c",kn=()=>isC()?"服装":"道具";
   let msg="";
   const upd=()=>{if(cb)cb()};
-  const showIt=i=>i.pg.includes(pid)&&(s.spf==="all"||!(i.sp[pid]&&i.sp[pid].length)||i.sp[pid].map(String).includes(String(s.spf)));
+  const showIt=i=>pid==="toc"||i.pg.includes(pid)&&(s.spf==="all"||!(i.sp[pid]&&i.sp[pid].length)||i.sp[pid].map(String).includes(String(s.spf)));
   const groups=L=>{const g={};L.forEach(i=>{(g[i.cat]=g[i.cat]||[]).push(i)});const od=CATS[s.kind];return Object.keys(g).sort((a,b)=>{const x=od.indexOf(a),y=od.indexOf(b);return(x<0?99:x)-(y<0?99:y)}).map(k=>[k,g[k]])};
   const kindBar=()=>`<div class="gx-kind"><button data-gxk="c" class="${isC()?"on":""}">👕 服装</button><button data-gxk="t" class="${isC()?"":"on"}">🎒 道具</button></div>`;
   const spNames=i=>{const a=(i.sp[pid]||[]);if(!a.length||!species)return"";return a.map(id=>{const f=species.find(x=>String(x.id)===String(id));return f?f.n:""}).filter(Boolean).join("・")};
@@ -727,7 +727,7 @@ window.fnGearMount=function(el,pid,species,cb){
     const item1=i=>`<div class="gx-card gx-c1"><div class="gx-ic">${gearIcon(i,isC())}</div><div class="gx-nm1"><b>${E(i.name)}</b><em>${tgt(i)}</em></div><div class="gx-ds1">${E(i.desc||"")}</div><div class="gx-bt"><button class="gx-b" data-gxe="${E(i.id)}">編集</button><button class="gx-b gx-r" data-gxd="${E(i.id)}">削除</button></div></div>`;
     const item3=i=>`<button type="button" class="gx-tile" data-gxo="${E(i.id)}"><span class="gx-ic">${gearIcon(i,isC())}</span><b>${E(i.name)}</b>${i.desc?"<i>ⓘ</i>":""}</button>`;
     const body=L.length?groups(L).map(([c,a])=>`<div class="gx-cat">${gearCatIcon(c,isC())} ${E(c)}</div>`+(cols===3?`<div class="gx-g3">${a.map(item3).join("")}</div>`:a.map(item1).join(""))).join(""):`<div class="gx-empty">このページに表示する${kn()}はまだありません。<br>「一覧表・チェック」でチェックを入れるか、「＋ 追加」で作ってください。</div>`;
-    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button><span class="gx-cs"><button data-gxcol="1" class="${cols===1?"on":""}">1列</button><button data-gxcol="3" class="${cols===3?"on":""}">3列</button></span></div><p class="gx-h">チェックを入れた項目だけが、このページに表示されます。${cols===3?"項目をタップすると詳細が出ます。":""}</p>`+sel+body;
+    return kindBar()+`<div class="gx-top"><button class="gx-b gx-p" data-gxa="1">＋ 追加</button><button class="gx-b" data-gxm="table">📋 一覧表・チェック</button><span class="gx-cs"><button data-gxcol="1" class="${cols===1?"on":""}">1列</button><button data-gxcol="3" class="${cols===3?"on":""}">3列</button></span></div><p class="gx-h">${pid==="toc"?"すべての項目です。ページごとの表示は「一覧表・チェック」で設定します。":"チェックを入れた項目だけが、このページに表示されます。"}${cols===3?"項目をタップすると詳細が出ます。":""}</p>`+sel+body;
   };
   const tableHTML=()=>{
     const D=load(),L=D[s.kind],T=targets();
@@ -1218,6 +1218,13 @@ function drawPP(){
   $("ppsw").addEventListener("click",e=>{const b=e.target.closest(".ppb");if(!b)return;pci=+b.dataset.i;sv("fn_pcol",pci);paintPaper();drawPP()});
   $("ppr").addEventListener("input",e=>{pin=+e.target.value;sv("fn_pint",pin);paintPaper();drawPP()});
   paintPaper();drawPP();
+})();
+(function(){
+  const d=document.createElement("details");d.className="pp gx-det";d.id="gxtoc";d.innerHTML='<summary></summary><div class="gx"></div>';
+  const sm=d.querySelector("summary"),box=d.querySelector(".gx"),upd=()=>{const D=JSON.parse(localStorage.getItem("fn_gear_v1")||"null");sm.textContent="🎒 服装・道具（全ページの一覧表"+(D&&D.c&&D.t?"・"+(D.c.length+D.t.length)+"件":"")+"）"};
+  try{upd()}catch(e){sm.textContent="🎒 服装・道具（全ページの一覧表）"}
+  let done=0;d.addEventListener("toggle",()=>{if(d.open&&!done){done=1;fnGearMount(box,"toc",null,()=>{try{upd()}catch(e){}})}});
+  $("tocpg").insertBefore(d,$("ppanel"));
 })();
 let ppg=ld("fn_ppg",{}),cvi=ld("fn_cvint",50),rl=ld("fn_rule","none"),dec=ld("fn_dec",{h:1,n:1,f:1}),notes=ld("fn_notes",{});
 CV.push({n:"臙脂",c:"#7a2c25",d:"#511b16",g:"#e2c36e"},{n:"藍",c:"#1f4a6e",d:"#122f48",g:"#e2c36e"},{n:"紫",c:"#4a2f66",d:"#2e1b42",g:"#e2c36e"},{n:"橙",c:"#b8622a",d:"#82401a",g:"#f1dc9a"},{n:"桃",c:"#b4637a",d:"#7e3a4e",g:"#f1dc9a"},{n:"灰",c:"#6b7280",d:"#444a55",g:"#e2c36e"},{n:"若草",c:"#6f8f4a",d:"#47602d",g:"#f1dc9a"});
