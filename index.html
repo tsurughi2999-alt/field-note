@@ -3295,8 +3295,8 @@ function initMemoPg(root){
 /* ---- ファーストエイドキット ---- */
 function initFirstAid(root){
   const K="fn_firstaid",CK="fn_fa_cols";
-  const CATS=[["傷の手当て","🩹"],["捻挫・骨折・打撲","🦴"],["虫・かぶれ・動物","🐝"],["常備薬","💊"],["熱中症・低体温","🌡️"],["器具・連絡","🧰"]];
-  const ICO=["🩹","🧻","🧴","💧","🧶","🔺","📏","🧊","🪵","💉","🦟","🥢","🧼","💊","👁️","📒","🧂","🧥","🔥","🍬","🧤","✂️","🧷","😷","📣","📝","🛍️","🔋"];
+  const CATS=[["傷の手当て","🩹"],["捻挫・骨折・打撲","🦴"],["虫・かぶれ・動物","🐝"],["危険な動植物の対処","⚠️"],["常備薬","💊"],["熱中症・低体温","🌡️"],["器具・連絡","🧰"],["野外の必須装備","🎒"]];
+  const ICO=["🩹","🧻","🧴","💧","🧶","🔺","📏","🧊","🪵","💉","🦟","🥢","🧼","💊","👁️","📒","🧂","🧥","🔥","🍬","🧤","✂️","🧷","😷","📣","📝","🛍️","🔋","🐍","🐝","🌿","🍄","🐻","🐛","🕷️","🔦","🔔","🧭","☔","🥤","🥾","🧢"];
   const SEED=[
 ["傷の手当て","🩹","絆創膏（大小）","各5枚ほど","小さな切り傷・すり傷に。先に水で汚れを洗い流し、周りの水気を拭いてから貼ります。"],
 ["傷の手当て","🧻","滅菌ガーゼ","5〜10枚","傷口を覆う・出血を押さえるのに使います。繊維が残らない滅菌タイプが安心です。"],
@@ -3332,9 +3332,33 @@ function initFirstAid(root){
 ["器具・連絡","📣","ホイッスル","1個","声より遠くまで届きます。道に迷ったときや助けを呼ぶときの合図に。"],
 ["器具・連絡","📝","緊急連絡先メモ・保険証のコピー","1式","連絡先・持病・アレルギー・血液型を書いて防水袋に入れます。"],
 ["器具・連絡","🛍️","ビニール袋・ジップ袋","数枚","汚れ物の持ち帰り、スマホや書類の防水、氷のう代わりにも使えます。"],
-["器具・連絡","🔋","モバイルバッテリー","1個","救急要請や位置情報の共有に、スマホの電池を切らさないために。"]];
+["器具・連絡","🔋","モバイルバッテリー","1個","救急要請や位置情報の共有に、スマホの電池を切らさないために。"],
+["常備薬","💉","アドレナリン自己注射薬（処方された人のみ）","処方された本数","ハチ刺されなどのアナフィラキシーに備えて、医師から処方された人だけが持ちます。使い方・期限・保管は医師や薬剤師の指導に従います。使ったあとは、症状が治まっても必ず119番・受診をします。"],
+["危険な動植物の対処","🐍","マムシ・ヤマカガシ","4〜10月（夕方〜夜、水辺・石垣・藪）","【予防】長ズボン・長靴かゲイター・厚手の手袋。草むら・石垣・倒木の陰・水辺では、先にストックや棒で払ってから進みます。見えない所に手足を入れない。見かけても近づかず、触らず、そっと離れます。\n【咬まれたら】すぐヘビから離れ、あわてず安静に。歩かせず、119番か救助要請をします。傷口は水でよく洗い、咬まれた所を心臓より低くします。腫れる前に指輪・時計・きつい靴を外します。\n【避けること】強く縛る、切る、氷で冷やす、動き回る。口で吸い出すのも勧められません。縛るかどうかは自治体の案内に差があるため、救急隊や医師の指示に従います。\n【受診】症状は30分以内に出ることが多く、原則入院になります。必ず病院へ。\n【ヤマカガシ】毒牙が奥にあり、深く咬まれると毒が入ります。咬まれたら必ず受診します。"],
+["危険な動植物の対処","🐝","スズメバチ","春〜秋（特に8〜10月）","【予防】黒っぽい服を避け、白っぽい帽子・長袖で。香水・整髪料・甘い飲み物も寄ってきます。木の洞・地面の穴・藪・軒下の巣に近づかない。羽音が大きくなる、カチカチと音がするのは威嚇のサインです。\n【近づかれたら】走らず、手で払わず、姿勢を低くして顔と首を守り、静かにその場を離れます。\n【刺されたら】その場を離れ、流水で洗い、あればポイズンリムーバーで毒を吸い出して冷やします。30分〜1時間は一人にならず様子を見ます。\n【すぐ119番】息苦しい・声がかすれる・全身のじんま疹・めまい・吐き気・意識がぼんやりするとき。アナフィラキシーは刺されてすぐ起こることがあり、以前に刺された人は特に注意です。"],
+["危険な動植物の対処","🐝","アシナガバチ・ミツバチ","春〜秋","【予防】スズメバチと同じく、巣に近づかず、黒っぽい服を避けます。\n【刺されたら】針が残っているときは、指でつままず、カードなどでこすり取ります。洗って冷やします。\n【注意】息苦しい・全身のじんま疹などが出たら、すぐ119番。何度も刺されたときも受診します。"],
+["危険な動植物の対処","🌿","ウルシ類（ヤマウルシ・ツタウルシ・ハゼノキ）","新芽の春〜紅葉の秋","【予防】長袖・長ズボン・手袋で肌を出さない。見分けのつかない木や、ツタの絡んだ木には触れません。新芽・葉・枝・樹液、秋の紅葉でも触れるとかぶれます。個人差が大きく、近づいただけで出る人もいます。枝を燃やした煙でも症状が出ることがあります。\n【触れたら】できるだけ早く、石けんと流水で洗い流します（強くこすらない）。手袋・道具・靴・服にも成分が付くので洗い、着替えた服は分けて洗います。\n【症状が出たら】半日〜2日ほどで赤み・かゆみ・水ぶくれが出ます。冷やして、かゆみには市販のステロイド外用薬（用法は製品の表示に従う）。水ぶくれは潰さないようにします。\n【皮膚科へ】顔・目の周り・広い範囲の腫れや強い症状、数日たっても治まらないとき。"],
+["危険な動植物の対処","🕷️","マダニ","春〜秋（草地・藪）","【予防】肌を出さず、ズボンの裾は靴下やゲイターの中へ。明るい色の服だと見つけやすくなります。マダニに使える虫よけを、製品の表示に従って使います。\n【帰宅後】その日のうちに着替えて入浴し、頭皮・耳の後ろ・わき・膝の裏・股・腰まわりを確認します。\n【咬まれていたら】無理に引き抜かず（口の部分が皮膚に残ることがあります）、皮膚科で取ってもらいます。やむを得ないときはマダニ除去具を使います。\n【1〜2週間は注意】発熱・だるさ・吐き気・発疹が出たら、「マダニに咬まれた」と伝えて受診します（重症熱性血小板減少症候群や日本紅斑熱などがあります）。"],
+["危険な動植物の対処","🦟","ヒル・ブヨ・アブ","梅雨〜夏（水辺・湿った林）","【予防】肌を出さず、靴下やゲイターの上から虫よけを使います。水辺や湿った所は特に注意です。\n【ヒル】吸いついたら、爪や硬いカードで皮膚からこすり取ります。傷口は洗い、出血が続くときはガーゼで押さえます。\n【ブヨ・アブ】咬まれた所は洗って冷やし、かいたり潰したりしないようにします。腫れとかゆみが数日続くことがあります。強い腫れや発熱があれば受診します。"],
+["危険な動植物の対処","🐛","ムカデ","梅雨〜秋","【予防】靴・手袋・寝袋・ザックは、使う前に振って確認します。倒木や石の下に手を入れません。\n【咬まれたら】強い痛みと腫れが出ます。流水でよく洗い、冷やします。かゆみや腫れには市販のステロイド外用薬を使います。\n【119番】息苦しい・全身のじんま疹・気分が悪いときは、すぐ119番。"],
+["危険な動植物の対処","🍄","毒草・毒きのこ（誤食）","山菜・きのこの採取シーズン","【予防】少しでも不安なものは採らない・食べない。まちがえやすい例：トリカブトとニリンソウ・シドケ、バイケイソウ類とギョウジャニンニク・ウルイ、スイセンとニラ、イヌサフランとギョウジャニンニク、ツキヨタケとムキタケ・ヒラタケ。\n【食べたあとに】吐き気・嘔吐・下痢・しびれ・めまい・動悸が出たら、すぐ119番か中毒110番（大阪 072-727-2499／つくば 029-852-9999）へ。自分で吐かせません。\n【持参】食べ残し・同じ場所で採った草やきのこ・吐いたものを取っておき、病院へ持って行きます。\n【触れるだけでも】カエンタケは、触れただけでも皮膚に症状が出ることがあります。"],
+["危険な動植物の対処","🐻","クマ（出会い対策）","春〜秋（特に早朝・夕方）","【予防】単独行動を避け、鈴・ラジオなどで音を出します。見通しの悪い藪・沢沿い・早朝や夕方は特に注意。新しいフン・足跡・木の爪あとを見つけたら引き返します。食べ物やごみを放置しません。\n【出会ったら】走って逃げず、クマから目をそらさず、ゆっくり後ずさりして距離をとります。\n【襲われたら】うつぶせになり、両手で首の後ろを守ります。傷はガーゼで強く押さえて止血し、すぐ119番。"],
+["野外の必須装備","🔦","ヘッドライト（予備電池）","1個＋予備電池","日没や道に迷ったときに必須です。日帰りでも持ちます。"],
+["野外の必須装備","🔔","熊鈴・ラジオ","どちらか1つ以上","クマやイノシシに、人の存在を先に知らせます。音は止めずに歩きます。"],
+["野外の必須装備","🧭","地図・コンパス","1式","スマホの地図アプリはオフラインで使える状態に。電池切れに備えて、紙の地図とコンパスも持ちます。"],
+["野外の必須装備","☔","雨具・防寒着","1式","天候の急変や低体温の予防に。上下に分かれたレインウェアが動きやすく安心です。"],
+["野外の必須装備","🥤","予備の水と食料","予定より多め","予定より長引いたときのために、多めに持ちます。"],
+["野外の必須装備","🥾","ゲイター・長靴","1組","ヘビ・マダニ・ヒルの対策に。ズボンの裾からの侵入も防げます。"],
+["野外の必須装備","🧢","手袋・帽子・長袖長ズボン","1式","ウルシ・ハチ・マダニ・すり傷の予防に。肌をできるだけ出しません。"],
+["野外の必須装備","📝","行き先と帰る時刻の共有","出発前に","家族や仲間に、行き先・ルート・帰る時刻・車を停める場所を伝えます。登山届を出せる山では必ず出します。"],
+["野外の必須装備","🧻","携帯トイレ・ウェットティッシュ","数回分","山の中で自然を汚さないために。手洗いの水がないときの手の清潔にも使えます。"]
+];
   const seed=()=>SEED.map((a,i)=>({id:"s"+i,cat:a[0],icon:a[1],name:a[2],qty:a[3],desc:a[4]}));
-  let items=ld(K,null);if(!Array.isArray(items)){items=seed();sv(K,items)}
+  const SK="fn_fa_seeded";let items=ld(K,null),sd=ld(SK,null);
+  if(!Array.isArray(items)){items=seed();sd=items.map(x=>x.id)}
+  else if(!Array.isArray(sd)){sd=[];for(let n=0;n<35;n++)sd.push("s"+n)}
+  {const nw=seed().filter(x=>!sd.includes(x.id));if(nw.length){items=items.concat(nw.filter(x=>!items.some(y=>y.id===x.id)));sd=sd.concat(nw.map(x=>x.id))}}
+  sv(K,items);sv(SK,sd);
   let f="all",msg="";
   const cols=()=>ld(CK,2)===3?3:2;
   const catIc=c=>{const x=CATS.find(a=>a[0]===c);return x?x[1]:"📁"};
@@ -3354,13 +3378,13 @@ function initFirstAid(root){
     o.addEventListener("click",e=>{if(e.target===o){o.remove();return}const b=e.target.closest("button");if(!b)return;if(b.dataset.x==="y"){o.remove();fn()}else if(b.dataset.x==="n")o.remove()})};
   const del=i=>cf("「"+esc(i.name)+"」を<br>削除しますか？","削除する",()=>{items=items.filter(x=>x.id!==i.id);sv(K,items);msg="";draw()});
   const pop=i=>{
-    const o=ov('<div class="gx-pop"><div class="big">'+esc(i.icon||"🩹")+'</div><h3>'+esc(i.name)+'</h3><span class="tag">'+catIc(i.cat)+" "+esc(i.cat)+'</span><div class="dt">'+(i.desc?esc(i.desc):"詳細はまだありません。「編集」から書き足せます。")+'</div>'+(i.qty?'<div class="tg">数量の目安：'+esc(i.qty)+'</div>':"")+'<div class="gx-act"><button type="button" class="gx-b" data-x="e">編集</button><button type="button" class="gx-b gx-r" data-x="d">削除</button><button type="button" class="gx-b gx-p" data-x="c">閉じる</button></div></div>');
+    const o=ov('<div class="gx-pop"><div class="big">'+esc(i.icon||"🩹")+'</div><h3>'+esc(i.name)+'</h3><span class="tag">'+catIc(i.cat)+" "+esc(i.cat)+'</span><div class="dt">'+(i.desc?esc(i.desc):"詳細はまだありません。「編集」から書き足せます。")+'</div>'+(i.qty?'<div class="tg">'+(i.cat==="危険な動植物の対処"?"注意する時期":"数量の目安")+'：'+esc(i.qty)+'</div>':"")+'<div class="gx-act"><button type="button" class="gx-b" data-x="e">編集</button><button type="button" class="gx-b gx-r" data-x="d">削除</button><button type="button" class="gx-b gx-p" data-x="c">閉じる</button></div></div>');
     o.addEventListener("click",e=>{if(e.target===o){o.remove();return}const b=e.target.closest("button");if(!b)return;const x=b.dataset.x;if(x==="c")o.remove();else if(x==="e"){o.remove();form(i)}else if(x==="d"){o.remove();del(i)}});
   };
   const form=i=>{
     const fm={icon:i?i.icon:"🩹",cat:i?i.cat:(f!=="all"?f:CATS[0][0])};
     const all=CATS.map(a=>a[0]);items.forEach(x=>{if(!all.includes(x.cat))all.push(x.cat)});
-    const o=ov('<h3>'+(i?"項目を編集":"項目を追加")+'</h3><label class="gx-l">名前</label><input class="sn-in" id="fa-n" maxlength="30" placeholder="例：絆創膏" value="'+esc(i?i.name:"")+'"><label class="gx-l">アイコン</label><div class="gx-pal" id="fa-p">'+ICO.map(x=>'<button type="button" data-ic="'+x+'" class="'+(x===fm.icon?"on":"")+'">'+x+'</button>').join("")+'</div><label class="gx-l">種類</label><div class="gx-pgs" id="fa-c">'+all.map(c=>'<button type="button" data-ct="'+esc(c)+'" class="'+(c===fm.cat?"on":"")+'">'+catIc(c)+" "+esc(c)+'</button>').join("")+'</div><input class="sn-in" id="fa-nc" maxlength="12" placeholder="新しい種類名（上から選ばないとき）" style="margin-top:8px"><label class="gx-l">数量の目安</label><input class="sn-in" id="fa-q" maxlength="30" placeholder="例：5枚" value="'+esc(i?i.qty||"":"")+'"><label class="gx-l">用途・使い方</label><textarea class="sn-in" id="fa-d" rows="5" maxlength="600" placeholder="どんなときに使うか、注意点など">'+esc(i?i.desc||"":"")+'</textarea><div class="gx-msg" id="fa-m" hidden></div><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-p" data-x="s">'+(i?"更新する":"追加する")+'</button></div>');
+    const o=ov('<h3>'+(i?"項目を編集":"項目を追加")+'</h3><label class="gx-l">名前</label><input class="sn-in" id="fa-n" maxlength="30" placeholder="例：絆創膏" value="'+esc(i?i.name:"")+'"><label class="gx-l">アイコン</label><div class="gx-pal" id="fa-p">'+ICO.map(x=>'<button type="button" data-ic="'+x+'" class="'+(x===fm.icon?"on":"")+'">'+x+'</button>').join("")+'</div><label class="gx-l">種類</label><div class="gx-pgs" id="fa-c">'+all.map(c=>'<button type="button" data-ct="'+esc(c)+'" class="'+(c===fm.cat?"on":"")+'">'+catIc(c)+" "+esc(c)+'</button>').join("")+'</div><input class="sn-in" id="fa-nc" maxlength="12" placeholder="新しい種類名（上から選ばないとき）" style="margin-top:8px"><label class="gx-l">数量の目安・時期</label><input class="sn-in" id="fa-q" maxlength="40" placeholder="例：5枚" value="'+esc(i?i.qty||"":"")+'"><label class="gx-l">用途・使い方</label><textarea class="sn-in" id="fa-d" rows="8" maxlength="1500" placeholder="どんなときに使うか、注意点など">'+esc(i?i.desc||"":"")+'</textarea><div class="gx-msg" id="fa-m" hidden></div><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-p" data-x="s">'+(i?"更新する":"追加する")+'</button></div>');
     o.addEventListener("click",e=>{
       if(e.target===o){o.remove();return}
       const b=e.target.closest("button");if(!b)return;
@@ -3370,7 +3394,7 @@ function initFirstAid(root){
       if(b.dataset.x==="s"){
         const g=s=>o.querySelector(s).value.trim(),n=g("#fa-n").slice(0,30);
         if(!n){const m=o.querySelector("#fa-m");m.hidden=false;m.textContent="名前を入れてください。";return}
-        const rec={id:i?i.id:"u"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:n,icon:fm.icon||"🩹",cat:g("#fa-nc").slice(0,12)||fm.cat||"その他",qty:g("#fa-q").slice(0,30),desc:g("#fa-d").slice(0,600)};
+        const rec={id:i?i.id:"u"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:n,icon:fm.icon||"🩹",cat:g("#fa-nc").slice(0,12)||fm.cat||"その他",qty:g("#fa-q").slice(0,40),desc:g("#fa-d").slice(0,1500)};
         const ix=i?items.findIndex(x=>x.id===i.id):-1;
         if(ix>=0)items[ix]=rec;else items.push(rec);
         sv(K,items);o.remove();msg=ix>=0?"更新しました。":"追加しました。";f="all";draw();
