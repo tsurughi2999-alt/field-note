@@ -603,6 +603,25 @@ if(curKey()&&rd("fn_auth"))$("lg").hidden=true;
 .gx-det{margin:14px 0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
 .gx-det>summary{font-weight:700;font-size:15px;cursor:pointer}.gx-det .gx{margin-top:12px}
 </style>
+<style id="fa-css">
+.fa-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 10px}
+.fa-cs{display:inline-flex;margin-left:auto}
+.fa-cs button{border:1px solid var(--line);background:none;padding:7px 13px;font-size:13px;color:var(--ink)}
+.fa-cs button:first-child{border-radius:8px 0 0 8px}.fa-cs button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.fa-cs .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.fa-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 6px;padding:2px 0}
+.fa-chips::-webkit-scrollbar{display:none}.fa-chips .sn-chip{flex:0 0 auto;color:var(--ink)}
+.fa-cat{margin:16px 0 8px;font-size:15px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid var(--line);padding-bottom:4px}
+.fa-cat small{font-weight:400;color:var(--sub);margin-left:8px;font-size:12px}
+.fa-g{display:grid;gap:8px}.fa-g[data-c="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}.fa-g[data-c="3"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fa-card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden;min-width:0}
+.fa-open{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;width:100%;padding:12px 6px 8px;border:0;background:none;color:var(--ink);text-align:center}
+.fa-open .ic{font-size:30px;line-height:1.1}.fa-open b{font-size:14px;line-height:1.4;word-break:break-all}
+.fa-g[data-c="3"] .fa-open .ic{font-size:26px}.fa-g[data-c="3"] .fa-open b{font-size:12px}
+.fa-mini{display:flex;border-top:1px solid var(--line)}
+.fa-mini button{flex:1;border:0;background:none;padding:8px 0;font-size:12px;color:var(--sub)}
+.fa-mini button+button{border-left:1px solid var(--line);color:#b5382a}
+</style>
 <script>
 (function(){
 const INITIAL_CLOTHING = [
@@ -698,7 +717,7 @@ function gearIcon(item, isClothing) {
 function gearCatIcon(cat, isClothing) { return GEAR_CAT_ICONS[cat] || (isClothing ? "👕" : "🎒"); }
 const KEY="fn_gear_v1",DEFPG=["sansai","fruit","kinoko"];
 const CATS={c:["上着","ズボン","靴","手袋","帽子","雨具","脚","頭","その他"],t:["採取道具","収納","安全","照明","救急","ナビ","携行食","その他"]};
-const NOPG=["info","all","members","tecchou","ref","region","howto","memo","admin","warikan"];
+const NOPG=["info","all","members","tecchou","ref","region","howto","memo","admin","warikan","firstaid"];
 const E=v=>esc(String(v==null?"":v));
 const PAL=["🧥","👕","👖","🥾","👢","🧤","🧢","☔","🧣","🔪","✂️","⛏️","🪏","🪓","🧺","🛒","🎒","🔦","🔔","🪈","🧭","📱","🔋","🥤","🍙","🩹","💊","🦟","🧴","🪢","🛍️","📝"];
 const targets=()=>{try{return pages().filter(p=>!NOPG.includes(p.id)&&!/割り勘|精算/.test(p.name||""))}catch(e){return[]}};
@@ -874,7 +893,7 @@ let custom=loadCustom(),cv=ld("fn_cover",0),dsg=ld("fn_design",0),bands=ld("fn_b
 let selIcon=ICONS[0],selColor=COLORS[0];
 const $=id=>document.getElementById(id),book=$("book");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const EXTRA=[{id:"saibai",name:"栽培果物",icon:"🍎",color:"#c75a3a"},{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"旅費精算書・割り勘",icon:"🧮",color:"#2f8f6f"}].map(skinPg);
+const EXTRA=[{id:"saibai",name:"栽培果物",icon:"🍎",color:"#c75a3a"},{id:"tozan",name:"登山",icon:"⛰️",color:"#3b7ca3"},{id:"onsen",name:"温泉",icon:"♨️",color:"#b8622a"},{id:"ref",name:"参考資料",icon:"📚",color:"#6a7a8f"},{id:"region",name:"地域マップ",icon:"🗺️",color:"#7a8f4f"},{id:"howto",name:"使い方・Q＆A集",icon:"❓",color:"#3b7ca3"},{id:"memo",name:"メモ",icon:"📝",color:"#b8922a"},{id:"warikan",name:"旅費精算書・割り勘",icon:"🧮",color:"#2f8f6f"},{id:"firstaid",name:"ファーストエイドキット",icon:"🩹",color:"#c0392b"}].map(skinPg);
 const ADMIN={id:"admin",name:"管理者専用",icon:"🔐",color:"#6a4a7a"};
 const bl=()=>BASE.concat(EXTRA.filter(e=>!custom.some(c=>c.name===e.name)));
 const adm=()=>ld("fn_admin",0)?[ADMIN]:[],TI=()=>adm().length+2;
@@ -910,10 +929,10 @@ function renderPages(){
     const ia=p.id==="admin",i=i0-adm().length;
     const s=document.createElement("section");s.className="pg dyn";
     s.innerHTML=`${band(p)}<button class="back" data-go="${TI()}">‹ もくじへ</button><button class="pbtn">🎨 紙の色</button><div class="pp pp-pg" hidden></div><div class="hd"><div class="ico" style="background:${p.color}">${icoOf(p)}</div><h2>${esc(p.name)}</h2></div><div class="ph"><b>図鑑</b>次のステップで移植します</div><div class="ph"><b>スポット</b>次のステップで移植します</div><div class="ph"><b>収穫記録</b>次のステップで移植します</div>`;
-    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="tecchou"?"Z":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="saibai"?"B":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘"||p.name==="旅費精算書・割り勘")?"W":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
+    const kd=!canView(p)?"L":p.id==="all"?"A":p.id==="info"?"I":p.id==="tecchou"?"Z":p.id==="sansai"?"S":p.id==="fruit"?"F":p.id==="kinoko"?"K":(p.id==="tozan"||p.name==="登山")?"T":(p.id==="onsen"||p.name==="温泉")?"O":p.id==="saibai"?"B":p.id==="ref"?"R":p.id==="region"?"G":p.id==="admin"?"D":p.id==="members"?"M":p.id==="howto"?"H":p.id==="memo"?"N":(p.id==="warikan"||p.name==="割り勘"||p.name==="旅費精算書・割り勘")?"W":(p.id==="firstaid"||p.name==="ファーストエイドキット")?"X":custom.includes(p)?"C":"";if(kd)s.innerHTML=s.innerHTML.replace(/<div class="ph">[\s\S]*$/,'<div class="sn"></div>');
     if(kd&&kd!=="L"&&p.id!=="admin"&&p.id!=="members"&&p.id!=="howto"&&p.id!=="memo"&&p.id!=="tecchou")s.querySelector(".hd").insertAdjacentHTML("afterend",`<div class="pgmem" data-pm="${esc(p.id)}"></div>`);
     if(ia)book.insertBefore(s,$("tocpg"));else book.appendChild(s);
-    if(kd)({A:initAll,I:initInfo,Z:initTecho,S:initSansai,F:initSansai,K:initSansai,B:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
+    if(kd)({A:initAll,I:initInfo,Z:initTecho,S:initSansai,F:initSansai,K:initSansai,B:initSansai,T:initTozan,O:initOnsen,R:initRef,G:initRegion,D:initAdmin,M:initMembers,H:initHowto,N:initMemoPg,W:initWarikan,X:initFirstAid,L:initLocked,C:initCustom})[kd](s.querySelector(".sn"),kd==="C"||kd==="L"?p:CFGS[kd]);
     if(kd==="T"||kd==="O"||kd==="C"){const gh=document.createElement("div");s.querySelector(".sn").after(gh);fnGearSide(gh,p.id)}
     s.insertAdjacentHTML("beforeend",`<button class="back back-end" data-go="${TI()}">‹ 目次に戻る</button>`);
     {const pb=s.querySelector(".pp-pg");ppPanel(pb,p.id);paintPg(s,p.id);s.querySelector(".pbtn").onclick=()=>{pb.hidden=!pb.hidden}}wrapPg(s,p.id,ia?"– 管理者 –":"– "+(i+1)+" –");
@@ -1695,8 +1714,8 @@ function initAll(root){
   const own=()=>ld("fn_links",[]);
   const lkRow=(x,del)=>`<div class="sn-row">${okUrl(x.u)?`<a href="${E(x.u)}" target="_blank" rel="noopener"><b>🔗 ${E(x.t)}</b></a>`:`<b>${E(x.t)}</b>`}<br><small class="sn-note">${E(x.u)}</small>${del}</div>`;
   const lkV=()=>'<div class="nl">みんなのリンク</div>'+(L("lk").map(x=>lkRow(x,mine(x.id)?"<br>"+dB("l"+x.id):"")).join("")||'<p class="sn-note">まだありません。</p>')+'<div class="nl">自分用のリンク</div>'+(own().map((x,i)=>lkRow(x,"<br>"+dB("o"+i))).join("")||'<p class="sn-note">まだありません。</p>')+`<div class="ic"><h4>リンクを追加</h4><input class="sn-in" id="lk-t" placeholder="名前" maxlength="30"><input class="sn-in" id="lk-u" placeholder="https://..." maxlength="200"><div class="sn-g"><button class="sn-btn sn-ghost" id="lk-own">自分用に追加</button><button class="sn-btn adm-only" id="lk-pub">みんなに追加（管理者）</button></div><span class="adm-only">${hint}</span></div>`;
-  const QA=[["このアプリは何ですか？","山菜・果実・きのこ・登山・温泉の記録と図鑑をまとめた、ノート形式のアプリです。"],["最初にどうすればいいですか？","開くとログイン画面が出ます。はじめての方は、「はじめての方：参加を申請する」から、名前と自己紹介を書いて申請の文字を作り、管理者にLINEなどで送ってください。許可されると、管理者からあなた専用のIDとパスワードが届きます。初めてのログインのときだけ通信が必要です。「この端末ではログインしたままにする」にしておくと、次からは入力不要です。"],["ログインできません","IDとパスワードの大文字・小文字、余分な空白を確認してください（👁で表示できます）。IDやパスワードは、人に教えないでください。忘れたり、使えなくなったときは、管理者に再発行してもらってください。"],["ログアウトしたい","目次ページの「ログアウト」にある「ログアウト」ボタンを押します。"],["ホーム画面にアイコンを置きたい","Chromeで開き、右上の︙から「アプリをインストール」（または「ホーム画面に追加」）を選びます。iPhoneはSafariの共有ボタンから「ホーム画面に追加」です。"],["ページはどうめくりますか？","画面を左右にスワイプします。下の点や、目次のカードからも移動できます。"],["記録はどこに保存されますか？","この端末の中に保存され、端末ごとに別です。ブラウザの「サイトデータの削除」をすると消えるので、大事な記録は目次ページの「データのバックアップ」で書き出しておいてください。"],["表紙や紙の色を変えたい","表紙は最初のページの下のボタンで、紙の色は各ページの「🎨 紙の色」と目次ページで変えられます。"],["付箋はどう使いますか？","各ページの「🔖 付箋」で追加します。タップして、文字・大きさ・色を変えたり、削除できます。大きさは「小・中・大」のほか、幅と高さのスライダーで自由に決められます。指で動かせます。"],["みんなで記録を共有するには？","記録で「共有する」にして、目次ページで提出用の文字を作り、管理者へ送ります。管理者が取り込んで配信すると、みんなの画面に表示されます。"],["エリアの共有は安全ですか？","共有するときに、ぼかす範囲（約500m・約1km・約3km）を自分で選べます（初期値は約1km）。選んだ範囲の中のどこか、という見え方になり、正確な場所は送りません。「ピンポイント」を選んだときだけ、正確な場所が共有されます。配信ファイルも暗号化されています。"],["位置情報はいつ使われますか？","情報ページ、収穫の「現在地も記録する」、パトロールのときだけです。"],["参考資料ページは何ですか？","天気・地図・登山・安全などのリンク集です。カテゴリで絞り込めて、自分で追加・削除もできます。追加したリンクはこの端末だけに保存されます。"],["自分で追加したページの使い方は？","目次ページで追加したページには、予定（カレンダー）・記録・スポット・メモ・リンクの5つのタブがあります。スポットで「現在地も記録する」を選ぶと、地図で開くリンクが付きます。"],["地域マップは何ですか？","長野・岐阜・愛知・福井・石川・富山・新潟・山梨のスポット数を、県ごとに表示します。スポットの「県・地域」に県名を入れると集計されます。場所を守るため、管理者モードの端末だけに表示されます。"],["グループのカレンダーとは？","管理者が設定したGoogleカレンダーを、目次ページで見られます。予定は、各ページの「予定」タブから「Googleカレンダーに追加」で、自分のカレンダーにも入れられます。"],["毒草・毒きのこに注意","似た毒のあるものがあります。図鑑の注意を読み、少しでも迷ったら採らず、食べないでください。"],["【管理者】配信するには？","「管理者専用」ページで、申請の取り込みと許可をしたあと、「取り込みと配信」で「配信ファイルの中身を書き出す」を押し、「shared.json をファイルで保存」を押します。できたファイルを、GitHubの「Add file → Upload files」で上げます（暗号化されます）。許可・停止・ページの変更は、配信ファイルを上げ直したあとにメンバーへ反映されます。"],["【管理者】管理者モードにするには？","目次ページの「ログアウト」の「管理者の方はこちら」で管理者パスワードを入れます。管理者パスワードは、管理者の端末の「管理者専用」ページで設定し、配信ファイルを書き出し直すと、ほかの端末でも使えます。"],["【管理者】パスワードを変えるには？","メンバー個人のIDとパスワードは、参加を許可するときに自動で発行されます。再発行は、「メンバー」ページでそのメンバーの「編集」から行い、表示された文面をLINEなどで本人に送ります。管理者自身のIDとパスワードは、「管理者専用」ページの「管理者のIDとパスワード」で変えられます。どちらも、そのあと配信ファイルを上げ直してください。"],["見られないページがあります（グレーの🔒）","最初に開けるのは、山菜採り・果実と樹の実・きのこと、固定ページ（情報・みんな・メンバー・参考資料・地域マップ）です。登山・温泉・新しく作られたページは、管理者の許可があるまで中身を読めません。グレーのページを開いて「このページの閲覧を申請する」を押し、出てきた文字を管理者に送ってください。許可されたら、アプリを開き直すと見られます。"],["新しいページを作りたい","目次の「ページの作成を申請」から名前などを決めて、出てきた文字を管理者に送ります。許可されると、全員の目次に新しいページが出ます。ほかの人は、閲覧を別に申請して許可されると見られます。"],["自分のプロフィールを変えたい","「メンバー」ページの「自分のプロフィールを編集」から変えられます。写真や紹介文などを、ほかのメンバーに見せるかどうかも選べます。「更新を管理者に申請する」で出た文字を管理者に送ると、反映されます。"]];
-  const manV=()=>QA.filter(a=>ld("fn_admin",0)||!a[0].startsWith("【管理者】")).map(a=>`<details class="ic"><summary><b>${a[0]}</b></summary><p class="sn-note">${a[1]}</p></details>`).join("");
+  const QA=[];
+  const manV=()=>'<p class="sn-note">使い方とQ＆Aは、もくじの「使い方・Q＆A集」ページにまとめています。</p><button class="sn-btn" data-gohow="1">使い方・Q＆A集を開く</button>';
   const goTo=pid=>{const i=pages().findIndex(p=>p.id===pid);if(i>=0)go(i+TI()+1)};
   const res=()=>{
     const t=q.trim();if(!t)return '<p class="sn-note">図鑑・百名山・泉質・自分の記録・レシピ・メモをまとめて探せます。</p>';
@@ -1719,6 +1738,7 @@ function initAll(root){
     else if(d.pj){goTo(d.pj)}
     else if(d.rd){const s=ld("fn_seen",[]);if(!s.includes(d.rd))s.push(d.rd);sv("fn_seen",s);render()}
     else if(d.dp){if(ask===d.dp){const k=d.dp[0],id=d.dp.slice(1);if(k==="o"){const a=own();a.splice(+id,1);sv("fn_links",a)}else delPool(id);ask=null}else ask=d.dp;render()}
+    else if(d.gohow){goTo("howto")}
     else if(d.hist){hist=!hist;render()}
     else if(d.ne){edit=d.ne;ask=null;render()}
     else if(d.nc){edit=null;render()}
@@ -2996,7 +3016,9 @@ const HW_FOR=(id,ic,nm,extra)=>[id,ic+" "+nm+"ページ",id,[
   "【収穫】日付・名前・量を記録します。「現在地も記録する」にチェックを入れると、その場所（GPS）も一緒に残り、収穫マップに出ます。",
   "【収穫マップ】山菜採り・果実と樹の実・きのこ・栽培果物の記録を、国土地理院の地図の上に📌でまとめて表示します。「1km／3km／5km 範囲」で広さを選べます。📌の色は、山菜採り＝緑、果実と樹の実＝赤、きのこ＝オレンジです。📌をタップすると、何が採れたか（日付・名前・量・メモ）が出ます。「中心：最新の記録／現在地」と「地図／航空写真」も切り替えられます。「🧭 向きに合わせて回す」を押すと、いま向いている方向が地図の上になります。背景の地図は通信が必要ですが、通信できる場所で「この場所の地図を端末に保存」を押しておくと、その周り（1km・3km・5km）の地図が、通信がなくても出ます。見た地図も自動で保存されます。📌は、通信がなくても出ます。自分の記録は、いつでもピンポイントで確認できます。ほかのメンバーが共有した場所は、本人が選んだ範囲にぼかした円で表示されます。山菜採り・果実と樹の実・きのこ・栽培果物のどれも同じです。",
   "【まとめ】収穫の記録を集計して見られます。",
-  "【持ち物・レシピ】出発前の持ち物のチェックと、保存・調理のレシピです。",
+  "【持ち物】出発前の持ち物のチェックです。",
+  "【服装・道具】山菜・きのこなど採るものに合わせた、服装と道具の一覧です。使い方は「🎒 服装・道具」の項目を見てください。",
+  "【レシピ】保存・調理のレシピです。",
   "【ブログ】写真つきの採取記録を載せます。",
   "【パトロール】巡回の予定を入れます。「📅 Googleカレンダーに追加」で、グループのカレンダーにも入れられます。",
   "【リンク】このページに関係するリンク集です。「参考資料」ページのリンクのうち、関係するカテゴリのものが出ます。ここで追加したリンクは、参考資料ページにも入ります。この端末だけに保存されます。",
@@ -3018,7 +3040,7 @@ const HOWTO_MAN=[
   "現在地（GPS）、コンパス、日の出・日の入り、月齢、潮の満干、天気と気温、安全のお知らせ、今月の旬を見られます。山に入る前の確認に使ってください。",
   "コンパス：「コンパスを開始」を押すと、針が動きます。「真北に補正」は、磁石の北と地図の北のずれ（日本では西に5〜9度ほど）を直します。画面の一番下の「関連リンク」には、天気・地図・安全のリンクと、磁北と真北のずれ（偏角）を調べるための国土地理院のページが入っています。下の一覧から、近くのスポットや収穫地点を選ぶと、赤い印でその方角が出て、距離と「右前・左」などの向きも出ます。iPhoneでは、最初に「動きと向き」の許可が出ます。金属や電子機器の近くでは狂うので、あくまで目安にしてください。"]],
 HW_FOR("sansai","🌿","山菜採り",["採るときは、似た毒草に注意してください。見分けに自信がないときは、採らないでください。"]),
-HW_FOR("sansai|fruit|kinoko","📒","山菜手帳",["このページは、山菜・果実と樹の実・きのこの3つの機能を1つにまとめたページです。上の「🌿 山菜／🍒 果実と樹の実／🍄 きのこ」のボタンで切り替えます。図鑑・旬の暦・スポット・収穫・収穫マップ・まとめ・持ち物・レシピ・ブログ・パトロール・メモ・リンク・みんなの全タブが、それぞれの区分で使えます。","記録は、「山菜採り」「果実と樹の実」「きのこ」の各ページと同じものです。どちらで入れても、両方に出ます。"]),
+HW_FOR("sansai|fruit|kinoko","📒","山菜手帳",["このページは、山菜・果実と樹の実・きのこの3つの機能を1つにまとめたページです。上の「🌿 山菜／🍒 果実と樹の実／🍄 きのこ」のボタンで切り替えます。図鑑・旬の暦・スポット・収穫・収穫マップ・まとめ・持ち物・服装・道具・レシピ・ブログ・パトロール・メモ・リンク・みんなの全タブが、それぞれの区分で使えます。","記録は、「山菜採り」「果実と樹の実」「きのこ」の各ページと同じものです。どちらで入れても、両方に出ます。"]),
 HW_FOR("fruit","🍒","果実と樹の実"),
 HW_FOR("kinoko","🍄","きのこ",["毒きのこと間違えやすい種類があります。見分けに自信がないときは、採らないで、食べないでください。"]),
 HW_FOR("saibai","🍎","栽培果物",["図鑑には、農家や家庭で育てる果物（リンゴ・ナシ・ブドウ・ミカンなど）が入っています。産地と代表的な品種も見られます。"]),
@@ -3026,23 +3048,45 @@ HW_FOR("saibai","🍎","栽培果物",["図鑑には、農家や家庭で育て�
   "【百名山】一覧を「全て／登頂済／未登頂／行きたい」で絞り込めます。",
   "【リンク】登山・天気・地図・安全のリンク集です。追加もできます。",
   "【山行記録】歩いた山の記録を残します。天気（晴れ・曇り・雨・雪・霧）も選べます。",
-  "【持ち物・入山連絡】山行の持ち物のチェックと、入山の連絡です。",
-  "【みんな】管理者が配信した共有の内容が出ます。"]],
+  "【持ち物】山行の持ち物のチェックです。",
+  "【入山連絡】入山の連絡をまとめます。",
+  "【みんな】管理者が配信した共有の内容が出ます。",
+  "ページの下の「🎒 服装・道具」を開くと、このページに表示する服装・道具の一覧が出ます。"]],
 ["onsen","♨️ 温泉ページ","onsen",[
   "【入湯記録】入った温泉を記録します。",
   "【行きたい】行ってみたい温泉をためておきます。",
-  "【泉質ガイド・日帰り情報】泉質の目安と、日帰りで入れる温泉の情報です。",
+  "【泉質ガイド】泉質の目安です。",
+  "【日帰り情報】日帰りで入れる温泉の情報です。",
   "【リンク】温泉に関するリンク集です。「リンクを追加」で名前とアドレス（https://…）を入れると、一覧に増えます。削除もできます。「共有する」にしたリンクは、ほかの記録と同じ手順で、みんなにも届きます。",
-  "【みんな】管理者が配信した共有の内容が出ます。"]],
+  "【みんな】管理者が配信した共有の内容が出ます。",
+  "ページの下の「🎒 服装・道具」を開くと、このページに表示する服装・道具の一覧が出ます。"]],
+["gear","🎒 服装・道具（全員）","",[
+  "どこにある？：山菜採り・山菜手帳・果実と樹の実・きのこ・栽培果物は、上のタブの「服装・道具」です。登山・温泉・追加したページ（キャンプなど）は、ページの下の「🎒 服装・道具」を開きます。もくじにも「🎒 服装・道具」のアイコンがあり、全ページの一覧表が開きます。",
+  "見かた：「👕 服装」「🎒 道具」で切り替えます。山菜ページでは「🌿 対象で絞り込み」で、ウド・コゴミなど、採るものごとの服装・道具だけを出せます。項目をタップすると詳細が出ます。「1列／3列」で並べ方を変えられます。",
+  "ページに出す項目を決める：「📋 一覧表・チェック」を開くと、ページごとの列にチェック欄が並びます。チェックを入れた項目だけが、そのページに表示されます。横にスクロールすると、ほかのページの列も見られます。",
+  "追加・編集・削除：「＋ 追加」で項目を足せます。一覧の「編集」で内容を直し、「削除」で消せます。この内容は、この端末だけに保存されます。"]],
+["mina","💬 みんなページ（全員）","",[
+  "上のタブは「お知らせ」「リンク」「使い方」「さがす」です。未読のお知らせがあると、「お知らせ」に●が付きます。",
+  "お知らせ：新しいものと、まだ読んでいないものが上に出ます。「✓ 読んだ（通知を消す）」を押すと、既読になります。管理者が「必読」にしたお知らせは、アプリを開いたときに全画面で出るので、「読みました」を押してください。",
+  "過去のお知らせ：「過去のお知らせ（履歴 ○件）を見る」を押すと、古いお知らせが月ごとに並びます。いつでも読み返せます。",
+  "リンク：管理者が配信した「みんなのリンク」と、自分だけの「自分用のリンク」があります。",
+  "さがす：図鑑・百名山・泉質・自分の記録・レシピ・メモ・お知らせを、まとめて探せます。",
+  "使い方：このページの「使い方」から、「使い方・Q＆A集」ページを開けます。"]],
+["custom","🏕️ 追加したページ・🏊 市民プール（見られるページのみ）","",[
+  "キャンプ・ドライブ・観光・旅行など、あとから追加したページには、「予定」「記録」「スポット」「メモ」「リンク」のタブがあります。予定の「📅 Googleカレンダーに追加」で、自分のカレンダーにも入れられます。ページの下には「🎒 服装・道具」もあります。",
+  "市民プール：「記録」「グラフ」「目標」「カレンダー」「リンク」のタブがあります。記録を入れると、泳いだ日・距離・連続日数が出て、グラフで週・月・年の距離を見られます。",
+  "追加したページは、管理者の許可があるまで読めません（もくじでグレーになります）。"]],
 ["warikan","🧮 旅費精算書・割り勘ページ","warikan",[
   "「新しい旅費をつくる」から始め、メンバー・車の費用（ガソリン・高速）・そのほかの予算（宿泊・食事・入場料など）・実費を入れていくと、一人あたりの金額が出ます。"]],
-["ref","📚 参考資料・🗺️ 地域マップ（全員）","",[
+["ref","📚 参考資料・🗺️ 地域マップ","",[
   "参考資料：各ページに関するリンク集です。リンクの追加・削除ができます。",
-  "地域マップ：県ごとに、スポットなどを見られます。"]],
+  "地域マップ：県ごとのスポット数を見られます。場所を守るため、管理者モードの端末だけに表示されます。"]],
 ["mem","🧑‍🤝‍🧑 メンバーページ（全員）","",[
   "メンバーはカードで2〜3列に並びます。カードをタップすると、詳細が開きます。",
   "「参加・閲覧の申請」：もくじでグレーになっているページは、まだ見る許可がありません。ここから申請し、管理者が許可すると見られるようになります。",
-  "自分のプロフィール（名前・写真・ひとこと）は、あとから自由に直せます。",
+  "自分のプロフィール（名前・写真・ひとこと）は、あとから自由に直せます。「自分のプロフィールを編集」から直し、「更新を管理者に申請」で出た文字を管理者に送ると、反映されます。",
+  "連絡：相手が連絡先を見せている場合、カードに電話・SMS・メール・LINEのアイコンが出ます。タップするとそのまま連絡できます。",
+  "「📣 メンバーに連絡する」：相手（全員、またはページごと）を選び、文面を書いて、LINE・SMS・メールで送れます。「コピー」もできます。",
   "利用ルールは、このページで読めます。"]],
 ["adm","🔐 管理者向けの操作","admin",[
   "管理者専用ページ：メンバーには出ません。メンバーの招待と承認、IDとパスワードの発行、配信ファイルの書き出しなどはここで行います。",
@@ -3060,6 +3104,20 @@ const HOWTO_QA=[
 ["グループのカレンダーはどこで見られますか？","表紙の次の「カレンダー」ページにあります。管理者が決めたGoogleカレンダーです。その下の「近日の予定」で、これからの予定を5件まで見られます。"],
 ["予定の通知はどんなときに出ますか？","アプリを開いたときと、開いている間に、黄色い付箋でお知らせします。新しい予定や予定の変更があったとき、予定の24時間前と1時間前です。「端末の通知を許可する」を押すと、端末の通知でも届きます。アプリを閉じている間は届きません。"],
 ["カレンダーに予定を入れるには？","グループのGoogleカレンダーに予定を入れます。入れられるのは、管理者と、編集の権限をもらった人です。入れたいときは、管理者にGoogleアカウントを伝えてください。"],
+["服装・道具はどこにありますか？","山菜採り・山菜手帳・果実と樹の実・きのこ・栽培果物は、上のタブの「服装・道具」です。登山・温泉・追加したページは、ページの下の「🎒 服装・道具」を開きます。もくじの「🎒 服装・道具」のアイコンからは、全ページの一覧表が開きます。"],
+["服装・道具を追加・編集・削除したい","「＋ 追加」で項目を足し、一覧の「編集」「削除」で直したり消したりできます。この内容は、この端末だけに保存されます。"],
+["服装・道具が、そのページに出てこない","「📋 一覧表・チェック」で、そのページの列にチェックが入っている項目だけが出ます。山菜ページでは、「🌿 対象で絞り込み」が「すべて表示」になっているかも見てください。"],
+["お知らせの過去の分を見たい","「みんな」ページの「お知らせ」の下にある「過去のお知らせ（履歴 ○件）を見る」を押すと、月ごとに並びます。"],
+["お知らせの●や「必読」はどうすれば消えますか？","お知らせの「✓ 読んだ（通知を消す）」を押します。「必読」は、アプリを開いたときに出る画面の「読みました」を押すと消えます。"],
+["記録はどこに保存されますか？","この端末の中に保存され、端末ごとに別です。ブラウザの「サイトデータの削除」をすると消えるので、大事な記録は、もくじの下の「データのバックアップ」で書き出しておいてください。"],
+["ログアウトしたい","もくじの下の「ログアウト」にある「ログアウト」ボタンを押します。"],
+["表紙や紙の色を変えたい","表紙は、表紙のページの下の「表紙のデザイン」「表紙の色」で変えられます。紙の色は、各ページの「🎨 紙の色」と、もくじの下の「ページの紙（共通）」で変えられます。"],
+["自分の記録をみんなと共有するには？","記録で「共有する」にして、出てきた提出用の文字を管理者に送ります。管理者が取り込んで配信ファイルを上げ直すと、みんなの画面に出ます。"],
+["位置情報はいつ使われますか？","情報ページ、コンパス、収穫やスポットの「現在地も記録する」、パトロール、収穫マップの「中心：現在地」を使ったときだけです。"],
+["新しいページを作りたい","もくじの「ページの作成を申請」から名前などを決め、出てきた文字を管理者に送ります。許可されると、全員のもくじに新しいページが出ます。ほかの人は、閲覧を別に申請して許可されると見られます。"],
+["自分のプロフィールを変えたい","「メンバー」ページの「自分のプロフィールを編集」から直し、「更新を管理者に申請」で出た文字を管理者に送ると、反映されます。"],
+["メンバーに連絡したい","「メンバー」ページで、連絡先を見せているメンバーのカードのアイコン（電話・SMS・メール・LINE）をタップします。まとめて送るときは「📣 メンバーに連絡する」で、相手と文面を決めて送ります。"],
+["地域マップが開かない","地域マップは、スポットの場所を守るため、管理者モードの端末だけに表示されます。"],
 ["グレーで開けないページがある","もくじでグレーになっているページは、まだ見る許可がありません。「メンバー」ページの「参加・閲覧の申請」から申請してください。管理者が許可すると見られるようになります。"],
 ["収穫マップに📌が出ない","「収穫」で記録するときに、「現在地も記録する」にチェックを入れた記録だけが載ります。それでも出ないときは、カテゴリのボタン（山菜採り・果実と樹の実・きのこ）が入っているか、「5km 範囲」にして範囲の外になっていないかを見てください。","sansai|fruit|kinoko|saibai"],
 ["収穫マップの地図が出ない（📌だけ出る）","背景の地図は通信が必要です。圏外や電波が弱いときは出ません。📌は通信がなくても出ます。","sansai|fruit|kinoko|saibai"],
@@ -3068,12 +3126,15 @@ const HOWTO_QA=[
 ["パトロールの予定を登録したい","「パトロール」タブで、日付・時間・場所を入れて「予定を追加」を押します。登録した予定には「📅 Googleカレンダーに追加」「編集」「削除」が付きます。ここに書いた予定は、この端末だけに保存されます。みんなに知らせたいときは、「📅 Googleカレンダーに追加」から、グループのカレンダーに入れてください。","sansai|fruit|kinoko|saibai"],
 ["通信がない山の中でも使えますか？","使えます。記録・図鑑・付箋・コンパス・地点までの方角と距離は、通信がなくても動きます（GPSは端末の機能です）。背景の地図だけは、通信できる場所で、収穫マップの「この場所の地図を端末に保存」を押しておくと、その周りの地図が出ます。出発前に、「中心：現在地」にして保存するのがおすすめです。"],
 ["コンパスの針が動かない・ずれる","「コンパスを開始」を押してください。iPhoneでは「動きと向き」の許可が必要です（設定のブラウザの項目で許可できます）。針が狂うときは、金属や電子機器から離れ、端末を8の字に振ってください。Chromeでは、サイトの設定の「モーションセンサー」が許可になっているかも見てください。磁気センサーが使えない端末（回転センサーだけが動く端末）では、5〜10mほど歩くと北が合います。回転センサーもない端末では、針は動かず、歩いている間だけGPSの進行方向で表示します。向きの目安なので、道に迷わないために、地図やGPSアプリも併用してください。"],
-["ログインできない・IDやパスワードが分からない","管理者にご連絡ください。"],
+["ログインできない・IDやパスワードが分からない","IDとパスワードの大文字・小文字や、余分な空白がないかを確認してください。それでも入れないとき、忘れたときは、管理者に連絡して再発行してもらってください。初めてのログインのときだけ通信が必要です。"],
 ["データのバックアップは？","もくじの下にある「データのバックアップ」で、記録・付箋・ページ設定をまとめて保存・復元できます。機種変更やアプリの入れ直しの前に使ってください。"],
 ["アプリが古いままで更新されない","アプリを完全に閉じてから、開き直してください。それでも変わらないときは、少し時間をおいて、もう一度開いてください。"],
 ["ホーム画面に置くには？","ブラウザのメニューから「ホーム画面に追加」（または「アプリをインストール」）を選びます。"],
 ["新しいメンバーを招待するには？（管理者向け）","管理者ページの「メンバー招待」で、最初から見せるページを選んで保存し、「QRコードを表示」を押します。読み取った人に、ログイン画面の「はじめての方：参加を申請する」を押してもらい、届いた申請を許可すると、IDとパスワードが発行されます。","admin"],
 ["山で迷ったときに、集合場所へ帰るには？（管理者向け）","管理者ページの「帰り道」で、車を停めたらすぐ「現在地を集合場所に登録」を押します。車が複数台あるときは、名前と色を変えて登録します。山の中では「位置の追跡を開始」を押すと、集合場所までの方向（矢印）と距離が出て、「Googleマップで案内」で地図の案内も開けます。方向と距離はGPSだけで計算するので、圏外でも動きます。同行者の位置は、LINEやGoogleマップで届いたリンクや座標を貼り付けると、「◯分前」の表示つきで出ます。更新が古い人は、灰色の「直前の情報」になります。","admin"],
+["管理者モードにするには？（管理者向け）","もくじの下の「ログアウト」の「管理者の方はこちら」で、管理者パスワードを入れます。","admin"],
+["メンバーのIDやパスワードを再発行したい（管理者向け）","「メンバー」ページで、そのメンバーの編集から再発行し、出てきた文面をLINEなどで本人に送ります。そのあと、配信ファイルを上げ直してください。","admin"],
+["お知らせを追加・編集したい（管理者向け）","「みんな」ページの「お知らせ」の下の「管理者用：お知らせを追加」で追加します。各お知らせの「編集」で、題名・内容・必読を直せます。「削除」で消せます。追加や編集のあとは、「管理者専用」ページで配信ファイルを書き出し、GitHubに上げ直すと、みんなに届きます。","admin"],
 ["図鑑の項目を消したい・名前を直したい（管理者向け）","図鑑の詳細を開き、「名前・ふりがな・Wikipedia・画像を編集」で名前を直せます。消すときは「この項目を削除」を押します。メンバーにも反映するには、「図鑑コピー」の「fn-zukan.json を書き出す」を押し、できたファイルをGitHubに上げ直してください。","admin"]
 ];
 function initHowto(root){
@@ -3230,6 +3291,108 @@ function initMemoPg(root){
     else if(b.dataset.me!==undefined){ed=+b.dataset.me;msg="";form();list();const f=root.querySelector("#mp-f");if(f)f.scrollIntoView({block:"center",behavior:"smooth"})}
     else if(b.dataset.md!==undefined){const i=+b.dataset.md;if(ask===i){sv(K,L().filter(y=>y.id!==i));ask=null;if(ed===i){ed=null;form()}}else ask=i;list()}
   });
+}
+/* ---- ファーストエイドキット ---- */
+function initFirstAid(root){
+  const K="fn_firstaid",CK="fn_fa_cols";
+  const CATS=[["傷の手当て","🩹"],["捻挫・骨折・打撲","🦴"],["虫・かぶれ・動物","🐝"],["常備薬","💊"],["熱中症・低体温","🌡️"],["器具・連絡","🧰"]];
+  const ICO=["🩹","🧻","🧴","💧","🧶","🔺","📏","🧊","🪵","💉","🦟","🥢","🧼","💊","👁️","📒","🧂","🧥","🔥","🍬","🧤","✂️","🧷","😷","📣","📝","🛍️","🔋"];
+  const SEED=[
+["傷の手当て","🩹","絆創膏（大小）","各5枚ほど","小さな切り傷・すり傷に。先に水で汚れを洗い流し、周りの水気を拭いてから貼ります。"],
+["傷の手当て","🧻","滅菌ガーゼ","5〜10枚","傷口を覆う・出血を押さえるのに使います。繊維が残らない滅菌タイプが安心です。"],
+["傷の手当て","📏","医療用テープ","1巻","ガーゼの固定に。肌が弱い人は低刺激タイプを選びます。"],
+["傷の手当て","🧴","消毒液・消毒綿","小分けで少量","傷の周りの消毒に。まずは水でたっぷり洗い流すのが基本です。"],
+["傷の手当て","💧","洗浄用の水","500mlを1本","泥や土の付いた傷を洗い流します。目に入ったゴミを流すときにも使えます。"],
+["傷の手当て","🧣","止血用タオル・パッド","1枚","出血は、清潔なガーゼやタオルで傷口を強く押さえて止血します。止まらないときは119番や救助要請を。"],
+["傷の手当て","🥾","靴ずれ用パッド","2〜3枚","靴ずれ・水ぶくれに。山歩きでは出番が多い品です。痛くなる前に貼るのがコツです。"],
+["捻挫・骨折・打撲","🔺","三角巾","1〜2枚","腕のつり・患部の固定・止血の押さえに使えます。軽くてかさばりません。"],
+["捻挫・骨折・打撲","📏","テーピングテープ","1巻","足首や指の固定に。きつく巻きすぎず、指先の色や痺れを確認します。"],
+["捻挫・骨折・打撲","🧶","伸縮包帯","2本","捻挫の固定、ガーゼや副木の固定に。"],
+["捻挫・骨折・打撲","🧊","瞬間冷却パック","2個","打撲・捻挫・虫刺され・暑さで体が熱いときの冷却に。直接肌に当てず、布越しにします。"],
+["捻挫・骨折・打撲","🪵","副木（折りたたみ式）","1本","骨折が疑われるときの固定に。なければストックや枝と包帯で代用します。"],
+["虫・かぶれ・動物","💉","ポイズンリムーバー","1個","ハチ・ブヨ・ムカデなどの毒を吸い出します。刺されて息苦しい・気分が悪い・全身にじんま疹が出たら、すぐ119番を。"],
+["虫・かぶれ・動物","🦟","虫よけスプレー","1本","ブヨ・アブ・蚊・マダニ対策に。肌の出る所にこまめに使います。"],
+["虫・かぶれ・動物","🧴","かゆみ止め軟膏","1本","虫刺され・かぶれのかゆみに。用法は製品の表示に従います。"],
+["虫・かぶれ・動物","🥢","ピンセット・マダニ除去具","1つ","トゲやヒルの除去に。マダニは無理に引き抜かず、専用の除去具を使い、早めに皮膚科へ。"],
+["虫・かぶれ・動物","🧼","石けん・洗い流し用の水","小さめ1個","ウルシ類に触れたときは、早めに石けんと水でよく洗い流します。"],
+["常備薬","💊","痛み止め・解熱薬","必要分","頭痛・発熱・痛みに。用法・用量は製品の表示に従い、迷ったら薬剤師に相談します。"],
+["常備薬","💊","胃腸薬・整腸薬","必要分","食べ慣れない山菜やきのこ、疲れでお腹が不調のときに。"],
+["常備薬","💊","下痢止め","必要分","外出先でお腹をこわしたときに。発熱や血便があるときは自己判断せず受診します。"],
+["常備薬","💊","抗ヒスタミン薬（かゆみ・アレルギー用）","必要分","虫刺されや花粉などのアレルギー症状に。眠気が出る種類もあるので、運転前は注意します。"],
+["常備薬","👁️","目薬・洗眼液","1本","ゴミや花粉が目に入ったとき、きれいな水で洗い流す補助に。"],
+["常備薬","📒","自分の常用薬・お薬手帳","多めの日数分","持病の薬は予定より多めに持ちます。お薬手帳（またはそのコピー）も一緒に。"],
+["熱中症・低体温","🧂","経口補水塩・塩タブレット","数包","大量に汗をかく季節に。水分と一緒にとります。"],
+["熱中症・低体温","🧥","エマージェンシーシート","1枚","軽くて小さい保温シート。低体温や雨風をしのぐときに使えます。"],
+["熱中症・低体温","🔥","使い捨てカイロ","2〜3個","春先や秋の冷え込み、体が冷えたときに。肌に直接貼らないようにします。"],
+["熱中症・低体温","🍬","行動食・飴","少し多めに","エネルギー切れや低血糖の予防に。すぐ食べられるものを取り出しやすい所へ。"],
+["器具・連絡","🧤","使い捨て手袋","2〜3組","血液や体液に直接触れないために。手当ての前にはめます。"],
+["器具・連絡","✂️","救急ハサミ","1本","包帯・テープ・衣類を切るときに。先が丸いタイプが安全です。"],
+["器具・連絡","🧷","安全ピン","数本","三角巾や包帯の固定に。"],
+["器具・連絡","😷","人工呼吸用フェイスシールド","1個","心肺蘇生のときに、感染を防ぎながら息を吹き込むための道具です。"],
+["器具・連絡","📣","ホイッスル","1個","声より遠くまで届きます。道に迷ったときや助けを呼ぶときの合図に。"],
+["器具・連絡","📝","緊急連絡先メモ・保険証のコピー","1式","連絡先・持病・アレルギー・血液型を書いて防水袋に入れます。"],
+["器具・連絡","🛍️","ビニール袋・ジップ袋","数枚","汚れ物の持ち帰り、スマホや書類の防水、氷のう代わりにも使えます。"],
+["器具・連絡","🔋","モバイルバッテリー","1個","救急要請や位置情報の共有に、スマホの電池を切らさないために。"]];
+  const seed=()=>SEED.map((a,i)=>({id:"s"+i,cat:a[0],icon:a[1],name:a[2],qty:a[3],desc:a[4]}));
+  let items=ld(K,null);if(!Array.isArray(items)){items=seed();sv(K,items)}
+  let f="all",msg="";
+  const cols=()=>ld(CK,2)===3?3:2;
+  const catIc=c=>{const x=CATS.find(a=>a[0]===c);return x?x[1]:"📁"};
+  const cats=()=>{const o=CATS.map(a=>a[0]);items.forEach(i=>{if(!o.includes(i.cat))o.push(i.cat)});return o.filter(c=>items.some(i=>i.cat===c))};
+  const card=i=>'<div class="fa-card"><button type="button" class="fa-open" data-fa-o="'+esc(i.id)+'"><span class="ic">'+esc(i.icon||"🩹")+'</span><b>'+esc(i.name)+'</b></button><div class="fa-mini"><button type="button" data-fa-e="'+esc(i.id)+'">編集</button><button type="button" data-fa-d="'+esc(i.id)+'">削除</button></div></div>';
+  const draw=()=>{
+    const cs=cats();if(f!=="all"&&!cs.includes(f))f="all";
+    const c=cols(),show=cs.filter(x=>f==="all"||x===f);
+    root.innerHTML='<p class="sn-note">山歩き・採取に持っていく救急用品の一覧です。項目名をタップすると、使い方と数量の目安が出ます。この端末だけに保存されます。内容は一般的な目安です。持病・アレルギーのある方は主治医や薬剤師にも相談してください。ケガや体調不良が重いときは、迷わず119番へ。</p>'
+    +'<div class="fa-top"><button type="button" class="gx-b gx-p" data-fa="add">＋ 追加</button><button type="button" class="gx-b" data-fa="seed">おすすめを補充</button><span class="fa-cs"><button type="button" data-fa-c="2" class="'+(c===2?"on":"")+'">2列</button><button type="button" data-fa-c="3" class="'+(c===3?"on":"")+'">3列</button></span></div>'
+    +(msg?'<div class="gx-msg">'+esc(msg)+'</div>':"")
+    +'<div class="fa-chips">'+["all"].concat(cs).map(x=>'<button type="button" class="sn-chip'+(f===x?" on":"")+'" data-fa-f="'+esc(x)+'">'+(x==="all"?"すべて（"+items.length+"）":catIc(x)+" "+esc(x))+'</button>').join("")+'</div>'
+    +(show.length?show.map(cat=>{const a=items.filter(i=>i.cat===cat);return '<div class="fa-cat">'+catIc(cat)+" "+esc(cat)+'<small>'+a.length+'件</small></div><div class="fa-g" data-c="'+c+'">'+a.map(card).join("")+'</div>'}).join(""):'<p class="sn-note">項目がありません。「＋ 追加」から作れます。</p>');
+  };
+  const ov=h=>{const o=document.createElement("div");o.className="gx-ov";o.innerHTML='<div class="gx-box">'+h+'</div>';document.body.appendChild(o);return o};
+  const cf=(text,okLabel,fn)=>{const o=ov('<h3 style="text-align:center">'+text+'</h3><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-r" data-x="y">'+okLabel+'</button></div>');
+    o.addEventListener("click",e=>{if(e.target===o){o.remove();return}const b=e.target.closest("button");if(!b)return;if(b.dataset.x==="y"){o.remove();fn()}else if(b.dataset.x==="n")o.remove()})};
+  const del=i=>cf("「"+esc(i.name)+"」を<br>削除しますか？","削除する",()=>{items=items.filter(x=>x.id!==i.id);sv(K,items);msg="";draw()});
+  const pop=i=>{
+    const o=ov('<div class="gx-pop"><div class="big">'+esc(i.icon||"🩹")+'</div><h3>'+esc(i.name)+'</h3><span class="tag">'+catIc(i.cat)+" "+esc(i.cat)+'</span><div class="dt">'+(i.desc?esc(i.desc):"詳細はまだありません。「編集」から書き足せます。")+'</div>'+(i.qty?'<div class="tg">数量の目安：'+esc(i.qty)+'</div>':"")+'<div class="gx-act"><button type="button" class="gx-b" data-x="e">編集</button><button type="button" class="gx-b gx-r" data-x="d">削除</button><button type="button" class="gx-b gx-p" data-x="c">閉じる</button></div></div>');
+    o.addEventListener("click",e=>{if(e.target===o){o.remove();return}const b=e.target.closest("button");if(!b)return;const x=b.dataset.x;if(x==="c")o.remove();else if(x==="e"){o.remove();form(i)}else if(x==="d"){o.remove();del(i)}});
+  };
+  const form=i=>{
+    const fm={icon:i?i.icon:"🩹",cat:i?i.cat:(f!=="all"?f:CATS[0][0])};
+    const all=CATS.map(a=>a[0]);items.forEach(x=>{if(!all.includes(x.cat))all.push(x.cat)});
+    const o=ov('<h3>'+(i?"項目を編集":"項目を追加")+'</h3><label class="gx-l">名前</label><input class="sn-in" id="fa-n" maxlength="30" placeholder="例：絆創膏" value="'+esc(i?i.name:"")+'"><label class="gx-l">アイコン</label><div class="gx-pal" id="fa-p">'+ICO.map(x=>'<button type="button" data-ic="'+x+'" class="'+(x===fm.icon?"on":"")+'">'+x+'</button>').join("")+'</div><label class="gx-l">種類</label><div class="gx-pgs" id="fa-c">'+all.map(c=>'<button type="button" data-ct="'+esc(c)+'" class="'+(c===fm.cat?"on":"")+'">'+catIc(c)+" "+esc(c)+'</button>').join("")+'</div><input class="sn-in" id="fa-nc" maxlength="12" placeholder="新しい種類名（上から選ばないとき）" style="margin-top:8px"><label class="gx-l">数量の目安</label><input class="sn-in" id="fa-q" maxlength="30" placeholder="例：5枚" value="'+esc(i?i.qty||"":"")+'"><label class="gx-l">用途・使い方</label><textarea class="sn-in" id="fa-d" rows="5" maxlength="600" placeholder="どんなときに使うか、注意点など">'+esc(i?i.desc||"":"")+'</textarea><div class="gx-msg" id="fa-m" hidden></div><div class="gx-act"><button type="button" class="gx-b" data-x="n">キャンセル</button><button type="button" class="gx-b gx-p" data-x="s">'+(i?"更新する":"追加する")+'</button></div>');
+    o.addEventListener("click",e=>{
+      if(e.target===o){o.remove();return}
+      const b=e.target.closest("button");if(!b)return;
+      if(b.dataset.ic){fm.icon=b.dataset.ic;o.querySelectorAll("#fa-p button").forEach(x=>x.classList.toggle("on",x===b));return}
+      if(b.dataset.ct){fm.cat=b.dataset.ct;o.querySelectorAll("#fa-c button").forEach(x=>x.classList.toggle("on",x===b));o.querySelector("#fa-nc").value="";return}
+      if(b.dataset.x==="n"){o.remove();return}
+      if(b.dataset.x==="s"){
+        const g=s=>o.querySelector(s).value.trim(),n=g("#fa-n").slice(0,30);
+        if(!n){const m=o.querySelector("#fa-m");m.hidden=false;m.textContent="名前を入れてください。";return}
+        const rec={id:i?i.id:"u"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:n,icon:fm.icon||"🩹",cat:g("#fa-nc").slice(0,12)||fm.cat||"その他",qty:g("#fa-q").slice(0,30),desc:g("#fa-d").slice(0,600)};
+        const ix=i?items.findIndex(x=>x.id===i.id):-1;
+        if(ix>=0)items[ix]=rec;else items.push(rec);
+        sv(K,items);o.remove();msg=ix>=0?"更新しました。":"追加しました。";f="all";draw();
+      }
+    });
+  };
+  root.addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b||!root.contains(b))return;
+    const d=b.dataset,find=id=>items.find(x=>x.id===id);
+    if(d.faO){const i=find(d.faO);if(i)pop(i)}
+    else if(d.faE){const i=find(d.faE);if(i)form(i)}
+    else if(d.faD){const i=find(d.faD);if(i)del(i)}
+    else if(d.faF){f=d.faF;msg="";draw()}
+    else if(d.faC){sv(CK,+d.faC);draw()}
+    else if(d.fa==="add")form(null);
+    else if(d.fa==="seed"){
+      const have=new Set(items.map(x=>x.id)),add=seed().filter(x=>!have.has(x.id));
+      if(!add.length){msg="おすすめ項目はすべて入っています。";draw();return}
+      cf("おすすめ項目を<br>"+add.length+"件 追加しますか？<br><small>（削除した項目も戻ります）</small>","追加する",()=>{items=items.concat(add);sv(K,items);msg="おすすめ項目を"+add.length+"件追加しました。";draw()});
+    }
+  });
+  draw();
 }
 (function(){const A=window.fnAdm=window.fnAdm||{},d=document.createElement("div");d.className="pp";initWarikan(d,null);A.wk=d})();
 drawCover();renderPages();__sig=sigNow();checkAgree();
