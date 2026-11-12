@@ -873,7 +873,7 @@ const PAL=[CV,YC,HC],DG=["古い辞書風","野帳風","植物標本帳風"];
 const DEF={info:6,all:4,tecchou:8,sansai:8,fruit:2,saibai:2,kinoko:9,tozan:6,onsen:7,ref:4,region:5};
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-const FIXED=["info","all","members","ref","region","howto","memo"],DEFPG=["sansai","fruit","kinoko"];
+const FIXED=["info","all","members","ref","region","howto","memo","firstaid"],DEFPG=["sansai","fruit","kinoko"];
 function isAdm(){return !!ld("fn_admin",0)}
 function gateOn(){return !isAdm()&&!!remote().gate}
 function meRec(){const u=ld("fn_uid",null);return u?(remote().members||[]).find(m=>m.uid===u)||null:null}
