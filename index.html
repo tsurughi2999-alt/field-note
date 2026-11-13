@@ -3177,6 +3177,7 @@ function initHowto(root){
 /* ---- 管理者メモ（写真つき・この端末だけ） ---- */
 (function(){
   const A=window.fnAdm=window.fnAdm||{},K="fn_admmemo",MAXI=5;
+  const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
   const root=document.createElement("div");root.className="pp";
   let ed=null,pend=[],ask=null,msg="",busy=false,dr={t:"",x:""};
   const L=()=>{const l=ld(K,[]);return Array.isArray(l)?l:[]};
@@ -3237,7 +3238,7 @@ function initHowto(root){
     if(b.dataset.r!==undefined){grab();pend.splice(+b.dataset.r,1);msg="";form()}
     else if(a==="pick"){grab();root.querySelector("#am-f1").click()}
     else if(a==="cancel"){ed=null;dr={t:"",x:""};pend=[];msg="";form()}
-    else if(a==="save"){
+    else if(a==="save"){try{
       grab();const t=dr.t.trim().slice(0,40),x=dr.x.trim().slice(0,3000);
       if(busy){msg="写真を処理中です。少し待ってから保存してください。";form();return}
       if(!t&&!x&&!pend.length){msg="メモか写真を入れてください。";form();return}
@@ -3245,7 +3246,7 @@ function initHowto(root){
       if(ed!==null){const m=l.find(y=>y.id===ed);if(m){m.t=t;m.x=x;m.im=pend.slice()}}else l.push({id:Date.now(),d:today(),t,x,im:pend.slice()});
       if(!save(l)){msg="保存できませんでした。端末の保存容量がいっぱいです。古い写真つきのメモを削除するか、写真を減らしてください。";form();return}
       ed=null;dr={t:"",x:""};pend=[];msg="保存しました。";form();list();
-    }
+    }catch(err){msg="保存できませんでした（"+((err&&err.message)||err)+"）";form()}}
     else if(b.dataset.me!==undefined){
       const m=L().find(y=>y.id===+b.dataset.me);if(!m)return;
       ed=m.id;dr={t:m.t||"",x:m.x||""};pend=(m.im||[]).filter(okI);msg="";form();list();
