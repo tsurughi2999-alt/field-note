@@ -1843,7 +1843,7 @@ async function cmpStart(){
   cmpRun();
 }
 function initInfo(root){
-  let loc=ld("fn_loc",null),wx=ld("fn_wx",null),tide=ld("fn_tide",null),emg=ld("fn_emg",{}),bear=ld("fn_bear",[]),msg={},bo=false,ask=null;
+  let loc=ld("fn_loc",null),wx=ld("fn_wx",null),tide=ld("fn_tide",null),emg=ld("fn_emg",{}),bear=ld("fn_bear",[]),dest=ld("fn_dest",null),wx2=ld("fn_wx2",null),dres=[],dqv="",msg={},bo=false,ask=null;
   const $=id=>root.querySelector("#"+id),f2=n=>String(n).padStart(2,"0"),hm=d=>d&&!isNaN(d)?f2(d.getHours())+":"+f2(d.getMinutes()):"--:--";
   const rad=Math.PI/180,DAY=864e5,J2000=2451545,J1970=2440588,toD=d=>d.valueOf()/DAY-0.5+J1970-J2000,fromJ=j=>new Date((j+0.5-J1970)*DAY);
   function sunT(date,lat,lng,hd){
@@ -1887,11 +1887,43 @@ function initInfo(root){
     }else b='<p class="sn-note">電波のあるときに「潮位を取得」を押してください。</p>';
     return `<div class="ic"><h4>④ 潮の満干（現在地に近い海）</h4>${b}<button class="sn-btn sn-ghost" data-a="tide">潮位を取得</button><p class="sn-note">${esc(msg.tide||"")}釣りや海に入るときは、気象庁の潮位表も確認してください。</p></div>`;
   };
+  const kD=x=>x.getFullYear()+"-"+f2(x.getMonth()+1)+"-"+f2(x.getDate());
+  const wxDay=(d,i)=>{const w=WC(d.weather_code[i]),t=d.time&&d.time[i],n=new Date(),lab=t===kD(n)?"今日":t===kD(new Date(n.getTime()+DAY))?"明日":t?(+t.slice(5,7))+"/"+(+t.slice(8,10)):(i?"明日":"今日");
+    return `<div><div class="sn-note">${lab}</div><div class="ib">${w[0]}</div><div class="sn-note">${w[1]}　${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°<br>降水 ${d.precipitation_probability_max[i]==null?"-":d.precipitation_probability_max[i]+"%"}　風 ${Math.round(d.wind_speed_10m_max[i])} m/s</div></div>`};
+  const wxBlk=(title,j,extra)=>{
+    if(!(j&&j.daily))return `<div class="sn-note"><b>${title}</b>　未取得${extra||""}</div>`;
+    const d=j.daily,g=j.got?new Date(j.got):null;
+    return `<div class="sn-note"><b>${title}</b>${j.elevation!=null?"　標高 "+Math.round(j.elevation)+"m":""}${extra||""}</div><div class="ir">${wxDay(d,0)}${wxDay(d,1)}</div><div class="sn-note">${j.current?"今の気温 "+Math.round(j.current.temperature_2m)+"°　":""}${g?(kD(g)===kD(new Date())?"":(g.getMonth()+1)+"/"+g.getDate()+" ")+hm(g)+" 取得":""}</div>`};
   const wxC=()=>{
-    let b='<p class="sn-note">電波のあるときに「天気を取得」を押してください。</p>';
-    if(wx&&wx.daily){const d=wx.daily,one=i=>{const w=WC(d.weather_code[i]);return `<div><div class="sn-note">${i?"明日":"今日"}</div><div class="ib">${w[0]}</div><div class="sn-note">${w[1]}　${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°<br>降水 ${d.precipitation_probability_max[i]==null?"-":d.precipitation_probability_max[i]+"%"}　風 ${Math.round(d.wind_speed_10m_max[i])} m/s</div></div>`};b=`<div class="ir">${one(0)}${one(1)}</div><div class="sn-note">${wx.current?"今の気温 "+Math.round(wx.current.temperature_2m)+"°　":""}${wx.got?new Date(wx.got).getHours()+":"+f2(new Date(wx.got).getMinutes())+" 取得":""}</div>`}
-    return `<div class="ic"><h4>⑤ 天気と気温</h4>${b}<button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}山の上の天気は、麓と大きく違うことがあります。</p></div>`;
+    const far=loc&&wx&&wx.at&&(Math.abs(wx.at[0]-loc.la)+Math.abs(wx.at[1]-loc.lo)>0.03);
+    const cur=wxBlk("📍 現在地",wx,far?"　（前に取得した場所です。もう一度「天気を取得」を）":"");
+    const dst=dest?wxBlk("🎯 目的地："+esc(dest.n)+(dest.sub?"（"+esc(dest.sub)+"）":""),wx2,"")+'<button class="sn-del" data-a="dx">目的地を消す</button>':"";
+    const chips=dres.length?`<div class="sn-chips">${dres.map((r,i)=>`<button class="sn-chip" data-dr="${i}">${esc(r.n)}${r.sub?"（"+esc(r.sub)+"）":""}${r.el!=null?" "+r.el+"m":""}</button>`).join("")}</div>`:"";
+    return `<div class="ic"><h4>⑤ 天気と気温（現在地と目的地）</h4>${cur}${dst}<div style="display:flex;gap:8px;margin-top:10px"><input class="sn-in" id="wx-q" style="flex:1;min-width:0" placeholder="目的地の地名（例：蔵王山）／緯度,経度" value="${esc(dqv)}"><button class="sn-btn sn-ghost" data-a="dq">探す</button></div>${chips}<div class="sn-note">${esc(msg.dq||"")}</div><button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}電波のあるときに押してください。山の上の天気は、麓と大きく違うことがあります。</p></div>`;
   };
+  const wxUrl=(la,lo,e)=>`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2${typeof e==="number"&&e>-50&&e<4000?"&elevation="+e:""}`;
+  const getWx=async()=>{
+    if(!loc&&!dest){msg.wx="先に現在地を取得するか、目的地を決めてください。";render();return}
+    msg.wx="取得中… ";render();
+    const one=async p=>{const r=await fetch(wxUrl(p.la,p.lo,p.alt!=null?p.alt:p.el));if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();return j};
+    const [x,y]=await Promise.allSettled([loc?one(loc):Promise.reject(0),dest?one(dest):Promise.reject(0)]),bad=[];
+    if(loc){if(x.status==="fulfilled"){wx=x.value;wx.at=[loc.la,loc.lo];sv("fn_wx",wx)}else bad.push("現在地")}
+    if(dest){if(y.status==="fulfilled"){wx2=y.value;sv("fn_wx2",wx2)}else bad.push("目的地")}
+    msg.wx=bad.length?bad.join("と")+"の天気を取得できませんでした。電波のある場所で、もう一度試してください。":"";
+    render()};
+  const setDest=d=>{dest=d;sv("fn_dest",dest);wx2=null;sv("fn_wx2",null);dres=[];dqv="";msg.dq=""};
+  const findDest=async()=>{
+    const el=$("wx-q"),q=(el?el.value:dqv).trim();dqv=q;dres=[];
+    if(!q){msg.dq="地名か、緯度,経度を入れてください。";render();return}
+    const m=q.match(/^(-?\d+(?:\.\d+)?)\s*[,，、\s]\s*(-?\d+(?:\.\d+)?)$/);
+    if(m){const la=+m[1],lo=+m[2];if(Math.abs(la)>90||Math.abs(lo)>180){msg.dq="緯度・経度の数字が正しくありません。";render();return}
+      setDest({n:"指定した地点",sub:la.toFixed(4)+", "+lo.toFixed(4),la:+la.toFixed(5),lo:+lo.toFixed(5),el:null});render();return}
+    msg.dq="探しています…";render();
+    try{const r=await fetch("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=6&language=ja&format=json&countryCode=JP");if(!r.ok)throw 0;const j=await r.json();
+      dres=(j.results||[]).map(x=>({n:x.name,sub:[x.admin1,x.admin2].filter(Boolean).join(" "),la:+(+x.latitude).toFixed(5),lo:+(+x.longitude).toFixed(5),el:x.elevation==null?null:Math.round(x.elevation)}));
+      msg.dq=dres.length?"候補をタップして決めてください。":"見つかりませんでした。別の呼び方か、Googleマップの緯度,経度で試してください。"}
+    catch(e){msg.dq="探せませんでした。電波のある場所で、もう一度試してください。"}
+    render()};
   const BEAR=[["予防",["鈴やラジオで人の存在を知らせる","できるだけ複数人で行動する","早朝・夕方・霧の日は特に注意する","食べ物やゴミを残さない","新しい糞・足跡・爪痕を見たら引き返す"]],["遠くで見つけたら",["落ち着いて、静かにその場を離れる","走らない・大声を出さない・写真を撮らない"]],["近くで遭遇したら",["背中を見せず、クマを見ながらゆっくり後ずさる","クマスプレーを持っているときは、すぐ使えるようにする","襲われたら、うつぶせで首の後ろを両手で守る"]]];
   const safeC=()=>{
     let gl="";if(loc){const n=new Date(),T=sunT(new Date(n.getFullYear(),n.getMonth(),n.getDate(),12),loc.la,loc.lo,-0.833);if(T)gl=`<div class="sn-note">下山の目安：${hm(new Date(T.set.getTime()-2*36e5))}（日の入りの2時間前）までに下山しましょう。</div>`}
@@ -1931,7 +1963,10 @@ function initInfo(root){
     if(a==="re")render();
     else if(a==="gps"){if(!navigator.geolocation){msg.gps="この端末では取得できません。";render();return}msg.gps="取得中…";render();navigator.geolocation.getCurrentPosition(p=>{loc={la:+p.coords.latitude.toFixed(5),lo:+p.coords.longitude.toFixed(5),alt:p.coords.altitude==null?null:Math.round(p.coords.altitude),acc:Math.round(p.coords.accuracy),t:Date.now()};sv("fn_loc",loc);msg.gps="";render()},()=>{msg.gps="現在地を取得できませんでした。位置情報の許可を確認してください。";render()},{enableHighAccuracy:true,timeout:15000})}
     else if(a==="share"&&loc){const t=`現在地：${loc.la}, ${loc.lo}\nhttps://www.google.com/maps?q=${loc.la},${loc.lo}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);msg.gps="現在地をコピーしました。"}catch(x){}render()}}
-    else if(a==="wx")go(`https://api.open-meteo.com/v1/forecast?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2`,"fn_wx","wx");
+    else if(a==="wx")getWx();
+    else if(a==="dq")findDest();
+    else if(b.dataset.dr!==undefined){const r=dres[+b.dataset.dr];if(r){setDest(r);render()}}
+    else if(a==="dx"){setDest(null);render()}
     else if(a==="tide")go(`https://marine-api.open-meteo.com/v1/marine?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2&cell_selection=sea`,"fn_tide","tide");
     else if(b.dataset.cs!==undefined){if(b.dataset.cs==="1"){cmpStart().then(()=>render())}else{cmpStop();CMP.msg="";render()}}
     else if(b.dataset.cc!==undefined){CMP.cor=!CMP.cor;render()}
