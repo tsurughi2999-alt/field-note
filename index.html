@@ -1892,23 +1892,25 @@ function initInfo(root){
     return `<div><div class="sn-note">${lab}</div><div class="ib">${w[0]}</div><div class="sn-note">${w[1]}　${Math.round(d.temperature_2m_max[i])}° / ${Math.round(d.temperature_2m_min[i])}°<br>降水 ${d.precipitation_probability_max[i]==null?"-":d.precipitation_probability_max[i]+"%"}　風 ${Math.round(d.wind_speed_10m_max[i])} m/s</div></div>`};
   const wxBlk=(title,j,extra)=>{
     if(!(j&&j.daily))return `<div class="sn-note"><b>${title}</b>　未取得${extra||""}</div>`;
-    const d=j.daily,g=j.got?new Date(j.got):null;
-    return `<div class="sn-note"><b>${title}</b>${j.elevation!=null?"　標高 "+Math.round(j.elevation)+"m":""}${extra||""}</div><div class="ir">${wxDay(d,0)}${wxDay(d,1)}</div><div class="sn-note">${j.current?"今の気温 "+Math.round(j.current.temperature_2m)+"°　":""}${g?(kD(g)===kD(new Date())?"":(g.getMonth()+1)+"/"+g.getDate()+" ")+hm(g)+" 取得":""}</div>`};
+    const d=j.daily,g=j.got?new Date(j.got):null,old=d.time&&d.time[0]&&d.time[0]<kD(new Date());
+    return `<div class="sn-note"><b>${title}</b>${j.elevation!=null?"　標高 "+Math.round(j.elevation)+"m":""}${old?"　⚠️古いデータです":""}${extra||""}</div><div class="ir">${wxDay(d,0)}${wxDay(d,1)}</div><div class="sn-note">${j.current?"今の気温 "+Math.round(j.current.temperature_2m)+"°　":""}${g?(kD(g)===kD(new Date())?"":(g.getMonth()+1)+"/"+g.getDate()+" ")+hm(g)+" 取得":""}</div>`};
   const wxC=()=>{
     const far=loc&&wx&&wx.at&&(Math.abs(wx.at[0]-loc.la)+Math.abs(wx.at[1]-loc.lo)>0.03);
     const cur=wxBlk("📍 現在地",wx,far?"　（前に取得した場所です。もう一度「天気を取得」を）":"");
     const dst=dest?wxBlk("🎯 目的地："+esc(dest.n)+(dest.sub?"（"+esc(dest.sub)+"）":""),wx2,"")+'<button class="sn-del" data-a="dx">目的地を消す</button>':"";
     const chips=dres.length?`<div class="sn-chips">${dres.map((r,i)=>`<button class="sn-chip" data-dr="${i}">${esc(r.n)}${r.sub?"（"+esc(r.sub)+"）":""}${r.el!=null?" "+r.el+"m":""}</button>`).join("")}</div>`:"";
-    return `<div class="ic"><h4>⑤ 天気と気温（現在地と目的地）</h4>${cur}${dst}<div style="display:flex;gap:8px;margin-top:10px"><input class="sn-in" id="wx-q" style="flex:1;min-width:0" placeholder="目的地の地名（例：蔵王山）／緯度,経度" value="${esc(dqv)}"><button class="sn-btn sn-ghost" data-a="dq">探す</button></div>${chips}<div class="sn-note">${esc(msg.dq||"")}</div><button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}電波のあるときに押してください。山の上の天気は、麓と大きく違うことがあります。</p></div>`;
+    return `<div class="ic"><h4>⑤ 天気と気温（現在地と目的地）</h4>${cur}${dst}<div style="display:flex;gap:8px;margin-top:10px;align-items:stretch"><input class="sn-in" id="wx-q" style="flex:1 1 0;width:0;min-width:0;margin-bottom:0" placeholder="目的地（例：蔵王山）／緯度,経度" value="${esc(dqv)}"><button class="sn-btn sn-ghost" data-a="dq" style="flex:0 0 auto;width:auto;padding:11px 20px">探す</button></div>${chips}<div class="sn-note">${esc(msg.dq||"")}</div><button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}電波のあるときに押してください。山の上の天気は、麓と大きく違うことがあります。</p></div>`;
   };
   const wxUrl=(la,lo,e)=>`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2${typeof e==="number"&&e>-50&&e<4000?"&elevation="+e:""}`;
+  const wxWhy=e=>navigator.onLine===false?"端末がオフラインです":!e?"不明":e.name==="AbortError"?"時間切れ":(e.message||"通信エラー");
   const getWx=async()=>{
     if(!loc&&!dest){msg.wx="先に現在地を取得するか、目的地を決めてください。";render();return}
     msg.wx="取得中… ";render();
-    const one=async p=>{const r=await fetch(wxUrl(p.la,p.lo,p.alt!=null?p.alt:p.el));if(!r.ok)throw 0;const j=await r.json();j.got=Date.now();return j};
+    const one=async p=>{const ac=typeof AbortController!=="undefined"?new AbortController():null,tm=ac?setTimeout(()=>ac.abort(),20000):0;
+      try{const r=await fetch(wxUrl(p.la,p.lo,p.alt!=null?p.alt:p.el),ac?{signal:ac.signal}:{});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();if(!j||!j.daily)throw new Error("データの形式が違います");j.got=Date.now();return j}finally{clearTimeout(tm)}};
     const [x,y]=await Promise.allSettled([loc?one(loc):Promise.reject(0),dest?one(dest):Promise.reject(0)]),bad=[];
-    if(loc){if(x.status==="fulfilled"){wx=x.value;wx.at=[loc.la,loc.lo];sv("fn_wx",wx)}else bad.push("現在地")}
-    if(dest){if(y.status==="fulfilled"){wx2=y.value;sv("fn_wx2",wx2)}else bad.push("目的地")}
+    if(loc){if(x.status==="fulfilled"){wx=x.value;wx.at=[loc.la,loc.lo];sv("fn_wx",wx)}else bad.push("現在地（"+wxWhy(x.reason)+"）")}
+    if(dest){if(y.status==="fulfilled"){wx2=y.value;sv("fn_wx2",wx2)}else bad.push("目的地（"+wxWhy(y.reason)+"）")}
     msg.wx=bad.length?bad.join("と")+"の天気を取得できませんでした。電波のある場所で、もう一度試してください。":"";
     render()};
   const setDest=d=>{dest=d;sv("fn_dest",dest);wx2=null;sv("fn_wx2",null);dres=[];dqv="";msg.dq=""};
@@ -1976,8 +1978,10 @@ function initInfo(root){
     else if(a==="bradd"){const p=$("br-p").value.trim(),m=$("br-m").value.trim();if(!p&&!m)return;const n=new Date();bear.unshift({d:n.getFullYear()+"-"+f2(n.getMonth()+1)+"-"+f2(n.getDate()),p,m});sv("fn_bear",bear);render()}
     else if(b.dataset.bd!==undefined){const i=+b.dataset.bd;if(ask===i){bear.splice(i,1);sv("fn_bear",bear);ask=null}else ask=i;render()}
   });
-  root.addEventListener("input",e=>{if(e.target.id==="em-n"||e.target.id==="em-p"){emg={n:$("em-n").value,p:$("em-p").value};sv("fn_emg",emg)}});
+  root.addEventListener("input",e=>{if(e.target.id==="wx-q"){dqv=e.target.value;return}if(e.target.id==="em-n"||e.target.id==="em-p"){emg={n:$("em-n").value,p:$("em-p").value};sv("fn_emg",emg)}});
   render();
+  {const H3=3*36e5,old=j=>!j||!j.got||Date.now()-j.got>H3;
+    if((loc||dest)&&(old(wx)||(dest&&old(wx2)))&&navigator.onLine!==false&&Date.now()-(window.__wxT||0)>60000){window.__wxT=Date.now();getWx()}}
 }
 (function(){
   const d=document.createElement("div");d.className="pp";const ad=ld("fn_admin",0);
