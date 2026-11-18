@@ -244,6 +244,12 @@ html[data-pgno="off"] .pgno,html[data-fold="off"] .fold{display:none}
 .ic h4{margin:0 0 8px;font-size:13px;color:var(--acc);letter-spacing:.06em}
 .ib{font-size:21px;font-weight:600;line-height:1.3}
 .ir{display:flex;gap:10px}.ir>.ic{flex:1;min-width:0}
+.wxb{border:1px solid;border-left-width:7px;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.wxb.cur{border-color:#3b7ca3;background:rgba(59,124,163,.10)}
+.wxb.dst{border-color:#d9822b;background:rgba(217,130,43,.12)}
+.wxt{display:inline-block;color:#fff;font-weight:700;font-size:14px;padding:2px 12px;border-radius:999px;margin-right:6px}
+.wxt.cur{background:#3b7ca3}.wxt.dst{background:#c9731f}
+.wxb .ir{margin:6px 0}
 .ibar{height:8px;border-radius:4px;background:var(--line);position:relative;margin:10px 0 6px}
 .ibar i{position:absolute;top:0;bottom:0;background:#f0c050;border-radius:4px}.ibar u{position:absolute;top:-3px;width:3px;height:14px;background:#b3412f}
 .ic.wn{background:#fbe9e5;border-color:#e3b3a8}
@@ -1896,10 +1902,12 @@ function initInfo(root){
     return `<div class="sn-note"><b>${title}</b>${j.elevation!=null?"　標高 "+Math.round(j.elevation)+"m":""}${old?"　⚠️古いデータです":""}${extra||""}</div><div class="ir">${wxDay(d,0)}${wxDay(d,1)}</div><div class="sn-note">${j.current?"今の気温 "+Math.round(j.current.temperature_2m)+"°　":""}${g?(kD(g)===kD(new Date())?"":(g.getMonth()+1)+"/"+g.getDate()+" ")+hm(g)+" 取得":""}</div>`};
   const wxC=()=>{
     const far=loc&&wx&&wx.at&&(Math.abs(wx.at[0]-loc.la)+Math.abs(wx.at[1]-loc.lo)>0.03);
-    const cur=wxBlk("📍 現在地",wx,far?"　（前に取得した場所です。もう一度「天気を取得」を）":"");
-    const dst=dest?wxBlk("🎯 目的地："+esc(dest.n)+(dest.sub?"（"+esc(dest.sub)+"）":""),wx2,"")+'<button class="sn-del" data-a="dx">目的地を消す</button>':"";
+    const cur='<div class="wxb cur">'+wxBlk('<span class="wxt cur">📍 現在地</span>',wx,far?"　（前に取得した場所です。もう一度「天気を取得」を）":"")+'</div>';
+    const dTitle=dest?'<span class="wxt dst">🎯 目的地</span>'+esc(dest.n)+(dest.sub?"（"+esc(dest.sub)+"）":""):'<span class="wxt dst">🎯 目的地</span>';
+    const dBody=dest?wxBlk(dTitle,wx2,"")+'<div><button class="sn-del" data-a="dx">目的地を消す</button></div>':'<div class="sn-note">'+dTitle+'　未設定（下の欄に入れて「探す」）</div>';
     const chips=dres.length?`<div class="sn-chips">${dres.map((r,i)=>`<button class="sn-chip" data-dr="${i}">${esc(r.n)}${r.sub?"（"+esc(r.sub)+"）":""}${r.el!=null?" "+r.el+"m":""}</button>`).join("")}</div>`:"";
-    return `<div class="ic"><h4>⑤ 天気と気温（現在地と目的地）</h4>${cur}${dst}<div style="display:flex;gap:8px;margin-top:10px;align-items:stretch"><input class="sn-in" id="wx-q" style="flex:1 1 0;width:0;min-width:0;margin-bottom:0" placeholder="目的地（例：蔵王山）／緯度,経度" value="${esc(dqv)}"><button class="sn-btn sn-ghost" data-a="dq" style="flex:0 0 auto;width:auto;padding:11px 20px">探す</button></div>${chips}<div class="sn-note">${esc(msg.dq||"")}</div><button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}電波のあるときに押してください。山の上の天気は、麓と大きく違うことがあります。</p></div>`;
+    const dst='<div class="wxb dst">'+dBody+'<div class="sn-note" style="margin-top:8px"><b>目的地を入れる</b>　住所・地名・緯度経度（度分秒もOK）</div><div style="display:flex;gap:8px;align-items:stretch"><input class="sn-in" id="wx-q" style="flex:1 1 0;width:0;min-width:0;margin-bottom:0" placeholder="例：蔵王山／新潟県上越市…／36.85,138.36" value="'+esc(dqv)+'"><button class="sn-btn sn-ghost" data-a="dq" style="flex:0 0 auto;width:auto;padding:11px 20px">探す</button></div>'+chips+'<div class="sn-note">'+esc(msg.dq||"")+'</div></div>';
+    return `<div class="ic"><h4>⑤ 天気と気温（現在地と目的地）</h4>${cur}${dst}<button class="sn-btn sn-ghost" data-a="wx">天気を取得</button><p class="sn-note">${esc(msg.wx||"")}電波のあるときに押してください。山の上の天気は、麓と大きく違うことがあります。</p></div>`;
   };
   const wxUrl=(la,lo,e)=>`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&wind_speed_unit=ms&timezone=auto&forecast_days=2${typeof e==="number"&&e>-50&&e<4000?"&elevation="+e:""}`;
   const wxWhy=e=>navigator.onLine===false?"端末がオフラインです":!e?"不明":e.name==="AbortError"?"時間切れ":(e.message||"通信エラー");
@@ -1914,17 +1922,35 @@ function initInfo(root){
     msg.wx=bad.length?bad.join("と")+"の天気を取得できませんでした。電波のある場所で、もう一度試してください。":"";
     render()};
   const setDest=d=>{dest=d;sv("fn_dest",dest);wx2=null;sv("fn_wx2",null);dres=[];dqv="";msg.dq=""};
+  const parseLL=q=>{
+    let t=q.normalize("NFKC").replace(/[′’‘`´]/g,"'").replace(/[″”“]/g,'"').replace(/''/g,'"').replace(/[º˚]/g,"°").replace(/度(?=\s*\d)/g,"°").replace(/緯度|経度|緯|経/g,"").replace(/分/g,"'").replace(/秒/g,'"');
+    const re=/([NSEW北南東西])?\s*(-?\d+(?:\.\d+)?)\s*(?:°\s*(?:(\d+(?:\.\d+)?)\s*')?\s*(?:(\d+(?:\.\d+)?)\s*")?)?\s*([NSEW北南東西])?/gi,cs=[];let m;
+    const rest=t.replace(re,(x,p,d,mi,se,sf)=>{cs.push({h:(p||sf||"").toUpperCase(),d:+d,mi:+(mi||0),se:+(se||0),neg:d.trim().charAt(0)==="-"});return " "});
+    if(cs.length!==2||!/^[\s,，、\/／;]*$/.test(rest))return null;
+    const val=c=>{let v=Math.abs(c.d)+c.mi/60+c.se/3600;if(c.neg||"S南W西".includes(c.h)&&c.h)v=-v;return v};
+    let la,lo;const isLa=c=>"N北S南".includes(c.h)&&c.h,isLo=c=>"E東W西".includes(c.h)&&c.h;
+    if(isLo(cs[0])||isLa(cs[1])){lo=val(cs[0]);la=val(cs[1])}else{la=val(cs[0]);lo=val(cs[1])}
+    if(Math.abs(la)>90||Math.abs(lo)>180)return {bad:1};
+    return {la,lo};
+  };
   const findDest=async()=>{
     const el=$("wx-q"),q=(el?el.value:dqv).trim();dqv=q;dres=[];
-    if(!q){msg.dq="地名か、緯度,経度を入れてください。";render();return}
-    const m=q.match(/^(-?\d+(?:\.\d+)?)\s*[,，、\s]\s*(-?\d+(?:\.\d+)?)$/);
-    if(m){const la=+m[1],lo=+m[2];if(Math.abs(la)>90||Math.abs(lo)>180){msg.dq="緯度・経度の数字が正しくありません。";render();return}
-      setDest({n:"指定した地点",sub:la.toFixed(4)+", "+lo.toFixed(4),la:+la.toFixed(5),lo:+lo.toFixed(5),el:null});render();return}
+    if(!q){msg.dq="地名・住所か、緯度経度を入れてください。";render();return}
+    const ll=parseLL(q);
+    if(ll){if(ll.bad){msg.dq="緯度・経度の数字が正しくありません。";render();return}
+      setDest({n:"指定した地点",sub:ll.la.toFixed(4)+", "+ll.lo.toFixed(4),la:+ll.la.toFixed(5),lo:+ll.lo.toFixed(5),el:null});render();getWx();return}
     msg.dq="探しています…";render();
-    try{const r=await fetch("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=6&language=ja&format=json&countryCode=JP");if(!r.ok)throw 0;const j=await r.json();
-      dres=(j.results||[]).map(x=>({n:x.name,sub:[x.admin1,x.admin2].filter(Boolean).join(" "),la:+(+x.latitude).toFixed(5),lo:+(+x.longitude).toFixed(5),el:x.elevation==null?null:Math.round(x.elevation)}));
-      msg.dq=dres.length?"候補をタップして決めてください。":"見つかりませんでした。別の呼び方か、Googleマップの緯度,経度で試してください。"}
-    catch(e){msg.dq="探せませんでした。電波のある場所で、もう一度試してください。"}
+    const tmo=ms=>{const ac=typeof AbortController!=="undefined"?new AbortController():null;if(ac)setTimeout(()=>ac.abort(),ms);return ac?{signal:ac.signal}:{}};
+    const gsi=async()=>{const r=await fetch("https://msearch.gsi.go.jp/address-search/AddressSearch?q="+encodeURIComponent(q),tmo(12000));if(!r.ok)throw 0;const j=await r.json();
+      return (Array.isArray(j)?j:[]).slice(0,5).map(x=>({n:(x.properties&&x.properties.title)||q,sub:"住所・地名",la:+(+x.geometry.coordinates[1]).toFixed(5),lo:+(+x.geometry.coordinates[0]).toFixed(5),el:null}))};
+    const om=async()=>{const r=await fetch("https://geocoding-api.open-meteo.com/v1/search?name="+encodeURIComponent(q)+"&count=6&language=ja&format=json&countryCode=JP",tmo(12000));if(!r.ok)throw 0;const j=await r.json();
+      return (j.results||[]).map(x=>({n:x.name,sub:[x.admin1,x.admin2].filter(Boolean).join(" "),la:+(+x.latitude).toFixed(5),lo:+(+x.longitude).toFixed(5),el:x.elevation==null?null:Math.round(x.elevation)}))};
+    const [g,o]=await Promise.allSettled([gsi(),om()]);
+    const all=[].concat(o.status==="fulfilled"?o.value:[],g.status==="fulfilled"?g.value:[]);
+    dres=all.filter((r,i)=>all.findIndex(z=>Math.abs(z.la-r.la)+Math.abs(z.lo-r.lo)<0.002)===i).slice(0,8);
+    if(dres.length)msg.dq="候補をタップして決めてください。";
+    else if(g.status==="rejected"&&o.status==="rejected")msg.dq="探せませんでした。電波のある場所で、もう一度試してください。";
+    else msg.dq="見つかりませんでした。別の呼び方や、都道府県から入れた住所、または緯度経度（例：36.85,138.36／北緯36°51'06\" 東経138°21'56\"）で試してください。";
     render()};
   const BEAR=[["予防",["鈴やラジオで人の存在を知らせる","できるだけ複数人で行動する","早朝・夕方・霧の日は特に注意する","食べ物やゴミを残さない","新しい糞・足跡・爪痕を見たら引き返す"]],["遠くで見つけたら",["落ち着いて、静かにその場を離れる","走らない・大声を出さない・写真を撮らない"]],["近くで遭遇したら",["背中を見せず、クマを見ながらゆっくり後ずさる","クマスプレーを持っているときは、すぐ使えるようにする","襲われたら、うつぶせで首の後ろを両手で守る"]]];
   const safeC=()=>{
@@ -1967,7 +1993,7 @@ function initInfo(root){
     else if(a==="share"&&loc){const t=`現在地：${loc.la}, ${loc.lo}\nhttps://www.google.com/maps?q=${loc.la},${loc.lo}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else{try{navigator.clipboard.writeText(t);msg.gps="現在地をコピーしました。"}catch(x){}render()}}
     else if(a==="wx")getWx();
     else if(a==="dq")findDest();
-    else if(b.dataset.dr!==undefined){const r=dres[+b.dataset.dr];if(r){setDest(r);render()}}
+    else if(b.dataset.dr!==undefined){const r=dres[+b.dataset.dr];if(r){setDest(r);render();getWx()}}
     else if(a==="dx"){setDest(null);render()}
     else if(a==="tide")go(`https://marine-api.open-meteo.com/v1/marine?latitude=${loc?loc.la:0}&longitude=${loc?loc.lo:0}&hourly=sea_level_height_msl&timezone=auto&forecast_days=2&cell_selection=sea`,"fn_tide","tide");
     else if(b.dataset.cs!==undefined){if(b.dataset.cs==="1"){cmpStart().then(()=>render())}else{cmpStop();CMP.msg="";render()}}
