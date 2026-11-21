@@ -371,6 +371,7 @@ body:not(.adm) .adm-only{display:none!important}
 .adb h3{font-size:14px;letter-spacing:.04em;border-left:4px solid var(--acc);padding-left:8px;margin:0 0 8px}
 .adx h3{display:none}
 </style>
+<style id="gc-css">#gc-cal{margin:6px -20px 0 -36px!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important}#gc-cal>h3{margin:0 0 6px;padding:0 20px 0 36px}#gc-cal .gc-bar{padding:0 20px 6px 36px}#gc-cal .gc-bar .sn-btn{width:auto;margin:0;padding:6px 14px}#gc-cal .gc-fr{display:block;width:100%;height:calc(100vh - 210px);height:calc(100dvh - 210px);min-height:420px;border:0;background:#fff}#gc-cal .gc-nt{padding:0 20px 0 36px}</style>
 </head>
 <body>
 <div id="lg" role="dialog" aria-modal="true"><div class="lgc">
@@ -2405,12 +2406,28 @@ function initRegion(root){
   root.addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;sel=sel===b.dataset.p&&sel!=="全て"?"全て":b.dataset.p;render()});
   render();
 }
+function fnCalFull(url){
+  if(document.getElementById("gc-fs"))return;
+  const o=document.createElement("div");o.id="gc-fs";
+  o.style.cssText="position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:9000;background:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box";
+  o.innerHTML='<div style="flex:0 0 44px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 14px;background:#2f5d3f;color:#fff;font-size:16px;font-weight:bold"><span>📅 カレンダー</span><button type="button" id="gc-fs-x" style="border:0;background:rgba(255,255,255,.2);color:#fff;font-size:15px;border-radius:8px;padding:8px 14px;min-height:36px">✕ 閉じる</button></div><iframe src="'+url+'" style="flex:1 1 auto;width:100%;border:0;min-height:0"></iframe>';
+  document.body.appendChild(o);
+  let closed=false;
+  const close=()=>{if(closed)return;closed=true;window.removeEventListener("popstate",onpop);try{if(document.fullscreenElement)document.exitFullscreen()}catch(x){}o.remove();if(history.state&&history.state.fnCal)history.back()};
+  const onpop=()=>{if(closed)return;closed=true;window.removeEventListener("popstate",onpop);try{if(document.fullscreenElement)document.exitFullscreen()}catch(x){}o.remove()};
+  o.querySelector("#gc-fs-x").onclick=close;
+  try{history.pushState({fnCal:1},"")}catch(x){}
+  window.addEventListener("popstate",onpop);
+  try{const r=o.requestFullscreen&&o.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(x){}
+}
 (function(){
   const d=document.createElement("div");d.className="pp";
   const ad=ld("fn_admin",0),ok=v=>/^[\w.+\-@%]{6,200}$/.test(String(v||""));
   const a=document.createElement("div");a.className="pp";
   const draw=()=>{const g=ld("fn_gcal",null)||remote().gcal||"";
-    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<details open><summary>カレンダーを表示</summary><iframe src="https://calendar.google.com/calendar/embed?src=${encodeURIComponent(g)}&ctz=Asia%2FTokyo&hl=ja&mode=MONTH" style="width:100%;height:420px;border:0;margin-top:8px" loading="lazy"></iframe><p class="sn-note">表示されないときは、管理者に公開設定を確認してもらってください。</p></details>`:'<p class="sn-note">まだ設定されていません。</p>');
+    const cu=ok(g)?"https://calendar.google.com/calendar/embed?src="+encodeURIComponent(g)+"&ctz=Asia%2FTokyo&hl=ja&mode=MONTH":"";
+    d.innerHTML='<h3>グループのカレンダー</h3>'+(ok(g)?`<div class="gc-bar"><button type="button" class="sn-btn" id="gc-full">⛶ さらに大きく</button></div><iframe class="gc-fr" src="${cu}" loading="lazy"></iframe><p class="sn-note gc-nt">予定をタップすると、詳しい内容が出ます。表示されないときは、管理者に公開設定を確認してもらってください。</p>`:'<p class="sn-note">まだ設定されていません。</p>');
+    const fb=d.querySelector("#gc-full");if(fb)fb.onclick=()=>fnCalFull(cu);
     a.innerHTML=ad?`<h3>グループのカレンダー設定</h3><input class="sn-in" id="gc-i" placeholder="カレンダーID（xxxx@group.calendar.google.com）" value="${esc(ld("fn_gcal","")||"")}"><input class="sn-in" id="gc-k" placeholder="APIキー（AIza…）予定の通知用" value="${esc(ld("fn_gkey","")||"")}"><button class="sn-btn sn-ghost" id="gc-s">設定する</button><p class="sn-note" id="gc-m">Googleカレンダーの「設定と共有」→「カレンダーの統合」にある「カレンダーID」を入れます。メンバーに見せるにはカレンダーを一般公開にし、設定後に配信ファイルを書き出し直してください。</p>`:"";
     const b=a.querySelector("#gc-s");if(b)b.onclick=()=>{const v=a.querySelector("#gc-i").value.trim();if(v&&!ok(v)){a.querySelector("#gc-m").textContent="カレンダーIDの形式が正しくありません。";return}const k=a.querySelector("#gc-k").value.trim();if(k&&!/^[\w\-]{20,80}$/.test(k)){a.querySelector("#gc-m").textContent="APIキーの形式が正しくありません。";return}sv("fn_gkey",k||null);sv("fn_gcal",v||null);draw();if(window.fnEvRefresh)window.fnEvRefresh()}};
   draw();{const tp=$("calpg"),pg=tp.querySelector(".pgin")||tp,h=pg.querySelector(".lead");d.id="gc-cal";if(h)h.after(d);else pg.appendChild(d)}(window.fnAdm=window.fnAdm||{}).cal=a;
